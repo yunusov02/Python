@@ -1,4 +1,4 @@
-from pole import Pole
+from game import Game
 
 def main():
     print("Welcome to Ping Pong Game")
@@ -6,11 +6,11 @@ def main():
     player1 = input("Enter first player name: ")
     player2 = input("Enter second player name: ")
 
-    pole = Pole(player1, player2)
+    game = Game(player1, player2)
 
-    pole.game()
+    game.game()
 
-    pole.print_winner()
+    game.print_winner()
 
     print("Game End")
 

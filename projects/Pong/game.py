@@ -2,14 +2,15 @@ from ball import Ball
 from player import Player
 
 
-class Pole:
+
+class Game:
     def __init__(self, player1: str, player2: str):
         self.player1 = Player(player1.title())
         self.player2 = Player(player2.title())
 
         self.ball = Ball("O")
 
-        
+        self.pole = ["" for i in range()]
 
 
     def game(self):

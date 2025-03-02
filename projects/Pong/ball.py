@@ -1,6 +1,4 @@
-DEFAULT_I = 10
-DEFAULT_J = 10
-
+from config import DEFAULT_I, DEFAULT_J
 
 class Ball:
 

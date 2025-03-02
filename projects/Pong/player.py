@@ -1,6 +1,4 @@
-PLAYER_I = 2
-PLAYER_J = 2
-
+from config import PLAYER_I, PLAYER_J
 
 class Player:
     def __init__(self, name, i=PLAYER_I, j=PLAYER_J, score = 0):
