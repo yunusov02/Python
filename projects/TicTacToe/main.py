@@ -8,7 +8,7 @@ def main():
 
     game = Game(name1=name1, name2=name2)
 
-    game.print_pole()
+    game.game()
 
 
 if __name__ == "__main__":
