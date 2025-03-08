@@ -334,7 +334,7 @@ Kevin Miller 	 $15000
 ### Method Resolution Order (MRO)
 When the parent classes have methods with the same name and the child class calls the method, Python
 uses the method resolution order (MRO) to search for the right method to call.\
-![image](images/mro.png)
+![image](../images/mro.png)
 
 
 ```python
