@@ -1,0 +1,1 @@
+POLE_SIZE = 10
