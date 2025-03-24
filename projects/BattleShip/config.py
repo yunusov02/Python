@@ -1,0 +1,3 @@
+POLE_X = 10
+POLE_Y = 5
+
