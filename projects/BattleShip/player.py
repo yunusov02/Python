@@ -37,24 +37,29 @@ class Player:
                 elif command == "R":
                     self.selected.rotate()
                 elif command == "P":
-                    for x, y in self.selected.sheep:
-                        self.pole[x][y] = "#"
-                    
-                    sheep_base = self.selected.sheep[0]
-                    length = self.selected.length
-                    
-                    start_x, start_y = sheep_base[0] - 1, sheep_base[1] - 1
-                    stop_x, stop_y = sheep_base[0] + length, sheep_base[1] + length
+                    self.put_sheep()
+                    break
 
-                    for x in range(start_x, stop_x+1):
-                        for y in range(start_y, stop_y+1):
-                            if 0 <= x < POLE_Y and 0 <= y < POLE_X and self.pole[x][y] != "#":
-                                self.pole[x][y] = "."
+    def put_sheep(self):
+        for x, y in self.selected.sheep:
+            self.pole[x][y] = "#"
 
-                    self.selected.status = SheepStatus.PUTTED
-                    time.sleep(2)
+        sheep_base = self.selected.sheep[-1]
+        sheep_end = self.selected.sheep[0]
 
-      
+        start_i = max(0, sheep_base[0] - 1)
+        start_j = max(0, sheep_base[1] - 1)
+
+        stop_i = min(POLE_Y - 1, sheep_end[0] + 1)
+        stop_j = min(POLE_X - 1, sheep_end[1] + 1)
+
+        for x in range(start_i, stop_i + 1):
+            for y in range(start_j, stop_j + 1):
+                if self.pole[x][y] == "*":
+                    self.pole[x][y] = "."
+
+        self.selected.status = SheepStatus.PUTTED
+
     def initialize_sheeps(self):
         self.sheeps = []
         j = 0
@@ -87,6 +92,3 @@ class Player:
                 else:
                     print(self.pole[i][j], end=" ")
             print("\n")   
-
-
-a = Player()
