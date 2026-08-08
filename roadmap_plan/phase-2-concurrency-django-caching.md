@@ -219,53 +219,53 @@ Celery in Phase 3.
 
 ## 8. Daily Plan — Week 5: GIL, Threading, Multiprocessing, Django Scaffold
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D25) | GIL mechanics | Fluent Python Ch.19 | GIL demo script (threads vs processes, CPU-bound) | New repo `quickserve/`, Django project init, settings split | Confirm `manage.py check` passes | `chore: django project scaffold` | Q1 | 3.5h |
-| Tue (D26) | `threading` module, I/O-bound concurrency | Python docs `threading` | Multithreaded file downloader | `catalog` app: `Product` model + admin registration | Model field test | `feat: product model + admin` | Q2 | 3.5h |
-| Wed (D27) | `multiprocessing`, process overhead | Python docs `multiprocessing` | Multiprocessing image resizer with `Pool` | `sales` app: `Receipt`, `ReceiptItem` models | Migration test | `feat: receipt models` | Q3 | 3.5h |
-| Thu (D28) | Race conditions, minimal repro | — | Deliberately trigger a race with 2 threads incrementing a shared counter | `discounts` app: `Discount` model + validation rules | Unit test discount calc (fixed/percent, cap) | `feat: discount model + calc rules` | Q4 | 3.5h |
-| Fri (D29) | Locks, deadlocks (4 conditions) | — | Fix Thursday's race with a `Lock`; then reproduce a deadlock on purpose | DRF serializers for products/receipts | Serializer validation tests | `feat: DRF serializers` | Q5 | 3.5h |
-| Sat (D30) | **Review** | — | Redo GIL demo from memory, explain results out loud | Re-read models for Django idioms vs FastAPI habits carried over wrongly | Full suite | — | Answer all Week-5 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D25) | GIL mechanics | Fluent Python Ch.19 | GIL demo script (threads vs processes, CPU-bound) | New repo `quickserve/`, Django project init, settings split | Confirm `manage.py check` passes | `chore: django project scaffold` | Q1 | Evaluate Reverse Polish Notation | QuickServe: daily revenue per cashier | 3.5h |
+| Tue (D26) | `threading` module, I/O-bound concurrency | Python docs `threading` | Multithreaded file downloader | `catalog` app: `Product` model + admin registration | Model field test | `feat: product model + admin` | Q2 | Generate Parentheses | Department Highest Salary | 3.5h |
+| Wed (D27) | `multiprocessing`, process overhead | Python docs `multiprocessing` | Multiprocessing image resizer with `Pool` | `sales` app: `Receipt`, `ReceiptItem` models | Migration test | `feat: receipt models` | Q3 | Daily Temperatures | QuickServe: receipts with at least one return | 3.5h |
+| Thu (D28) | Race conditions, minimal repro | — | Deliberately trigger a race with 2 threads incrementing a shared counter | `discounts` app: `Discount` model + validation rules | Unit test discount calc (fixed/percent, cap) | `feat: discount model + calc rules` | Q4 | Car Fleet | QuickServe: products never discounted | 3.5h |
+| Fri (D29) | Locks, deadlocks (4 conditions) | — | Fix Thursday's race with a `Lock`; then reproduce a deadlock on purpose | DRF serializers for products/receipts | Serializer validation tests | `feat: DRF serializers` | Q5 | Binary Search | Trips and Users | 3.5h |
+| Sat (D30) | **Review** | — | Redo GIL demo from memory, explain results out loud | Re-read models for Django idioms vs FastAPI habits carried over wrongly | Full suite | — | Answer all Week-5 Qs unscripted | Review: redo Thursday's problem from memory — Car Fleet | Review: rewrite Tuesday's query from memory, then extend it — Department Highest Salary | 2.5h |
 
 ---
 
 ## 9. Daily Plan — Week 6: DRF ViewSets, Checkout Flow, Redis Caching
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D31) | DRF ViewSets, routers | DRF docs Viewsets | — | `ProductViewSet` + `GET /products?search=` | Integration test | `feat: product list/search endpoint` | Q1 | 3.5h |
-| Tue (D32) | Service layer in Django (keeping views thin) | Two Scoops Ch.7 | — | `checkout_service.py`: build receipt from cart payload | Unit test checkout math | `feat: checkout service` | Q2 | 3.5h |
-| Wed (D33) | `select_related`/`prefetch_related`, N+1 in Django ORM | Django docs QuerySet | Reproduce N+1 on receipt-items listing, fix it | `POST /checkout` endpoint wired end-to-end | Integration test full checkout | `feat: checkout endpoint` | Q3 | 3.5h |
-| Thu (D34) | Redis cache-aside pattern | Redis docs caching | Standalone cache-aside demo script | Add Redis cache on `GET /products?search=`, TTL + invalidation on price update | Cache hit/miss test with `fakeredis` | `feat: redis cache-aside on product search` | Q4 | 3.5h |
-| Fri (D35) | Benchmarking, `hey`/`locust` basics | — | Load-test `/products` before/after cache, record p95 | Write `docs/caching-notes.md` with before/after numbers | — | `perf: benchmark cache impact` | Q5 | 3.5h |
-| Sat (D36) | **Review** | — | Redo cache-aside demo from memory | Re-check invalidation covers every write path to `price_cents` | Full suite | — | Answer all Week-6 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D31) | DRF ViewSets, routers | DRF docs Viewsets | — | `ProductViewSet` + `GET /products?search=` | Integration test | `feat: product list/search endpoint` | Q1 | Search a 2D Matrix | QuickServe: rank products by qty sold | 3.5h |
+| Tue (D32) | Service layer in Django (keeping views thin) | Two Scoops Ch.7 | — | `checkout_service.py`: build receipt from cart payload | Unit test checkout math | `feat: checkout service` | Q2 | Koko Eating Bananas | QuickServe: running total of daily sales | 3.5h |
+| Wed (D33) | `select_related`/`prefetch_related`, N+1 in Django ORM | Django docs QuerySet | Reproduce N+1 on receipt-items listing, fix it | `POST /checkout` endpoint wired end-to-end | Integration test full checkout | `feat: checkout endpoint` | Q3 | Find Minimum in Rotated Sorted Array | Rank Scores | 3.5h |
+| Thu (D34) | Redis cache-aside pattern | Redis docs caching | Standalone cache-aside demo script | Add Redis cache on `GET /products?search=`, TTL + invalidation on price update | Cache hit/miss test with `fakeredis` | `feat: redis cache-aside on product search` | Q4 | Search in Rotated Sorted Array | QuickServe: EXPLAIN ANALYZE the cached product-search query | 3.5h |
+| Fri (D35) | Benchmarking, `hey`/`locust` basics | — | Load-test `/products` before/after cache, record p95 | Write `docs/caching-notes.md` with before/after numbers | — | `perf: benchmark cache impact` | Q5 | Reverse Linked List | Consecutive Numbers | 3.5h |
+| Sat (D36) | **Review** | — | Redo cache-aside demo from memory | Re-check invalidation covers every write path to `price_cents` | Full suite | — | Answer all Week-6 Qs unscripted | Review: redo Thursday's problem from memory — Search in Rotated Sorted Array | Review: rewrite Tuesday's query from memory, then extend it — QuickServe: running total of daily sales | 2.5h |
 
 ---
 
 ## 10. Daily Plan — Week 7: Returns, Reports, JWT Refresh, Queues → PeopleOps Starts
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D37) | `simplejwt` access/refresh flow | djangorestframework-simplejwt docs | — | Wire refresh-token auth into QuickServe | Test token refresh + rotation | `feat: jwt access+refresh auth` | Q1 | 3.5h |
-| Tue (D38) | DRF throttling internals | DRF throttling docs | — | Add `UserRateThrottle` to `/checkout` | Test throttle triggers at limit | `feat: checkout rate limiting` | Q2 | 3.5h |
-| Wed (D39) | Returns flow, daily sales report query | — | — | `POST /returns`, `GET /reports/daily-sales` | Integration tests, tag `v0.1-quickserve` | `feat: returns + daily sales report` | Q3 | 3.5h |
-| Thu (D40) | `queue.Queue`, producer/consumer pattern | Python docs `queue` | Producer/consumer mini script with `Lock` | New repo `peopleops/`: Django scaffold, `Employee`, `LeaveRequest`, `LeaveBalance` models | Model tests | `feat: peopleops scaffold + core models` | Q4 | 3.5h |
-| Fri (D41) | Manager-approval permission modeling | DRF permissions docs | — | `LeaveRequestViewSet` + approve/reject actions, manager-only permission | Permission tests (staff can't approve) | `feat: leave request approval flow` | Q5 | 3.5h |
-| Sat (D42) | **Review** | — | Redo producer/consumer from memory | Trace the approval endpoint's synchronous email call — note exactly where it blocks | Full suite | — | Answer all Week-7 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D37) | `simplejwt` access/refresh flow | djangorestframework-simplejwt docs | — | Wire refresh-token auth into QuickServe | Test token refresh + rotation | `feat: jwt access+refresh auth` | Q1 | Merge Two Sorted Lists | PeopleOps: employees with more than 3 pending leave requests | 3.5h |
+| Tue (D38) | DRF throttling internals | DRF throttling docs | — | Add `UserRateThrottle` to `/checkout` | Test throttle triggers at limit | `feat: checkout rate limiting` | Q2 | Reorder List | Managers with at Least 5 Direct Reports | 3.5h |
+| Wed (D39) | Returns flow, daily sales report query | — | — | `POST /returns`, `GET /reports/daily-sales` | Integration tests, tag `v0.1-quickserve` | `feat: returns + daily sales report` | Q3 | Remove Nth Node From End of List | PeopleOps: average leave balance per department | 3.5h |
+| Thu (D40) | `queue.Queue`, producer/consumer pattern | Python docs `queue` | Producer/consumer mini script with `Lock` | New repo `peopleops/`: Django scaffold, `Employee`, `LeaveRequest`, `LeaveBalance` models | Model tests | `feat: peopleops scaffold + core models` | Q4 | Copy List with Random Pointer | PeopleOps: leave requests approved same-day vs delayed | 3.5h |
+| Fri (D41) | Manager-approval permission modeling | DRF permissions docs | — | `LeaveRequestViewSet` + approve/reject actions, manager-only permission | Permission tests (staff can't approve) | `feat: leave request approval flow` | Q5 | Add Two Numbers | Employee Bonus | 3.5h |
+| Sat (D42) | **Review** | — | Redo producer/consumer from memory | Trace the approval endpoint's synchronous email call — note exactly where it blocks | Full suite | — | Answer all Week-7 Qs unscripted | Review: redo Thursday's problem from memory — Copy List with Random Pointer | Review: rewrite Tuesday's query from memory, then extend it — Managers with at Least 5 Direct Reports | 2.5h |
 
 ---
 
 ## 11. Daily Plan — Week 8: The Synchronous-Email Pain Point, Celery Intro, Phase Wrap
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D43) | Why synchronous side-effects in a request are dangerous | — | Time the approval endpoint with a deliberately slow fake mail server (`time.sleep`) | Write `docs/blocking-email-problem.md` documenting the felt pain, numbers included | — | `docs: document blocking email problem` | Q1 | 3.5h |
-| Tue (D44) | Celery architecture: broker, worker, result backend | Celery docs "First Steps" | Celery producer/consumer mini task queue (`add.delay()`) | Add `celery.py` app config + Redis broker to `peopleops/` | Test a trivial task executes async | `feat: celery + redis broker wired up` | Q2 | 3.5h |
-| Wed (D45) | Task retries, idempotent tasks | Celery docs retries | — | Convert approval-email send into a Celery task with retry(3) | Test task retries on simulated failure | `feat: async email task with retries` | Q3 | 3.5h |
-| Thu (D46) | Leave balance accrual logic | — | — | `LeaveBalance` accrual calculation (manual trigger for now — cron comes Phase 3) | Unit test accrual math | `feat: leave balance accrual logic` | Q4 | 3.5h |
-| Fri (D47) | Phase 2 wrap: CI update (add Redis+Celery to pipeline) | GitHub Actions docs | — | Full CI green on both projects, Docker Compose gains `redis` + `celery-worker` services | Full suite both projects | `ci: add redis + celery worker to pipeline` | Q5 | 3.5h |
-| Sat (D48) | **Phase 2 wrap review** | — | Redo Celery retry demo from memory | Write `docs/postmortem-phase2.md` | Tag `v0.2-phase2` | `docs: phase 2 postmortem` | Mock-answer all 20 Phase-2 questions timed | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D43) | Why synchronous side-effects in a request are dangerous | — | Time the approval endpoint with a deliberately slow fake mail server (`time.sleep`) | Write `docs/blocking-email-problem.md` documenting the felt pain, numbers included | — | `docs: document blocking email problem` | Q1 | Linked List Cycle | PeopleOps: employees who never took leave | 3.5h |
+| Tue (D44) | Celery architecture: broker, worker, result backend | Celery docs "First Steps" | Celery producer/consumer mini task queue (`add.delay()`) | Add `celery.py` app config + Redis broker to `peopleops/` | Test a trivial task executes async | `feat: celery + redis broker wired up` | Q2 | Find the Duplicate Number | PeopleOps: leave requests pending 3+ days | 3.5h |
+| Wed (D45) | Task retries, idempotent tasks | Celery docs retries | — | Convert approval-email send into a Celery task with retry(3) | Test task retries on simulated failure | `feat: async email task with retries` | Q3 | LRU Cache | Investments in 2016 | 3.5h |
+| Thu (D46) | Leave balance accrual logic | — | — | `LeaveBalance` accrual calculation (manual trigger for now — cron comes Phase 3) | Unit test accrual math | `feat: leave balance accrual logic` | Q4 | Invert Binary Tree | PeopleOps: monthly accrual totals per employee | 3.5h |
+| Fri (D47) | Phase 2 wrap: CI update (add Redis+Celery to pipeline) | GitHub Actions docs | — | Full CI green on both projects, Docker Compose gains `redis` + `celery-worker` services | Full suite both projects | `ci: add redis + celery worker to pipeline` | Q5 | Maximum Depth of Binary Tree | Sales Person | 3.5h |
+| Sat (D48) | **Phase 2 wrap review** | — | Redo Celery retry demo from memory | Write `docs/postmortem-phase2.md` | Tag `v0.2-phase2` | `docs: phase 2 postmortem` | Mock-answer all 20 Phase-2 questions timed | Review: redo Thursday's problem from memory — Invert Binary Tree | Review: rewrite Tuesday's query from memory, then extend it — PeopleOps: leave requests pending 3+ days | 2.5h |
 
 ---
 

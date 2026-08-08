@@ -241,66 +241,66 @@ Inventory's domain layer.
 
 ## 8. Daily Plan — Week 9: PeopleOps Scheduling + Mini-Projects
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D49) | Celery Beat scheduling | Celery Beat docs | — | Monthly leave-accrual scheduled task | `freezegun`-based schedule test | `feat: celery beat monthly accrual` | Q1 | 3.5h |
-| Tue (D50) | Reminder-job pattern | — | — | 3-day unapproved-request reminder job | Test reminder fires at correct threshold | `feat: leave request reminder job` | — | 3.5h |
-| Wed (D51) | Dependency injection theory | — | Mini DI container (register/resolve) | — | Unit tests for DI container | `feat: mini DI container` | Q2 | 3.5h |
-| Thu (D52) | How ORMs work internally | SQLAlchemy source skim (`orm/session.py` overview) | Mini-ORM: dict-row → object mapper + tiny query builder | — | Unit tests for mini-ORM | `feat: mini orm exercise` | Q3 | 3.5h |
-| Fri (D53) | PeopleOps wrap | — | — | Finalize PeopleOps, `docs/postmortem-peopleops.md`, tag `v0.2-peopleops-final` | Full suite | `docs: peopleops final postmortem` | — | 3.5h |
-| Sat (D54) | **Review** | — | Redo mini-ORM query builder from memory | — | — | — | Answer Week-9 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D49) | Celery Beat scheduling | Celery Beat docs | — | Monthly leave-accrual scheduled task | `freezegun`-based schedule test | `feat: celery beat monthly accrual` | Q1 | Diameter of Binary Tree | PeopleOps: reminder-job candidates, final polish | 3.5h |
+| Tue (D50) | Reminder-job pattern | — | — | 3-day unapproved-request reminder job | Test reminder fires at correct threshold | `feat: leave request reminder job` | — | Balanced Binary Tree | Triangle Judgement | 3.5h |
+| Wed (D51) | Dependency injection theory | — | Mini DI container (register/resolve) | — | Unit tests for DI container | `feat: mini DI container` | Q2 | Same Tree | WareFlow: stock levels below zero | 3.5h |
+| Thu (D52) | How ORMs work internally | SQLAlchemy source skim (`orm/session.py` overview) | Mini-ORM: dict-row → object mapper + tiny query builder | — | Unit tests for mini-ORM | `feat: mini orm exercise` | Q3 | Subtree of Another Tree | WareFlow: total stock per warehouse | 3.5h |
+| Fri (D53) | PeopleOps wrap | — | — | Finalize PeopleOps, `docs/postmortem-peopleops.md`, tag `v0.2-peopleops-final` | Full suite | `docs: peopleops final postmortem` | — | Lowest Common Ancestor of a BST | Exchange Seats | 3.5h |
+| Sat (D54) | **Review** | — | Redo mini-ORM query builder from memory | — | — | — | Answer Week-9 Qs unscripted | Review: redo Thursday's problem from memory — Subtree of Another Tree | Review: rewrite Tuesday's query from memory, then extend it — Triangle Judgement | 2.5h |
 
 ---
 
 ## 9. Daily Plan — Week 10: WareFlow Scaffold, DDD-lite, Unit of Work
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D55) | Bounded contexts, aggregates | DDD Distilled Ch.1-3 | — | New repo `wareflow/`, define Inventory + Fulfillment context boundaries in `docs/architecture.md` | — | `docs: wareflow bounded contexts` | Q1 | 3.5h |
-| Tue (D56) | Aggregate roots, entities vs value objects | DDD Distilled Ch.4-5 | — | `Warehouse`, `StockLevel` entities (Inventory context) | Domain model unit tests | `feat: inventory domain models` | — | 3.5h |
-| Wed (D57) | Unit of Work pattern | Cosmic Python (free online) Ch.6 | UoW demo: 2 repos, 1 commit boundary | `UnitOfWork` class wrapping SQLAlchemy session | Test rollback on partial failure | `feat: unit of work implementation` | Q2 | 3.5h |
-| Thu (D58) | Repository pattern formalized | Cosmic Python Ch.2 | — | `StockLevelRepository`, `WarehouseRepository` conforming to Phase 1's `Repository[T]` protocol | Repository tests | `feat: inventory repositories` | — | 3.5h |
-| Fri (D59) | Domain services vs application services | DDD Distilled Ch.6 | — | `receive_stock` and `dispatch_transfer` domain services using UoW | Service unit tests (mocked UoW) | `feat: receive/dispatch stock services` | Q3 | 3.5h |
-| Sat (D60) | **Review** | — | Redo UoW demo from memory | Re-read context boundary doc, check for leaks | Full suite | — | Answer Week-10 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D55) | Bounded contexts, aggregates | DDD Distilled Ch.1-3 | — | New repo `wareflow/`, define Inventory + Fulfillment context boundaries in `docs/architecture.md` | — | `docs: wareflow bounded contexts` | Q1 | Binary Tree Level Order Traversal | WareFlow: warehouses with more distinct products than average | 3.5h |
+| Tue (D56) | Aggregate roots, entities vs value objects | DDD Distilled Ch.4-5 | — | `Warehouse`, `StockLevel` entities (Inventory context) | Domain model unit tests | `feat: inventory domain models` | — | Binary Tree Right Side View | WareFlow: products in one warehouse but not another | 3.5h |
+| Wed (D57) | Unit of Work pattern | Cosmic Python (free online) Ch.6 | UoW demo: 2 repos, 1 commit boundary | `UnitOfWork` class wrapping SQLAlchemy session | Test rollback on partial failure | `feat: unit of work implementation` | Q2 | Count Good Nodes in Binary Tree | Swap Salary | 3.5h |
+| Thu (D58) | Repository pattern formalized | Cosmic Python Ch.2 | — | `StockLevelRepository`, `WarehouseRepository` conforming to Phase 1's `Repository[T]` protocol | Repository tests | `feat: inventory repositories` | — | Validate Binary Search Tree | WareFlow: stock_movements reason breakdown | 3.5h |
+| Fri (D59) | Domain services vs application services | DDD Distilled Ch.6 | — | `receive_stock` and `dispatch_transfer` domain services using UoW | Service unit tests (mocked UoW) | `feat: receive/dispatch stock services` | Q3 | Kth Smallest Element in a BST | Tree Node | 3.5h |
+| Sat (D60) | **Review** | — | Redo UoW demo from memory | Re-read context boundary doc, check for leaks | Full suite | — | Answer Week-10 Qs unscripted | Review: redo Thursday's problem from memory — Validate Binary Search Tree | Review: rewrite Tuesday's query from memory, then extend it — WareFlow: products in one warehouse but not another | 2.5h |
 
 ---
 
 ## 10. Daily Plan — Week 11: RabbitMQ, Fulfillment Context
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D61) | RabbitMQ concepts: exchange, queue, binding | RabbitMQ tutorial 1-3 | Standalone producer/consumer script | Add `rabbitmq` to Docker Compose | Verify management UI reachable | `chore: rabbitmq service` | Q1 | 3.5h |
-| Tue (D62) | Publishing domain events after commit | — | — | `event_bus.py`: publish `StockDispatched`/`StockReceived` after UoW commit | Test event published only on successful commit | `feat: event bus wrapper` | — | 3.5h |
-| Wed (D63) | Consumer idempotency, ack/nack | RabbitMQ tutorial 4-5 | Duplicate-message idempotency demo | Fulfillment consumer for `StockDispatched` → creates `Reservation` | Test duplicate event doesn't double-reserve | `feat: fulfillment stock-dispatched consumer` | Q2 | 3.5h |
-| Thu (D64) | Dead-letter queues | RabbitMQ tutorial 6 (DLQ) | — | Configure DLQ, force a bad message, inspect it manually | Test message lands in DLQ after 3 failures | `feat: dead-letter queue config` | — | 3.5h |
-| Fri (D65) | Transfer receipt endpoint | — | — | `POST /transfers/{id}/receive` — confirms receipt, publishes `StockReceived` | Integration test full dispatch→receive flow | `feat: transfer receipt endpoint` | Q3 | 3.5h |
-| Sat (D66) | **Review** | — | Redo idempotency demo from memory | Trace one event end-to-end by hand, write it in `docs/notes.md` | Full suite | — | Answer Week-11 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D61) | RabbitMQ concepts: exchange, queue, binding | RabbitMQ tutorial 1-3 | Standalone producer/consumer script | Add `rabbitmq` to Docker Compose | Verify management UI reachable | `chore: rabbitmq service` | Q1 | Construct Binary Tree from Preorder and Inorder Traversal | WareFlow: reservations pending longer than 1 hour | 3.5h |
+| Tue (D62) | Publishing domain events after commit | — | — | `event_bus.py`: publish `StockDispatched`/`StockReceived` after UoW commit | Test event published only on successful commit | `feat: event bus wrapper` | — | Binary Tree Maximum Path Sum | WareFlow: products most frequently reserved | 3.5h |
+| Wed (D63) | Consumer idempotency, ack/nack | RabbitMQ tutorial 4-5 | Duplicate-message idempotency demo | Fulfillment consumer for `StockDispatched` → creates `Reservation` | Test duplicate event doesn't double-reserve | `feat: fulfillment stock-dispatched consumer` | Q2 | Serialize and Deserialize Binary Tree | Human Traffic of Stadium | 3.5h |
+| Thu (D64) | Dead-letter queues | RabbitMQ tutorial 6 (DLQ) | — | Configure DLQ, force a bad message, inspect it manually | Test message lands in DLQ after 3 failures | `feat: dead-letter queue config` | — | Implement Trie (Prefix Tree) | WareFlow: transfers stuck 'dispatched' over 24h | 3.5h |
+| Fri (D65) | Transfer receipt endpoint | — | — | `POST /transfers/{id}/receive` — confirms receipt, publishes `StockReceived` | Integration test full dispatch→receive flow | `feat: transfer receipt endpoint` | Q3 | Design Add and Search Words Data Structure | Friend Requests I: Overall Acceptance Rate | 3.5h |
+| Sat (D66) | **Review** | — | Redo idempotency demo from memory | Trace one event end-to-end by hand, write it in `docs/notes.md` | Full suite | — | Answer Week-11 Qs unscripted | Review: redo Thursday's problem from memory — Implement Trie (Prefix Tree) | Review: rewrite Tuesday's query from memory, then extend it — WareFlow: products most frequently reserved | 2.5h |
 
 ---
 
 ## 11. Daily Plan — Week 12: Postgres Deep Dive — Isolation, MVCC, Deadlocks, Partitioning
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D67) | MVCC mechanics | Postgres docs Ch.13 §3 | Two-transaction MVCC demo (concurrent reads never block) | Reservation creation with row-level locking | Test concurrent reservations for same stock | `feat: reservation row locking` | Q1 | 3.5h |
-| Tue (D68) | Isolation levels: read committed, repeatable read, serializable | Postgres docs Ch.13 §2 | Reproduce a non-repeatable read, then prevent it | Choose and document isolation level for reservations | — | `docs: isolation level decision for reservations` | — | 3.5h |
-| Wed (D69) | Deadlocks in practice | Postgres docs Ch.13 §3.4 | Reproduce a deadlock with opposing lock order across 2 warehouses | Fix lock ordering in transfer dispatch logic | Test no deadlock under simulated concurrent transfers | `fix: consistent lock ordering in transfers` | Q2 | 3.5h |
-| Thu (D70) | Table partitioning | Postgres docs Ch.5 §11 | — | Partition `stock_movements` by month | Test queries against old vs current partition | `perf: partition stock_movements by month` | — | 3.5h |
-| Fri (D71) | Query plan reading under partitioning | — | — | `EXPLAIN ANALYZE` before/after partitioning, record in `docs/partitioning-notes.md` | — | `docs: partitioning benchmark notes` | Q3 | 3.5h |
-| Sat (D72) | **Review** | — | Redo deadlock reproduction from memory | — | Full suite | — | Answer Week-12 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D67) | MVCC mechanics | Postgres docs Ch.13 §3 | Two-transaction MVCC demo (concurrent reads never block) | Reservation creation with row-level locking | Test concurrent reservations for same stock | `feat: reservation row locking` | Q1 | Kth Largest Element in a Stream | WareFlow: EXPLAIN ANALYZE reservation query before/after row-lock index | 3.5h |
+| Tue (D68) | Isolation levels: read committed, repeatable read, serializable | Postgres docs Ch.13 §2 | Reproduce a non-repeatable read, then prevent it | Choose and document isolation level for reservations | — | `docs: isolation level decision for reservations` | — | Last Stone Weight | WareFlow: stock_movements query on new monthly partition vs old | 3.5h |
+| Wed (D69) | Deadlocks in practice | Postgres docs Ch.13 §3.4 | Reproduce a deadlock with opposing lock order across 2 warehouses | Fix lock ordering in transfer dispatch logic | Test no deadlock under simulated concurrent transfers | `fix: consistent lock ordering in transfers` | Q2 | K Closest Points to Origin | Department Top Three Salaries | 3.5h |
+| Thu (D70) | Table partitioning | Postgres docs Ch.5 §11 | — | Partition `stock_movements` by month | Test queries against old vs current partition | `perf: partition stock_movements by month` | — | Kth Largest Element in an Array | WareFlow: a query that would deadlock under bad lock ordering | 3.5h |
+| Fri (D71) | Query plan reading under partitioning | — | — | `EXPLAIN ANALYZE` before/after partitioning, record in `docs/partitioning-notes.md` | — | `docs: partitioning benchmark notes` | Q3 | Task Scheduler | Nth Highest Salary | 3.5h |
+| Sat (D72) | **Review** | — | Redo deadlock reproduction from memory | — | Full suite | — | Answer Week-12 Qs unscripted | Review: redo Thursday's problem from memory — Kth Largest Element in an Array | Review: rewrite Tuesday's query from memory, then extend it — WareFlow: stock_movements query on new monthly partition vs old | 2.5h |
 
 ---
 
 ## 12. Daily Plan — Week 13: Kafka Intro, Outbox Gap, Phase Wrap
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D73) | Kafka concepts: topics, partitions, consumer groups | Confluent Kafka intro | Single-topic produce/consume mini project | — | Test consumer receives all messages | `feat: kafka mini exercise` | Q1 | 3.5h |
-| Tue (D74) | Kafka vs RabbitMQ tradeoffs | — | — | Write `docs/rabbitmq-vs-kafka.md` decision record for WareFlow | — | `docs: messaging tech decision record` | — | 3.5h |
-| Wed (D75) | The commit-then-publish gap | — | — | Deliberately break the "DB commit succeeds, publish fails" case, observe the bug | Test reproducing the gap (expected to fail — document why) | `docs: outbox pattern gap identified` | Q2 | 3.5h |
-| Thu (D76) | Stock-by-warehouse reporting endpoint | — | — | `GET /warehouses/{id}/stock` with pagination | Integration test | `feat: warehouse stock reporting` | — | 3.5h |
-| Fri (D77) | CI update, full pipeline | — | — | CI with Postgres+Redis+RabbitMQ service containers, all green | Full suite both remaining projects | `ci: add rabbitmq service container` | Q3 | 3.5h |
-| Sat (D78) | **Phase 3 wrap review** | — | Redo Kafka mini exercise from memory | `docs/postmortem-phase3.md`, tag `v0.3-phase3` | Full suite | `docs: phase 3 postmortem` | Mock-answer all Phase-3 questions timed | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D73) | Kafka concepts: topics, partitions, consumer groups | Confluent Kafka intro | Single-topic produce/consume mini project | — | Test consumer receives all messages | `feat: kafka mini exercise` | Q1 | Subsets | WareFlow: warehouse stock report | 3.5h |
+| Tue (D74) | Kafka vs RabbitMQ tradeoffs | — | — | Write `docs/rabbitmq-vs-kafka.md` decision record for WareFlow | — | `docs: messaging tech decision record` | — | Combination Sum | Actors and Directors Who Cooperated At Least Three Times | 3.5h |
+| Wed (D75) | The commit-then-publish gap | — | — | Deliberately break the "DB commit succeeds, publish fails" case, observe the bug | Test reproducing the gap (expected to fail — document why) | `docs: outbox pattern gap identified` | Q2 | Permutations | WareFlow: paginated GET /warehouses/{id}/stock query | 3.5h |
+| Thu (D76) | Stock-by-warehouse reporting endpoint | — | — | `GET /warehouses/{id}/stock` with pagination | Integration test | `feat: warehouse stock reporting` | — | Subsets II | Product Sales Analysis I | 3.5h |
+| Fri (D77) | CI update, full pipeline | — | — | CI with Postgres+Redis+RabbitMQ service containers, all green | Full suite both remaining projects | `ci: add rabbitmq service container` | Q3 | Word Search | WareFlow: recursive CTE over one product's transfer history | 3.5h |
+| Sat (D78) | **Phase 3 wrap review** | — | Redo Kafka mini exercise from memory | `docs/postmortem-phase3.md`, tag `v0.3-phase3` | Full suite | `docs: phase 3 postmortem` | Mock-answer all Phase-3 questions timed | Review: redo Thursday's problem from memory — Subsets II | Review: rewrite Tuesday's query from memory, then extend it — Actors and Directors Who Cooperated At Least Three Times | 2.5h |
 
 ---
 

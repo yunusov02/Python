@@ -272,53 +272,53 @@ that ordering mattered); sharding prematurely.
 
 ## 10. Daily Plan — Week 19: Outbox Pattern, FleetTrack Scaffold
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D109) | Outbox pattern theory | Fowler/microservices.io outbox article | Standalone outbox demo (insert + relay script) | New repo `fleettrack/`, `Delivery`, `DeliveryEvent`, `outbox` models | Model tests | `feat: fleettrack scaffold + outbox table` | Q1 | 3.5h |
-| Tue (D110) | Transactional outbox insert | — | — | Status-update service: state change + outbox row, one transaction | Test both happen or neither happens | `feat: transactional status update + outbox insert` | Q2 | 3.5h |
-| Wed (D111) | Relay process design | — | — | Outbox relay worker (poll, publish, mark sent) | Test relay publishes and marks sent correctly | `feat: outbox relay worker` | — | 3.5h |
-| Thu (D112) | Fault injection on the relay | — | — | Kill RabbitMQ mid-relay, confirm no event lost, retried next poll | Integration test with simulated broker outage | `test: outbox survives broker outage` | Q3 | 3.5h |
-| Fri (D113) | Outbox lag metric | — | — | Add outbox-lag metric to Prometheus/Grafana (from Phase 4 stack) | — | `feat: outbox lag metric` | — | 3.5h |
-| Sat (D114) | **Review** | — | Redo outbox demo from memory | — | Full suite | — | Answer Week-19 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D109) | Outbox pattern theory | Fowler/microservices.io outbox article | Standalone outbox demo (insert + relay script) | New repo `fleettrack/`, `Delivery`, `DeliveryEvent`, `outbox` models | Model tests | `feat: fleettrack scaffold + outbox table` | Q1 | Maximum Product Subarray | FleetTrack: unsent outbox rows older than 5 minutes | 3.5h |
+| Tue (D110) | Transactional outbox insert | — | — | Status-update service: state change + outbox row, one transaction | Test both happen or neither happens | `feat: transactional status update + outbox insert` | Q2 | Word Break | Rising Temperature — self-join with LAG variant | 3.5h |
+| Wed (D111) | Relay process design | — | — | Outbox relay worker (poll, publish, mark sent) | Test relay publishes and marks sent correctly | `feat: outbox relay worker` | — | Longest Increasing Subsequence | FleetTrack: delivery stuck longest in one status | 3.5h |
+| Thu (D112) | Fault injection on the relay | — | — | Kill RabbitMQ mid-relay, confirm no event lost, retried next poll | Integration test with simulated broker outage | `test: outbox survives broker outage` | Q3 | Partition Equal Subset Sum | FleetTrack: avg time between status transitions | 3.5h |
+| Fri (D113) | Outbox lag metric | — | — | Add outbox-lag metric to Prometheus/Grafana (from Phase 4 stack) | — | `feat: outbox lag metric` | — | Insert Interval | The Most Frequently Ordered Products for Each Customer | 3.5h |
+| Sat (D114) | **Review** | — | Redo outbox demo from memory | — | Full suite | — | Answer Week-19 Qs unscripted | Review: redo Thursday's problem from memory — Partition Equal Subset Sum | Review: rewrite Tuesday's query from memory, then extend it — Rising Temperature — self-join with LAG variant | 2.5h |
 
 ---
 
 ## 11. Daily Plan — Week 20: CQRS Read Model, Saga
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D115) | CQRS theory | Fowler CQRS article | Mini CQRS projector (rebuild view from event log) | `delivery_view` read model table | — | `feat: delivery_view read model` | Q1 | 3.5h |
-| Tue (D116) | Projector consuming outbox-relayed events | — | — | Consumer that updates `delivery_view` on each event | Test view reflects latest status within expected lag | `feat: delivery_view projector` | — | 3.5h |
-| Wed (D117) | Dispatcher dashboard endpoint | — | — | `GET /dispatch/dashboard` reading only from `delivery_view` | Integration test dashboard query performance vs join-based alternative | `feat: dispatcher dashboard (cqrs read path)` | Q2 | 3.5h |
-| Thu (D118) | Saga theory: choreography vs orchestration | Newman Ch.5 saga section | — | Design the cancellation saga on paper first (`docs/cancellation-saga.md`) | — | `docs: cancellation saga design` | Q3 | 3.5h |
-| Fri (D119) | Implementing the choreographed saga | — | — | 3-step cancellation saga: reverse assignment → notify → credit fee | Test each step fires on the prior step's event; test one failure path | `feat: delivery cancellation saga` | — | 3.5h |
-| Sat (D120) | **Review** | — | Redo CQRS projector from memory | Tag `v0.1-fleettrack` | Full suite | — | Answer Week-20 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D115) | CQRS theory | Fowler CQRS article | Mini CQRS projector (rebuild view from event log) | `delivery_view` read model table | — | `feat: delivery_view read model` | Q1 | Merge Intervals | FleetTrack: rebuild delivery_view from delivery_events by hand | 3.5h |
+| Tue (D116) | Projector consuming outbox-relayed events | — | — | Consumer that updates `delivery_view` on each event | Test view reflects latest status within expected lag | `feat: delivery_view projector` | — | Non-overlapping Intervals | Article Views I | 3.5h |
+| Wed (D117) | Dispatcher dashboard endpoint | — | — | `GET /dispatch/dashboard` reading only from `delivery_view` | Integration test dashboard query performance vs join-based alternative | `feat: dispatcher dashboard (cqrs read path)` | Q2 | Meeting Rooms | FleetTrack: drivers with the most cancelled deliveries | 3.5h |
+| Thu (D118) | Saga theory: choreography vs orchestration | Newman Ch.5 saga section | — | Design the cancellation saga on paper first (`docs/cancellation-saga.md`) | — | `docs: cancellation saga design` | Q3 | Meeting Rooms II | Article Views II | 3.5h |
+| Fri (D119) | Implementing the choreographed saga | — | — | 3-step cancellation saga: reverse assignment → notify → credit fee | Test each step fires on the prior step's event; test one failure path | `feat: delivery cancellation saga` | — | Maximum Subarray | FleetTrack: dispatcher dashboard — join vs read-model | 3.5h |
+| Sat (D120) | **Review** | — | Redo CQRS projector from memory | Tag `v0.1-fleettrack` | Full suite | — | Answer Week-20 Qs unscripted | Review: redo Thursday's problem from memory — Meeting Rooms II | Review: rewrite Tuesday's query from memory, then extend it — Article Views I | 2.5h |
 
 ---
 
 ## 12. Daily Plan — Week 21: DocuVault Scaffold, Elasticsearch
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D121) | Inverted index concept | ES "Getting Started" | Index 1000 fake docs, run basic queries | New repo `docuvault/`, `Document`/`DocumentVersion` models | Model tests | `feat: docuvault scaffold` | Q1 | 3.5h |
-| Tue (D122) | Analyzers, fuzziness, boosting | ES docs analyzers | Tune analyzer on the mini exercise corpus | `POST /documents` + MinIO upload (reusing Phase 4 presigned pattern) | Integration test upload flow | `feat: document upload` | — | 3.5h |
-| Wed (D123) | Keeping a derived index in sync | — | — | Outbox-relay-style consumer indexing new/updated docs into ES | Test index reflects new doc within expected lag | `feat: elasticsearch sync consumer` | Q2 | 3.5h |
-| Thu (D124) | Search query design | — | — | `GET /documents/search?q=&tags=` | Test typo tolerance, tag filter, title-boost ranking | `feat: document search endpoint` | — | 3.5h |
-| Fri (D125) | Reindex-from-source recovery | — | — | `POST /documents/reindex` — rebuilds ES fully from Postgres | Test ES wiped, reindex restores search correctly | `feat: full reindex recovery endpoint` | Q3 | 3.5h |
-| Sat (D126) | **Review** | — | Redo indexing mini exercise from memory | — | Full suite | — | Answer Week-21 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D121) | Inverted index concept | ES "Getting Started" | Index 1000 fake docs, run basic queries | New repo `docuvault/`, `Document`/`DocumentVersion` models | Model tests | `feat: docuvault scaffold` | Q1 | Jump Game | DocuVault: documents with the most versions | 3.5h |
+| Tue (D122) | Analyzers, fuzziness, boosting | ES docs analyzers | Tune analyzer on the mini exercise corpus | `POST /documents` + MinIO upload (reusing Phase 4 presigned pattern) | Integration test upload flow | `feat: document upload` | — | Jump Game II | Fix Names in a Table | 3.5h |
+| Wed (D123) | Keeping a derived index in sync | — | — | Outbox-relay-style consumer indexing new/updated docs into ES | Test index reflects new doc within expected lag | `feat: elasticsearch sync consumer` | Q2 | Gas Station | DocuVault: documents tagged with more than 3 tags | 3.5h |
+| Thu (D124) | Search query design | — | — | `GET /documents/search?q=&tags=` | Test typo tolerance, tag filter, title-boost ranking | `feat: document search endpoint` | — | Hand of Straights | DocuVault: latest version per document | 3.5h |
+| Fri (D125) | Reindex-from-source recovery | — | — | `POST /documents/reindex` — rebuilds ES fully from Postgres | Test ES wiped, reindex restores search correctly | `feat: full reindex recovery endpoint` | Q3 | Unique Paths | Recyclable and Low Fat Products | 3.5h |
+| Sat (D126) | **Review** | — | Redo indexing mini exercise from memory | — | Full suite | — | Answer Week-21 Qs unscripted | Review: redo Thursday's problem from memory — Hand of Straights | Review: rewrite Tuesday's query from memory, then extend it — Fix Names in a Table | 2.5h |
 
 ---
 
 ## 13. Daily Plan — Week 22: Kubernetes Fundamentals, Replication, Phase Wrap
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D127) | Pods, Deployments, Services | K8s "Learn Kubernetes Basics" pt.1-2 | Mini load balancer (round-robin, 2 processes) | `kind` cluster running locally, write Deployment+Service YAML for one DocuVault service | Verify pod reachable via Service | `feat: k8s deployment for docuvault service` | Q1 | 3.5h |
-| Tue (D128) | ConfigMaps, Secrets | K8s docs pt.3 | — | Externalize config/secrets from that service into ConfigMap/Secret | Verify service picks up config correctly | `feat: k8s configmap + secret` | — | 3.5h |
-| Wed (D129) | Scaling replicas, rolling updates | K8s docs pt.4-5 | — | Scale to 2 replicas, do a rolling update, observe zero dropped requests | Continuous-request test during rollout | `feat: k8s rolling update verified` | Q2 | 3.5h |
-| Thu (D130) | Postgres replication | Postgres replication docs | Local read-replica setup | Route ES-sync consumer's reads to replica | Test replica lag doesn't break sync correctness | `feat: postgres read replica for sync consumer` | — | 3.5h |
-| Fri (D131) | Sharding (conceptual) | — | — | `docs/sharding-decision-record.md` — what key, why, when it'd be justified | — | `docs: sharding decision record` | Q3 | 3.5h |
-| Sat (D132) | **Phase 5 wrap review** | — | Explain the outbox → CQRS → saga chain end-to-end, out loud | `docs/postmortem-phase5.md`, tag `v0.5-phase5` | Full suite | `docs: phase 5 postmortem` | Mock-answer all Phase-5 questions timed | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D127) | Pods, Deployments, Services | K8s "Learn Kubernetes Basics" pt.1-2 | Mini load balancer (round-robin, 2 processes) | `kind` cluster running locally, write Deployment+Service YAML for one DocuVault service | Verify pod reachable via Service | `feat: k8s deployment for docuvault service` | Q1 | Longest Common Subsequence | DocuVault: documents never tagged | 3.5h |
+| Tue (D128) | ConfigMaps, Secrets | K8s docs pt.3 | — | Externalize config/secrets from that service into ConfigMap/Secret | Verify service picks up config correctly | `feat: k8s configmap + secret` | — | Best Time to Buy and Sell Stock with Cooldown | Primary Department for Each Employee | 3.5h |
+| Wed (D129) | Scaling replicas, rolling updates | K8s docs pt.4-5 | — | Scale to 2 replicas, do a rolling update, observe zero dropped requests | Continuous-request test during rollout | `feat: k8s rolling update verified` | Q2 | Coin Change II | DocuVault: tags frequently used together | 3.5h |
+| Thu (D130) | Postgres replication | Postgres replication docs | Local read-replica setup | Route ES-sync consumer's reads to replica | Test replica lag doesn't break sync correctness | `feat: postgres read replica for sync consumer` | — | Target Sum | DocuVault: EXPLAIN ANALYZE a metadata query on replica vs primary | 3.5h |
+| Fri (D131) | Sharding (conceptual) | — | — | `docs/sharding-decision-record.md` — what key, why, when it'd be justified | — | `docs: sharding decision record` | Q3 | Interleaving String | Calculate Special Bonus | 3.5h |
+| Sat (D132) | **Phase 5 wrap review** | — | Explain the outbox → CQRS → saga chain end-to-end, out loud | `docs/postmortem-phase5.md`, tag `v0.5-phase5` | Full suite | `docs: phase 5 postmortem` | Mock-answer all Phase-5 questions timed | Review: redo Thursday's problem from memory — Target Sum | Review: rewrite Tuesday's query from memory, then extend it — Primary Department for Each Employee | 2.5h |
 
 ---
 

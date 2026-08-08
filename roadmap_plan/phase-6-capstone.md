@@ -279,53 +279,53 @@ bootcamp's purpose).
 
 ## 8. Daily Plan — Week 23: PayFlow — Idempotency, Webhooks
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D133) | Idempotency key mechanics | Stripe idempotency docs | Standalone idempotency-key demo | New repo `payflow/`, `PaymentIntent` model + idempotency table | Model tests | `feat: payflow scaffold + idempotency table` | Q1 | 3.5h |
-| Tue (D134) | Request hashing alongside the key | — | — | `POST /payments` idempotency middleware/service | Test duplicate request returns identical cached response | `feat: idempotent payment creation` | Q2 | 3.5h |
-| Wed (D135) | Race-testing idempotency | — | — | Fire the same request twice concurrently, assert single charge | Integration test under concurrency | `test: concurrent duplicate payment request` | — | 3.5h |
-| Thu (D136) | HMAC webhook signature verification | — | Standalone HMAC verify demo | Mock provider webhook endpoint + signature verification | Test invalid signature rejected | `feat: webhook signature verification` | Q3 | 3.5h |
-| Fri (D137) | Webhook idempotency (provider event ID) | — | — | Webhook processing idempotent on `provider_event_id`, reconciles ledger via `ledger-service` | Test triplicate webhook delivery results in one ledger entry | `feat: idempotent webhook processing + ledger reconciliation` | — | 3.5h |
-| Sat (D138) | **Review** | — | Redo idempotency demo from memory | — | Full suite | — | Answer Week-23 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D133) | Idempotency key mechanics | Stripe idempotency docs | Standalone idempotency-key demo | New repo `payflow/`, `PaymentIntent` model + idempotency table | Model tests | `feat: payflow scaffold + idempotency table` | Q1 | Longest Increasing Path in a Matrix | PayFlow: duplicate idempotency keys with different request hashes | 3.5h |
+| Tue (D134) | Request hashing alongside the key | — | — | `POST /payments` idempotency middleware/service | Test duplicate request returns identical cached response | `feat: idempotent payment creation` | Q2 | Distinct Subsequences | Duplicate Emails revisited | 3.5h |
+| Wed (D135) | Race-testing idempotency | — | — | Fire the same request twice concurrently, assert single charge | Integration test under concurrency | `test: concurrent duplicate payment request` | — | Edit Distance | PayFlow: webhook_events received more than once per provider_event_id | 3.5h |
+| Thu (D136) | HMAC webhook signature verification | — | Standalone HMAC verify demo | Mock provider webhook endpoint + signature verification | Test invalid signature rejected | `feat: webhook signature verification` | Q3 | Single Number | PayFlow: payment_intents stuck 'pending' longer than 10 minutes | 3.5h |
+| Fri (D137) | Webhook idempotency (provider event ID) | — | — | Webhook processing idempotent on `provider_event_id`, reconciles ledger via `ledger-service` | Test triplicate webhook delivery results in one ledger entry | `feat: idempotent webhook processing + ledger reconciliation` | — | Number of 1 Bits | Employees Whose Manager Left the Company | 3.5h |
+| Sat (D138) | **Review** | — | Redo idempotency demo from memory | — | Full suite | — | Answer Week-23 Qs unscripted | Review: redo Thursday's problem from memory — Single Number | Review: rewrite Tuesday's query from memory, then extend it — Duplicate Emails revisited | 2.5h |
 
 ---
 
 ## 9. Daily Plan — Week 24: Security Hardening, Load Testing
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D139) | OWASP Top 10 relevant to your stack | OWASP Top 10 | — | Refunds endpoint + API-key auth for server-to-server callers | Test refund creates correct reversing journal entry | `feat: refunds + api-key auth` | Q1 | 3.5h |
-| Tue (D140) | Secrets management patterns | — | — | Move webhook secret + API keys out of `.env` into a secrets-manager pattern | Verify no secret present in image/logs | `feat: secrets manager pattern` | — | 3.5h |
-| Wed (D141) | Audit logging | — | — | Append-only audit log for payment/refund state changes | Test audit entries recorded for every state change | `feat: append-only audit log` | Q2 | 3.5h |
-| Thu (D142) | Threat modeling | — | — | Write `docs/threat-model.md` (secret leak, key guessing, replay-after-expiry) | — | `docs: threat model` | — | 3.5h |
-| Fri (D143) | `locust` load testing | locust docs | Toy-endpoint locust scenario | Realistic-concurrency PayFlow load test, find + fix the bottleneck | Before/after benchmark recorded | `perf: fix idempotency-lookup bottleneck under load` | Q3 | 3.5h |
-| Sat (D144) | **Review** | — | Redo HMAC verify demo from memory | Tag `v0.1-payflow` | Full suite | — | Answer Week-24 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D139) | OWASP Top 10 relevant to your stack | OWASP Top 10 | — | Refunds endpoint + API-key auth for server-to-server callers | Test refund creates correct reversing journal entry | `feat: refunds + api-key auth` | Q1 | Counting Bits | PayFlow: refunds exceeding their original payment amount | 3.5h |
+| Tue (D140) | Secrets management patterns | — | — | Move webhook secret + API keys out of `.env` into a secrets-manager pattern | Verify no secret present in image/logs | `feat: secrets manager pattern` | — | Reverse Bits | PayFlow: same-day vs delayed refunds | 3.5h |
+| Wed (D141) | Audit logging | — | — | Append-only audit log for payment/refund state changes | Test audit entries recorded for every state change | `feat: append-only audit log` | Q2 | Missing Number | PayFlow: EXPLAIN ANALYZE the idempotency-key lookup under load | 3.5h |
+| Thu (D142) | Threat modeling | — | — | Write `docs/threat-model.md` (secret leak, key guessing, replay-after-expiry) | — | `docs: threat model` | — | Rotate Image | PayFlow: audit log for one payment_intent, ordered chronologically | 3.5h |
+| Fri (D143) | `locust` load testing | locust docs | Toy-endpoint locust scenario | Realistic-concurrency PayFlow load test, find + fix the bottleneck | Before/after benchmark recorded | `perf: fix idempotency-lookup bottleneck under load` | Q3 | Spiral Matrix | Find Followers Count | 3.5h |
+| Sat (D144) | **Review** | — | Redo HMAC verify demo from memory | Tag `v0.1-payflow` | Full suite | — | Answer Week-24 Qs unscripted | Review: redo Thursday's problem from memory — Rotate Image | Review: rewrite Tuesday's query from memory, then extend it — PayFlow: same-day vs delayed refunds | 2.5h |
 
 ---
 
 ## 10. Daily Plan — Week 25: AtlasMarket Architecture + Integration Sprint (part 1)
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D145) | Integration planning — what to reuse vs rebuild | — | — | New repo `atlasmarket/`, `docs/architecture.md` mapping each service to its origin project | — | `docs: atlasmarket architecture + service map` | Q1 | 3.5h |
-| Tue (D146) | Vendor-scoping the catalog | — | — | Adapt StockPilot's product model: add `vendor_id`, vendor onboarding endpoint | Test vendor-scoped product creation | `feat: vendor-scoped catalog` | — | 3.5h |
-| Wed (D147) | Vendor-scoped search | — | — | Adapt DocuVault's ES sync pattern to index vendor-scoped products | Test search respects vendor filters | `feat: vendor-scoped catalog search` | Q2 | 3.5h |
-| Thu (D148) | React/TS fundamentals, Vite setup | react.dev "Describing the UI" | — | `storefront/` scaffold (Vite + React + TS), product list page with TanStack Query | Basic render test | `feat: storefront scaffold + product list` | — | 3.5h |
-| Fri (D149) | TanStack Query caching | TanStack Query "Quick Start" | Mini product list against a dummy API | Cart state (local component state) + cart UI | — | `feat: storefront cart` | Q3 | 3.5h |
-| Sat (D150) | **Review** | — | Explain TanStack Query cache vs your Redis cache-aside pattern, out loud | — | — | — | Answer Week-25 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D145) | Integration planning — what to reuse vs rebuild | — | — | New repo `atlasmarket/`, `docs/architecture.md` mapping each service to its origin project | — | `docs: atlasmarket architecture + service map` | Q1 | Set Matrix Zeroes | AtlasMarket: revenue per vendor this month | 3.5h |
+| Tue (D146) | Vendor-scoping the catalog | — | — | Adapt StockPilot's product model: add `vendor_id`, vendor onboarding endpoint | Test vendor-scoped product creation | `feat: vendor-scoped catalog` | — | Happy Number | Product Sales Analysis III | 3.5h |
+| Wed (D147) | Vendor-scoped search | — | — | Adapt DocuVault's ES sync pattern to index vendor-scoped products | Test search respects vendor filters | `feat: vendor-scoped catalog search` | Q2 | Plus One | AtlasMarket: vendors with no products listed | 3.5h |
+| Thu (D148) | React/TS fundamentals, Vite setup | react.dev "Describing the UI" | — | `storefront/` scaffold (Vite + React + TS), product list page with TanStack Query | Basic render test | `feat: storefront scaffold + product list` | — | Pow(x, n) | AtlasMarket: top 5 vendors by order count | 3.5h |
+| Fri (D149) | TanStack Query caching | TanStack Query "Quick Start" | Mini product list against a dummy API | Cart state (local component state) + cart UI | — | `feat: storefront cart` | Q3 | Merge Sorted Array | The Most Recent Three Orders | 3.5h |
+| Sat (D150) | **Review** | — | Explain TanStack Query cache vs your Redis cache-aside pattern, out loud | — | — | — | Answer Week-25 Qs unscripted | Review: redo Thursday's problem from memory — Pow(x, n) | Review: rewrite Tuesday's query from memory, then extend it — Product Sales Analysis III | 2.5h |
 
 ---
 
 ## 11. Daily Plan — Week 26: AtlasMarket Integration Sprint (part 2), Mock Interviews, Program Wrap
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D151) | Multi-vendor checkout design | — | — | Checkout: cart → split into `order_vendor_groups` → PayFlow idempotent payment → per-vendor ledger entries | Test 2-vendor checkout creates 2 groups, 1 payment, 2 ledger entries | `feat: multi-vendor checkout` | Q1 | 3.5h |
-| Tue (D152) | Per-vendor fulfillment status | — | — | Adapt WareFlow's status concepts to `order_vendor_groups` | Integration test status updates independently per vendor | `feat: per-vendor fulfillment status` | — | 3.5h |
-| Wed (D153) | Checkout UI, end-to-end wiring | — | — | Storefront checkout form wired to the real API | Manual end-to-end run: browse → cart → checkout, verified live | `feat: storefront checkout flow` | Q2 | 3.5h |
-| Thu (D154) | Mock system design interview #1 | System Design Interview (Xu), relevant chapter | — | Design multi-vendor checkout from scratch on a whiteboard (no code), then compare to what you built | — | `docs: mock interview 1 notes` | Q1 mock, timed | 3.5h |
-| Fri (D155) | Mock system design interview #2 + #3 | — | — | Design payment idempotency + product search from scratch, unprompted | — | `docs: mock interviews 2-3 notes` | Q2, Q3 mock, timed | 3.5h |
-| Sat (D156) | **Program wrap** | — | — | `docs/atlasmarket-roadmap-post-bootcamp.md` (deferred features), `docs/postmortem-phase6.md`, full 6-month retrospective across all 10 projects, tag `v1.0-bootcamp-complete` | Full suite, all services | `docs: 6-month retrospective + post-bootcamp roadmap` | Full mock behavioral + system design round, timed, no notes | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D151) | Multi-vendor checkout design | — | — | Checkout: cart → split into `order_vendor_groups` → PayFlow idempotent payment → per-vendor ledger entries | Test 2-vendor checkout creates 2 groups, 1 payment, 2 ledger entries | `feat: multi-vendor checkout` | Q1 | Design Twitter | AtlasMarket: orders split across 2+ vendors | 3.5h |
+| Tue (D152) | Per-vendor fulfillment status | — | — | Adapt WareFlow's status concepts to `order_vendor_groups` | Integration test status updates independently per vendor | `feat: per-vendor fulfillment status` | — | LFU Cache | AtlasMarket: per-vendor payout reconciliation | 3.5h |
+| Wed (D153) | Checkout UI, end-to-end wiring | — | — | Storefront checkout form wired to the real API | Manual end-to-end run: browse → cart → checkout, verified live | `feat: storefront checkout flow` | Q2 | Word Search II | Capstone review: rewrite Week 12's partition-aware query from memory | 3.5h |
+| Thu (D154) | Mock system design interview #1 | System Design Interview (Xu), relevant chapter | — | Design multi-vendor checkout from scratch on a whiteboard (no code), then compare to what you built | — | `docs: mock interview 1 notes` | Q1 mock, timed | Merge k Sorted Lists | Capstone review: rewrite Week 6's window-function ranking query from memory | 3.5h |
+| Fri (D155) | Mock system design interview #2 + #3 | — | — | Design payment idempotency + product search from scratch, unprompted | — | `docs: mock interviews 2-3 notes` | Q2, Q3 mock, timed | Alien Dictionary | Capstone: the one query you'd hand an interviewer | 3.5h |
+| Sat (D156) | **Program wrap** | — | — | `docs/atlasmarket-roadmap-post-bootcamp.md` (deferred features), `docs/postmortem-phase6.md`, full 6-month retrospective across all 10 projects, tag `v1.0-bootcamp-complete` | Full suite, all services | `docs: 6-month retrospective + post-bootcamp roadmap` | Full mock behavioral + system design round, timed, no notes | Review: redo Thursday's problem from memory — Merge k Sorted Lists | Review: rewrite Tuesday's query from memory, then extend it — AtlasMarket: per-vendor payout reconciliation | 2.5h |
 
 ---
 

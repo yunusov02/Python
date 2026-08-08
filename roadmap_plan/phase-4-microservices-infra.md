@@ -305,66 +305,66 @@ without checking whether staleness is actually acceptable here (it isn't).
 
 ## 8. Daily Plan — Week 14: Service Split, Nginx, CarePoint Scaffold
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D79) | Reverse proxy fundamentals | Nginx reverse proxy guide | Hand-written `nginx.conf` for 2 dummy services | New repo `carepoint/`, `auth-service` scaffold (FastAPI, reused JWT logic from Phase 1) | Test auth-service issues valid JWT | `chore: carepoint scaffold + auth-service` | Q1 | 3.5h |
-| Tue (D80) | Service-to-service trust (shared secret/public key JWT validation) | — | — | `clinic-service` scaffold (Django/DRF), JWT validation middleware | Test protected endpoint rejects invalid token | `feat: clinic-service jwt validation` | — | 3.5h |
-| Wed (D81) | `EXCLUDE` constraints in Postgres | Postgres docs `btree_gist` | — | `Appointment` model with `EXCLUDE` constraint on overlapping slots | Test overlapping booking rejected at DB level | `feat: appointment model with exclude constraint` | Q2 | 3.5h |
-| Thu (D82) | Concurrent booking race | — | — | `POST /appointments` endpoint, deliberately fire 2 concurrent identical bookings | Integration test: exactly one succeeds | `feat: appointment booking endpoint` | — | 3.5h |
-| Fri (D83) | Wiring Nginx as the single entrypoint | — | — | `nginx.conf` routing `/auth/*` → auth-service, rest → clinic-service, added to Compose | Manual + automated smoke test through Nginx | `feat: nginx gateway routing` | Q3 | 3.5h |
-| Sat (D84) | **Review** | — | Redo nginx.conf from memory | — | Full suite | — | Answer Week-14 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D79) | Reverse proxy fundamentals | Nginx reverse proxy guide | Hand-written `nginx.conf` for 2 dummy services | New repo `carepoint/`, `auth-service` scaffold (FastAPI, reused JWT logic from Phase 1) | Test auth-service issues valid JWT | `chore: carepoint scaffold + auth-service` | Q1 | Number of Islands | CarePoint: doctors with overlapping appointments | 3.5h |
+| Tue (D80) | Service-to-service trust (shared secret/public key JWT validation) | — | — | `clinic-service` scaffold (Django/DRF), JWT validation middleware | Test protected endpoint rejects invalid token | `feat: clinic-service jwt validation` | — | Max Area of Island | Patients With a Condition | 3.5h |
+| Wed (D81) | `EXCLUDE` constraints in Postgres | Postgres docs `btree_gist` | — | `Appointment` model with `EXCLUDE` constraint on overlapping slots | Test overlapping booking rejected at DB level | `feat: appointment model with exclude constraint` | Q2 | Clone Graph | CarePoint: appointment count per doctor per day | 3.5h |
+| Thu (D82) | Concurrent booking race | — | — | `POST /appointments` endpoint, deliberately fire 2 concurrent identical bookings | Integration test: exactly one succeeds | `feat: appointment booking endpoint` | — | Islands and Treasure (Walls and Gates) | CarePoint: patients with no documents on file | 3.5h |
+| Fri (D83) | Wiring Nginx as the single entrypoint | — | — | `nginx.conf` routing `/auth/*` → auth-service, rest → clinic-service, added to Compose | Manual + automated smoke test through Nginx | `feat: nginx gateway routing` | Q3 | Rotting Oranges | The Most Recent Orders for Each Product | 3.5h |
+| Sat (D84) | **Review** | — | Redo nginx.conf from memory | — | Full suite | — | Answer Week-14 Qs unscripted | Review: redo Thursday's problem from memory — Islands and Treasure (Walls and Gates) | Review: rewrite Tuesday's query from memory, then extend it — Patients With a Condition | 2.5h |
 
 ---
 
 ## 9. Daily Plan — Week 15: Patient Records, Presigned Uploads, Reminders
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D85) | Object storage basics, MinIO local setup | MinIO docs | — | Add `minio` to Compose | Verify bucket reachable | `chore: minio service` | Q1 | 3.5h |
-| Tue (D86) | Presigned URLs | S3 presigned URL docs | Presigned upload/download demo | `POST /documents/presigned-upload` endpoint | Test URL expires correctly | `feat: presigned document upload` | — | 3.5h |
-| Wed (D87) | Mini API Gateway concept | — | Mini FastAPI gateway routing to 2 backend URLs | `GET /documents/{id}/presigned-download` | Integration test full upload→download flow | `feat: presigned document download` | Q2 | 3.5h |
-| Thu (D88) | Redis cache on doctor schedules | — | — | Cache `GET /appointments?doctor_id=&date=`, invalidate on booking/cancel | Cache invalidation test | `feat: cache doctor schedule lookups` | — | 3.5h |
-| Fri (D89) | Appointment reminder job | — | — | Celery Beat: 24h-before reminder task | `freezegun` schedule test | `feat: appointment reminder job` | Q3 | 3.5h |
-| Sat (D90) | **Review** | — | Redo presigned URL demo from memory | Tag `v0.1-carepoint` | Full suite | — | Answer Week-15 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D85) | Object storage basics, MinIO local setup | MinIO docs | — | Add `minio` to Compose | Verify bucket reachable | `chore: minio service` | Q1 | Pacific Atlantic Water Flow | CarePoint: appointments in next 24h needing a reminder | 3.5h |
+| Tue (D86) | Presigned URLs | S3 presigned URL docs | Presigned upload/download demo | `POST /documents/presigned-upload` endpoint | Test URL expires correctly | `feat: presigned document upload` | — | Surrounded Regions | CarePoint: doctors with the most documents on their patients | 3.5h |
+| Wed (D87) | Mini API Gateway concept | — | Mini FastAPI gateway routing to 2 backend URLs | `GET /documents/{id}/presigned-download` | Integration test full upload→download flow | `feat: presigned document download` | Q2 | Course Schedule | Reformat Department Table | 3.5h |
+| Thu (D88) | Redis cache on doctor schedules | — | — | Cache `GET /appointments?doctor_id=&date=`, invalidate on booking/cancel | Cache invalidation test | `feat: cache doctor schedule lookups` | — | Course Schedule II | CarePoint: EXPLAIN ANALYZE the doctor-schedule query | 3.5h |
+| Fri (D89) | Appointment reminder job | — | — | Celery Beat: 24h-before reminder task | `freezegun` schedule test | `feat: appointment reminder job` | Q3 | Redundant Connection | Queries Quality and Percentage | 3.5h |
+| Sat (D90) | **Review** | — | Redo presigned URL demo from memory | Tag `v0.1-carepoint` | Full suite | — | Answer Week-15 Qs unscripted | Review: redo Thursday's problem from memory — Course Schedule II | Review: rewrite Tuesday's query from memory, then extend it — CarePoint: doctors with the most documents on their patients | 2.5h |
 
 ---
 
 ## 10. Daily Plan — Week 16: LedgerBase Scaffold, Money-as-Cents, Double-Entry
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D91) | Double-entry bookkeeping fundamentals | (any intro accounting primer) | — | New repo `ledgerbase/`, `Account`, `JournalEntry`, `JournalLine` models — **float version, on purpose** | Test that reveals float drift after many entries | `feat: ledger models (float version — deliberate bug)` | Q1 | 3.5h |
-| Tue (D92) | Why floats break money math | — | — | Fix: convert all money fields to integer cents | Regression test proving the float bug is gone | `fix: money as integer cents` | — | 3.5h |
-| Wed (D93) | Enforcing balance: app + DB layer | Postgres `CHECK` constraint docs | — | `CHECK` constraint on `journal_lines`, app-level balance validation in service | Test unbalanced entry rejected both ways | `feat: enforce balanced entries (app + db)` | Q2 | 3.5h |
-| Thu (D94) | Invoicing domain | — | — | `Invoice`, `Payment` models, `invoicing-service` calling `ledger-service` internally | Integration test invoice→payment→journal entry | `feat: invoicing service + ledger integration` | — | 3.5h |
-| Fri (D95) | Trial balance report | — | — | `GET /reports/trial-balance` | Test report reconciles to zero | `feat: trial balance report` | Q3 | 3.5h |
-| Sat (D96) | **Review** | — | Redo the float-bug repro from memory, explain the fix | Add `ledgerbase` to Nginx routing | Full suite | — | Answer Week-16 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D91) | Double-entry bookkeeping fundamentals | (any intro accounting primer) | — | New repo `ledgerbase/`, `Account`, `JournalEntry`, `JournalLine` models — **float version, on purpose** | Test that reveals float drift after many entries | `feat: ledger models (float version — deliberate bug)` | Q1 | Number of Connected Components in an Undirected Graph | LedgerBase: verify every journal_entry balances | 3.5h |
+| Tue (D92) | Why floats break money math | — | — | Fix: convert all money fields to integer cents | Regression test proving the float bug is gone | `fix: money as integer cents` | — | Graph Valid Tree | LedgerBase: account balance = debits minus credits | 3.5h |
+| Wed (D93) | Enforcing balance: app + DB layer | Postgres `CHECK` constraint docs | — | `CHECK` constraint on `journal_lines`, app-level balance validation in service | Test unbalanced entry rejected both ways | `feat: enforce balanced entries (app + db)` | Q2 | Word Ladder | Rising Temperature — window function version | 3.5h |
+| Thu (D94) | Invoicing domain | — | — | `Invoice`, `Payment` models, `invoicing-service` calling `ledger-service` internally | Integration test invoice→payment→journal entry | `feat: invoicing service + ledger integration` | — | Reconstruct Itinerary | LedgerBase: unbalanced entries that slipped through | 3.5h |
+| Fri (D95) | Trial balance report | — | — | `GET /reports/trial-balance` | Test report reconciles to zero | `feat: trial balance report` | Q3 | Min Cost to Connect All Points | Movie Rating | 3.5h |
+| Sat (D96) | **Review** | — | Redo the float-bug repro from memory, explain the fix | Add `ledgerbase` to Nginx routing | Full suite | — | Answer Week-16 Qs unscripted | Review: redo Thursday's problem from memory — Reconstruct Itinerary | Review: rewrite Tuesday's query from memory, then extend it — LedgerBase: account balance = debits minus credits | 2.5h |
 
 ---
 
 ## 11. Daily Plan — Week 17: Full CI/CD, Zero-Downtime Deploy
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D97) | GitHub Actions: build + push to GHCR | GitHub Actions Docker docs | — | CI builds and pushes images for all 4 services | Verify images appear in GHCR | `ci: build and push images to ghcr` | Q1 | 3.5h |
-| Tue (D98) | SSH deploy step, secrets management | GitHub Actions secrets docs | — | Deploy step: SSH to VPS, pull new images | Manual verify deploy runs end-to-end | `ci: ssh deploy step` | — | 3.5h |
-| Wed (D99) | Zero-downtime rollover mechanics | — | Zero-downtime deploy script (health-gated swap) | Apply the script: bring up new container, health-check gate, swap Nginx upstream, stop old | Test deploy causes zero dropped requests (hit endpoint continuously during deploy) | `feat: zero-downtime deploy script` | Q2 | 3.5h |
-| Thu (D100) | Rollback path | — | — | Deliberately break new version's health check, confirm deploy aborts and old version stays live | Test the abort path explicitly | `feat: deploy rollback on failed health check` | — | 3.5h |
-| Fri (D101) | Full pipeline hardening | — | — | End-to-end: push to `main` → build → push → deploy, verified live | — | `ci: full pipeline verified end-to-end` | Q3 | 3.5h |
-| Sat (D102) | **Review** | — | Redo zero-downtime script from memory, explain every step | — | — | — | Answer Week-17 Qs unscripted | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D97) | GitHub Actions: build + push to GHCR | GitHub Actions Docker docs | — | CI builds and pushes images for all 4 services | Verify images appear in GHCR | `ci: build and push images to ghcr` | Q1 | Network Delay Time | LedgerBase: overdue unpaid invoices | 3.5h |
+| Tue (D98) | SSH deploy step, secrets management | GitHub Actions secrets docs | — | Deploy step: SSH to VPS, pull new images | Manual verify deploy runs end-to-end | `ci: ssh deploy step` | — | Swim in Rising Water | LedgerBase: monthly revenue trend from paid invoices | 3.5h |
+| Wed (D99) | Zero-downtime rollover mechanics | — | Zero-downtime deploy script (health-gated swap) | Apply the script: bring up new container, health-check gate, swap Nginx upstream, stop old | Test deploy causes zero dropped requests (hit endpoint continuously during deploy) | `feat: zero-downtime deploy script` | Q2 | Climbing Stairs | Replace Employee ID With The Unique Identifier | 3.5h |
+| Thu (D100) | Rollback path | — | — | Deliberately break new version's health check, confirm deploy aborts and old version stays live | Test the abort path explicitly | `feat: deploy rollback on failed health check` | — | Min Cost Climbing Stairs | LedgerBase: trial balance report | 3.5h |
+| Fri (D101) | Full pipeline hardening | — | — | End-to-end: push to `main` → build → push → deploy, verified live | — | `ci: full pipeline verified end-to-end` | Q3 | House Robber | Top Travellers | 3.5h |
+| Sat (D102) | **Review** | — | Redo zero-downtime script from memory, explain every step | — | — | — | Answer Week-17 Qs unscripted | Review: redo Thursday's problem from memory — Min Cost Climbing Stairs | Review: rewrite Tuesday's query from memory, then extend it — LedgerBase: monthly revenue trend from paid invoices | 2.5h |
 
 ---
 
 ## 12. Daily Plan — Week 18: Monitoring Stack, Phase Wrap
 
-| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
-|---|---|---|---|---|---|---|---|---|
-| Mon (D103) | Prometheus: scraping, metrics types | Prometheus "Getting Started" | Custom health-check aggregator (DB+Redis+RabbitMQ in one `/health`) | Add `/metrics` endpoint to all 4 services, Prometheus scrape config | Verify metrics visible in Prometheus UI | `feat: prometheus metrics on all services` | Q1 | 3.5h |
-| Tue (D104) | Grafana dashboards | Grafana "Getting Started" | — | Build a latency + queue-depth dashboard | — | `feat: grafana dashboards` | — | 3.5h |
-| Wed (D105) | Sentry integration | Sentry Python SDK docs | — | Wire Sentry into all 4 services | Trigger a deliberate exception, confirm it appears in Sentry | `feat: sentry error tracking` | Q2 | 3.5h |
-| Thu (D106) | Finding a bug via Sentry, not code-reading | — | — | Inject an unbalanced-entry bug past app validation (bypass service layer directly), find it via Sentry alert first | Write regression test for the found bug | `fix: bug found via sentry — regression test added` | — | 3.5h |
-| Fri (D107) | Phase wrap: docs, CI final check | — | — | `docs/postmortem-phase4.md`, full CI green across everything | Full suite, all 4 services | `docs: phase 4 postmortem` | Q3 | 3.5h |
-| Sat (D108) | **Phase 4 wrap review** | — | Explain your full deploy pipeline out loud, start to finish | Tag `v0.4-phase4` | — | — | Mock-answer all Phase-4 questions timed | 2.5h |
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D103) | Prometheus: scraping, metrics types | Prometheus "Getting Started" | Custom health-check aggregator (DB+Redis+RabbitMQ in one `/health`) | Add `/metrics` endpoint to all 4 services, Prometheus scrape config | Verify metrics visible in Prometheus UI | `feat: prometheus metrics on all services` | Q1 | House Robber II | LedgerBase: accounts with no activity this month | 3.5h |
+| Tue (D104) | Grafana dashboards | Grafana "Getting Started" | — | Build a latency + queue-depth dashboard | — | `feat: grafana dashboards` | — | Longest Palindromic Substring | LedgerBase: largest single journal entry this quarter | 3.5h |
+| Wed (D105) | Sentry integration | Sentry Python SDK docs | — | Wire Sentry into all 4 services | Trigger a deliberate exception, confirm it appears in Sentry | `feat: sentry error tracking` | Q2 | Palindromic Substrings | Sales Analysis I | 3.5h |
+| Thu (D106) | Finding a bug via Sentry, not code-reading | — | — | Inject an unbalanced-entry bug past app validation (bypass service layer directly), find it via Sentry alert first | Write regression test for the found bug | `fix: bug found via sentry — regression test added` | — | Decode Ways | LedgerBase: underpaid invoices | 3.5h |
+| Fri (D107) | Phase wrap: docs, CI final check | — | — | `docs/postmortem-phase4.md`, full CI green across everything | Full suite, all 4 services | `docs: phase 4 postmortem` | Q3 | Coin Change | Sales Analysis III | 3.5h |
+| Sat (D108) | **Phase 4 wrap review** | — | Explain your full deploy pipeline out loud, start to finish | Tag `v0.4-phase4` | — | — | Mock-answer all Phase-4 questions timed | Review: redo Thursday's problem from memory — Decode Ways | Review: rewrite Tuesday's query from memory, then extend it — LedgerBase: largest single journal entry this quarter | 2.5h |
 
 ---
 
