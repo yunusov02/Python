@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "phase-1-foundations.md",
+                "file": "phase-8-mlops-zoomcamp.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "phase-1-foundations"
+              "title": "phase-8-mlops-zoomcamp"
             }
           }
         ]
@@ -41,7 +41,9 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
               },
               "icon": "lucide-folder-closed",
               "title": "Files"
@@ -185,6 +187,8 @@
   },
   "active": "3d6e600ecffb8c50",
   "lastOpenFiles": [
+    "phase-7-ml-zoomcamp.md",
+    "phase-1-foundations.md",
     "00-curriculum-overview.md"
   ]
 }
