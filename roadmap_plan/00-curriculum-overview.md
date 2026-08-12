@@ -112,7 +112,8 @@ against in interviews.
 ### Phase 1 — Foundations: Advanced Python + Production FastAPI (Weeks 1–4)
 Advanced Python (decorators, generators, context managers, typing, dataclasses,
 descriptors), clean layered architecture, PostgreSQL fundamentals done right
-(indexes, transactions, N+1), Pytest, Docker basics, structured logging.
+(indexes, transactions, N+1), Pytest + Hypothesis (property-based testing),
+Docker basics, structured logging.
 **Project 1: StockPilot.**
 
 ### Phase 2 — Concurrency + Django/DRF + Caching (Weeks 5–8)
@@ -121,27 +122,34 @@ CRUD, Redis caching, Celery + background jobs, rate limiting, JWT auth/OAuth.
 **Project 2: QuickServe POS. Project 3 starts: PeopleOps.**
 
 ### Phase 3 — Distributed Systems Primitives (Weeks 9–13)
-RabbitMQ, Kafka basics, event-driven patterns, Repository/Service Layer/Unit
-of Work, DDD-lite, advanced Postgres (isolation levels, MVCC, deadlocks,
+RabbitMQ, Kafka basics, event-driven patterns, consumer-driven contract
+testing (Pact) on event schemas, Repository/Service Layer/Unit of Work,
+DDD-lite, advanced Postgres (isolation levels, MVCC, deadlocks,
 partitioning), database migrations at scale.
 **Project 3 finishes: PeopleOps. Project 4: WareFlow.**
 
 ### Phase 4 — Microservices & Infrastructure (Weeks 14–18)
 Docker Compose multi-service systems, Nginx reverse proxy, API Gateway
-patterns, CI/CD (GitHub Actions), Prometheus/Grafana, Sentry, health checks,
-zero-downtime deploys, S3/MinIO object storage.
+patterns, CI/CD (GitHub Actions) with dependency/secret/container security
+gates, Prometheus/Grafana, Sentry, health checks, zero-downtime deploys,
+S3/MinIO object storage, and the first of four React/TS/TanStack Query
+frontends built across the rest of the program (CarePoint's schedule view).
 **Project 5: CarePoint. Project 6: LedgerBase.**
 
 ### Phase 5 — Scaling & Advanced Architecture (Weeks 19–22)
 CQRS, Outbox pattern, Saga (overview), Elasticsearch/OpenSearch, sharding,
-replication, Kubernetes fundamentals, system design deep-dives (load
-balancers, CDN, CAP theorem in practice).
+replication, Kubernetes fundamentals, GitOps (conceptual), system design
+deep-dives (load balancers, CDN, CAP theorem in practice), plus two more
+React/TS frontends (FleetTrack's polling dispatcher dashboard, DocuVault's
+debounced search page) reusing Phase 4's setup.
 **Project 7: FleetTrack. Project 8: DocuVault.**
 
 ### Phase 6 — Senior-Track Capstone (Weeks 23–26)
-Idempotency, distributed transactions, security hardening, performance
-profiling under load, mock system-design interviews, frontend architecture
-literacy (React/TS/TanStack Query) for cross-functional communication.
+Idempotency, distributed transactions, a real secrets manager (HashiCorp
+Vault), security hardening, performance profiling under load, mock
+system-design interviews, and AtlasMarket's storefront — a fourth React/TS
+app with routing and a first component test, built on three prior
+frontends' habits instead of literacy learned from zero.
 **Project 9: PayFlow. Project 10: AtlasMarket (capstone).**
 
 *— End of Track A (6-month Python Backend Bootcamp) —*
@@ -149,7 +157,9 @@ literacy (React/TS/TanStack Query) for cross-functional communication.
 ### Phase 7 — LLM Zoomcamp (Weeks 27–32)
 RAG architecture, embeddings & vector search (Qdrant + Elasticsearch),
 tool-calling agents, RAG evaluation (hit rate/MRR, LLM-as-judge), monitoring,
-hybrid search/re-ranking, and prompt-injection guardrails.
+hybrid search/re-ranking, prompt-injection guardrails, and the hypothesis-
+testing fundamentals (confidence intervals, statistical significance)
+underneath A/B-testing prompts and models.
 **Project 11: CarePoint Patient-FAQ Assistant. Project 12: DocuVault "Ask
 Your Documents" Chatbot. Project 13: AtlasMarket Support Assistant.**
 

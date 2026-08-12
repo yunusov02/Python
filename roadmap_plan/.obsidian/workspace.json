@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "phase-8-mlops-zoomcamp.md",
+                "file": "dsa-problems.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "phase-8-mlops-zoomcamp"
+              "title": "dsa-problems"
             }
           }
         ]
@@ -187,8 +187,20 @@
   },
   "active": "3d6e600ecffb8c50",
   "lastOpenFiles": [
-    "phase-7-ml-zoomcamp.md",
+    "scripts/gen_progress.py.tmp.7618.4d98baca9b18",
+    "scripts/__pycache__/gen_progress.cpython-312.pyc",
+    "scripts/__pycache__",
+    "dsa-problems.md.tmp.7618.48649bb55006",
+    "dsa-problems.md.tmp.7618.e9eefaa5d3e2",
+    "dsa-problems.md.tmp.7618.f2f4fb1006fc",
+    "dsa-problems.md.tmp.7618.3e62c18330e3",
     "phase-1-foundations.md",
-    "00-curriculum-overview.md"
+    "phase-7-llm-zoomcamp.md",
+    "phase-3-distributed-systems.md",
+    "phase-2-concurrency-django-caching.md",
+    "phase-9-ml-zoomcamp.md",
+    "phase-6-capstone.md",
+    "00-curriculum-overview.md",
+    "phase-7-ml-zoomcamp.md"
   ]
 }

@@ -17,20 +17,31 @@
 - Get Kubernetes fundamentals hands-on with `kind`/`minikube` — enough to
   deploy DocuVault and explain Pods/Services/Deployments/ConfigMaps in an
   interview, not to become a K8s specialist.
+- Build two more React/TS frontends (FleetTrack's dispatcher view,
+  DocuVault's search page) reusing Phase 4's setup instead of relearning
+  it — polling and debounced-input patterns, the two UI problems these
+  particular backends actually create.
 
 ## 2. Technologies Introduced
 Outbox pattern, CQRS, Saga (overview + one hands-on choreographed example),
 Elasticsearch/OpenSearch, database replication (read replicas), sharding
 (conceptual + one hands-on partitioning-by-key exercise), Kubernetes
-(`kind`/`minikube`, Pods, Deployments, Services, ConfigMaps, Secrets).
+(`kind`/`minikube`, Pods, Deployments, Services, ConfigMaps, Secrets),
+GitOps (conceptual — ArgoCD/Flux reconciliation model, contrasted with
+manual `kubectl apply`), React + TypeScript + TanStack Query (continued
+from Phase 4 — polling for FleetTrack's dashboard, debounced search input
+for DocuVault).
 
 Deliberately not yet: Event Sourcing as a full system (overview only, in
 Week 20), full production Kubernetes (Helm, operators — named as "beyond
-this bootcamp's scope" so you know the term without overclaiming depth).
+this bootcamp's scope" so you know the term without overclaiming depth),
+an actually-installed GitOps controller (conceptual fluency only here —
+same treatment as sharding: know when you'd reach for it, don't build it
+on a `kind` cluster where it wouldn't earn its complexity).
 
 ---
 
-## 5. PROJECT 7 — FleetTrack (Fleet & Delivery Logistics Platform)
+## 3. PROJECT 7 — FleetTrack (Fleet & Delivery Logistics Platform)
 
 **Business Problem:** A delivery company with a fleet of drivers needs
 real-time-ish tracking of delivery status across multiple steps (assigned →
@@ -106,7 +117,11 @@ without re-deriving it — a sign the earlier investment is paying off.
 
 **Testing Strategy:** integration test that kills the RabbitMQ connection
 mid-relay and confirms no event is lost (it's just retried on next poll —
-this is the whole point of the pattern, prove it under fault injection).
+this is the whole point of the pattern, prove it under fault injection). The
+outbox-relayed events (`DeliveryStatusChanged`) get the same Pact
+message-contract treatment from Phase 3 — reused, not re-derived — so a
+payload-shape change on the relay side fails CI before it reaches any
+downstream consumer.
 
 **Monitoring:** Grafana panel for outbox lag (`now() - oldest unsent row`)
 — a concrete, interview-ready metric.
@@ -136,7 +151,7 @@ guaranteed instead of "at-least-once, needs monitoring."
 
 ---
 
-## 6. PROJECT 8 — DocuVault (Document Management with Search & Versioning)
+## 4. PROJECT 8 — DocuVault (Document Management with Search & Versioning)
 
 **Business Problem:** A mid-size company has thousands of internal
 documents (policies, contracts, reports) scattered across drives with no
@@ -227,7 +242,7 @@ that ordering mattered); sharding prematurely.
 
 ---
 
-## 7. Mini-Projects
+## 5. Mini-Projects
 
 | Mini-project | Week | Teaches |
 |---|---|---|
@@ -238,7 +253,7 @@ that ordering mattered); sharding prematurely.
 
 ---
 
-## 8. Books & Documentation
+## 6. Books & Documentation
 - Martin Fowler's blog: "What do you mean by Event-Driven?" and the Outbox
   pattern write-up (microservices.io/patterns/data/transactional-outbox.html).
 - *Building Microservices* (Newman) Ch. 5 (data) for CQRS/Saga sections.
@@ -248,7 +263,7 @@ that ordering mattered); sharding prematurely.
 
 ---
 
-## 9. Weekly Interview Question Sets
+## 7. Weekly Interview Question Sets
 
 **Week 19 — Outbox**
 1. What exact failure does the outbox pattern prevent that a direct
@@ -270,7 +285,7 @@ that ordering mattered); sharding prematurely.
 
 ---
 
-## 10. Daily Plan — Week 19: Outbox Pattern, FleetTrack Scaffold
+## 8. Daily Plan — Week 19: Outbox Pattern, FleetTrack Scaffold
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -283,46 +298,46 @@ that ordering mattered); sharding prematurely.
 
 ---
 
-## 11. Daily Plan — Week 20: CQRS Read Model, Saga
+## 9. Daily Plan — Week 20: CQRS Read Model, Saga
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Mon (D115) | CQRS theory | Fowler CQRS article | Mini CQRS projector (rebuild view from event log) | `delivery_view` read model table | — | `feat: delivery_view read model` | Q1 | Merge Intervals | FleetTrack: rebuild delivery_view from delivery_events by hand | 3.5h |
 | Tue (D116) | Projector consuming outbox-relayed events | — | — | Consumer that updates `delivery_view` on each event | Test view reflects latest status within expected lag | `feat: delivery_view projector` | — | Non-overlapping Intervals | Article Views I | 3.5h |
-| Wed (D117) | Dispatcher dashboard endpoint | — | — | `GET /dispatch/dashboard` reading only from `delivery_view` | Integration test dashboard query performance vs join-based alternative | `feat: dispatcher dashboard (cqrs read path)` | Q2 | Meeting Rooms | FleetTrack: drivers with the most cancelled deliveries | 3.5h |
+| Wed (D117) | Dispatcher dashboard endpoint; frontend — second React/TS app, this time with polling for near-real-time data (reusing Phase 4's `carepoint-web` setup, not re-deriving it) | — | — | `GET /dispatch/dashboard` reading only from `delivery_view`; `fleettrack-web/` (Vite + React + TS + TanStack Query), one page: dispatcher table polling the dashboard endpoint every few seconds | Integration test dashboard query performance vs join-based alternative; component test confirms the table re-renders on a poll tick without a full page flicker | `feat: dispatcher dashboard (cqrs read path) + fleettrack-web dispatcher view` | Q2 | Meeting Rooms | FleetTrack: drivers with the most cancelled deliveries | 3.5h |
 | Thu (D118) | Saga theory: choreography vs orchestration | Newman Ch.5 saga section | — | Design the cancellation saga on paper first (`docs/cancellation-saga.md`) | — | `docs: cancellation saga design` | Q3 | Meeting Rooms II | Article Views II | 3.5h |
 | Fri (D119) | Implementing the choreographed saga | — | — | 3-step cancellation saga: reverse assignment → notify → credit fee | Test each step fires on the prior step's event; test one failure path | `feat: delivery cancellation saga` | — | Maximum Subarray | FleetTrack: dispatcher dashboard — join vs read-model | 3.5h |
 | Sat (D120) | **Review** | — | Redo CQRS projector from memory | Tag `v0.1-fleettrack` | Full suite | — | Answer Week-20 Qs unscripted | Review: redo Thursday's problem from memory — Meeting Rooms II | Review: rewrite Tuesday's query from memory, then extend it — Article Views I | 2.5h |
 
 ---
 
-## 12. Daily Plan — Week 21: DocuVault Scaffold, Elasticsearch
+## 10. Daily Plan — Week 21: DocuVault Scaffold, Elasticsearch
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Mon (D121) | Inverted index concept | ES "Getting Started" | Index 1000 fake docs, run basic queries | New repo `docuvault/`, `Document`/`DocumentVersion` models | Model tests | `feat: docuvault scaffold` | Q1 | Jump Game | DocuVault: documents with the most versions | 3.5h |
 | Tue (D122) | Analyzers, fuzziness, boosting | ES docs analyzers | Tune analyzer on the mini exercise corpus | `POST /documents` + MinIO upload (reusing Phase 4 presigned pattern) | Integration test upload flow | `feat: document upload` | — | Jump Game II | Fix Names in a Table | 3.5h |
 | Wed (D123) | Keeping a derived index in sync | — | — | Outbox-relay-style consumer indexing new/updated docs into ES | Test index reflects new doc within expected lag | `feat: elasticsearch sync consumer` | Q2 | Gas Station | DocuVault: documents tagged with more than 3 tags | 3.5h |
-| Thu (D124) | Search query design | — | — | `GET /documents/search?q=&tags=` | Test typo tolerance, tag filter, title-boost ranking | `feat: document search endpoint` | — | Hand of Straights | DocuVault: latest version per document | 3.5h |
+| Thu (D124) | Search query design; frontend — third React/TS app, this time a controlled search input with debounced queries | — | — | `GET /documents/search?q=&tags=`; `docuvault-web/` search page: debounced search box + tag filter chips calling the endpoint via TanStack Query | Test typo tolerance, tag filter, title-boost ranking; component test confirms the query only fires after the debounce window, not on every keystroke | `feat: document search endpoint + docuvault-web search page` | — | Hand of Straights | DocuVault: latest version per document | 3.5h |
 | Fri (D125) | Reindex-from-source recovery | — | — | `POST /documents/reindex` — rebuilds ES fully from Postgres | Test ES wiped, reindex restores search correctly | `feat: full reindex recovery endpoint` | Q3 | Unique Paths | Recyclable and Low Fat Products | 3.5h |
 | Sat (D126) | **Review** | — | Redo indexing mini exercise from memory | — | Full suite | — | Answer Week-21 Qs unscripted | Review: redo Thursday's problem from memory — Hand of Straights | Review: rewrite Tuesday's query from memory, then extend it — Fix Names in a Table | 2.5h |
 
 ---
 
-## 13. Daily Plan — Week 22: Kubernetes Fundamentals, Replication, Phase Wrap
+## 11. Daily Plan — Week 22: Kubernetes Fundamentals, Replication, Phase Wrap
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Mon (D127) | Pods, Deployments, Services | K8s "Learn Kubernetes Basics" pt.1-2 | Mini load balancer (round-robin, 2 processes) | `kind` cluster running locally, write Deployment+Service YAML for one DocuVault service | Verify pod reachable via Service | `feat: k8s deployment for docuvault service` | Q1 | Longest Common Subsequence | DocuVault: documents never tagged | 3.5h |
 | Tue (D128) | ConfigMaps, Secrets | K8s docs pt.3 | — | Externalize config/secrets from that service into ConfigMap/Secret | Verify service picks up config correctly | `feat: k8s configmap + secret` | — | Best Time to Buy and Sell Stock with Cooldown | Primary Department for Each Employee | 3.5h |
-| Wed (D129) | Scaling replicas, rolling updates | K8s docs pt.4-5 | — | Scale to 2 replicas, do a rolling update, observe zero dropped requests | Continuous-request test during rollout | `feat: k8s rolling update verified` | Q2 | Coin Change II | DocuVault: tags frequently used together | 3.5h |
+| Wed (D129) | Scaling replicas, rolling updates; GitOps (conceptual) — why `kubectl apply` by hand doesn't scale past one cluster, and how ArgoCD/Flux would reconcile cluster state from this same YAML in git instead | K8s docs pt.4-5 + ArgoCD docs "Core Concepts" (read-only, not installed) | — | Scale to 2 replicas, do a rolling update, observe zero dropped requests; commit the Deployment/Service YAML to a `k8s/` directory as if a GitOps controller were about to watch it | Continuous-request test during rollout | `feat: k8s rolling update verified + k8s manifests as git-tracked source` | Q2 | Coin Change II | DocuVault: tags frequently used together | 3.5h |
 | Thu (D130) | Postgres replication | Postgres replication docs | Local read-replica setup | Route ES-sync consumer's reads to replica | Test replica lag doesn't break sync correctness | `feat: postgres read replica for sync consumer` | — | Target Sum | DocuVault: EXPLAIN ANALYZE a metadata query on replica vs primary | 3.5h |
 | Fri (D131) | Sharding (conceptual) | — | — | `docs/sharding-decision-record.md` — what key, why, when it'd be justified | — | `docs: sharding decision record` | Q3 | Interleaving String | Calculate Special Bonus | 3.5h |
 | Sat (D132) | **Phase 5 wrap review** | — | Explain the outbox → CQRS → saga chain end-to-end, out loud | `docs/postmortem-phase5.md`, tag `v0.5-phase5` | Full suite | `docs: phase 5 postmortem` | Mock-answer all Phase-5 questions timed | Review: redo Thursday's problem from memory — Target Sum | Review: rewrite Tuesday's query from memory, then extend it — Primary Department for Each Employee | 2.5h |
 
 ---
 
-## 14. Deliverables & GitHub Milestones
+## 12. Deliverables & GitHub Milestones
 
 **Milestone: `Phase 5 — FleetTrack v0.1 + DocuVault v0.1`**
 - [ ] Outbox pattern implemented and proven under fault injection
@@ -335,15 +350,17 @@ that ordering mattered); sharding prematurely.
 - [ ] `docs/sharding-decision-record.md` written
 - [ ] Tag: `v0.5-phase5`
 
-## 15. Skills Acquired Checklist
+## 13. Skills Acquired Checklist
 - [ ] Outbox pattern — implemented and fault-tested, not just described
 - [ ] CQRS — applied where justified, articulable where it's not
 - [ ] Saga (choreographed) — implemented at overview depth, honestly scoped
 - [ ] Elasticsearch: indexing, querying, keeping a derived index in sync
 - [ ] Kubernetes fundamentals: Pods, Deployments, Services, ConfigMaps,
       Secrets, rolling updates — hands-on, not just terminology
+- [ ] GitOps (ArgoCD/Flux) — conceptual fluency, correctly scoped as not-yet-needed
 - [ ] Postgres read replicas — hands-on
 - [ ] Sharding — conceptual fluency, correctly scoped as not-yet-needed
+- [ ] Two more React/TS frontends shipped: polling UI (FleetTrack), debounced search UI (DocuVault) — reusing Phase 4's setup
 
 ---
 

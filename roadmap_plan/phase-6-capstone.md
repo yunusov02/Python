@@ -11,24 +11,28 @@ capstone work, especially AtlasMarket, needs the room.)*
 - Build a payment platform with idempotency and webhook handling done
   correctly — the two things that separate a toy payment integration from
   one that survives production.
-- Harden a system for security: secrets management, audit logging, and a
-  real threat-modeling pass, not just "add HTTPS."
+- Harden a system for security: a real secrets manager (HashiCorp Vault,
+  not just a better-organized `.env`), audit logging, and a real
+  threat-modeling pass, not just "add HTTPS."
 - Run a genuine load test against your own infrastructure, read the
   results, and fix what breaks first.
 - Rehearse system design interviews out loud, using your own 6 months of
   projects as concrete evidence instead of abstract answers.
-- Gain enough React/TypeScript literacy to build a thin storefront
-  consuming your own API and to talk to a frontend engineer as a peer.
+- Ship your fourth React/TypeScript app this year — AtlasMarket's
+  storefront — building on the habits from CarePoint, FleetTrack, and
+  DocuVault instead of starting from zero, and be able to ship a small
+  frontend feature yourself, not just talk to a frontend engineer as a peer.
 - Kick off AtlasMarket — the marketplace capstone — honestly scoped as a
   **strong architectural skeleton with core flows working**, not a
   finished Amazon clone in 2 weeks. It's designed to keep growing after
   Day 182, which is the correct shape for a real portfolio centerpiece.
 
 ## 2. Technologies Introduced
-Idempotency keys, webhook signature verification, secrets management
-(`.env` → a real secrets manager pattern), `locust` load testing at a real
-scale (not the light Week-4 check), React + TypeScript + Vite +
-TanStack Query (frontend literacy only), system design interview technique.
+Idempotency keys, webhook signature verification, HashiCorp Vault (dynamic
+secrets, KV engine, fail-closed startup — replacing `.env` for anything
+that touches production), `locust` load testing at a real scale (not the
+light Week-4 check), React + TypeScript + Vite + TanStack Query, system
+design interview technique.
 
 ---
 
@@ -154,8 +158,11 @@ overscoped the way the original AtlasCommerce plan was.
   per-vendor payout tracking).
 - Order fulfillment status per vendor (reuses WareFlow's warehouse/
   reservation concepts, vendor-scoped instead of warehouse-scoped).
-- A thin React/TypeScript storefront (product list, cart, checkout) —
-  frontend-literacy scope only, not a polished consumer product.
+- A real React/TypeScript storefront (product list, cart, checkout) — your
+  fourth React/TS app this year (after CarePoint's schedule view,
+  FleetTrack's dispatcher dashboard, DocuVault's search page), so this one
+  is built on established habits, not learned from zero. Still honestly
+  scoped: functional and tested, not a polished consumer product.
 
 **Architecture — the payoff of 6 months of layering:**
 ```
@@ -189,13 +196,17 @@ workflow. All named, all deliberately deferred.
 vendors → checkout once → verify two `order_vendor_groups` created, two
 separate ledger entries, one idempotent payment.
 
-**Frontend Literacy (React/TS, scoped narrowly):** product list page
-(TanStack Query for data fetching/caching — you'll recognize the cache-
-invalidation parallels to Redis immediately), cart state (local component
-state, no Redux/Zustand needed at this scope — you note *why* global state
-management isn't justified yet, an honest architectural call), checkout
-form. Enough to read a frontend PR and ask the right questions, not enough
-to call yourself a frontend engineer.
+**Frontend (React/TS, fourth app — built on established habits):** product
+list page (TanStack Query for data fetching/caching — by now the cache-
+invalidation parallels to your own Redis cache-aside pattern are second
+nature, not a new idea), cart state (local component state, no Redux/
+Zustand needed at this scope — you note *why* global state management
+isn't justified yet, an honest architectural call, same discipline as
+every "not yet" decision this whole curriculum makes), checkout form wired
+to the real payment/order flow. Four builds in is enough to read a
+frontend PR and ask the right questions, and to ship a small feature
+yourself without a frontend engineer's help — still not the same as being
+a frontend specialist, and the plan doesn't pretend otherwise.
 
 **Common Interview Questions**
 1. Walk through the full checkout flow across the 5 services, start to
@@ -231,7 +242,7 @@ bootcamp's purpose).
 | Idempotency key demo (standalone, before PayFlow) | 23 | The mechanic in isolation |
 | Webhook signature verification demo (HMAC) | 23 | Signature verification before applying it |
 | `locust` load test scenario against a toy endpoint | 24 | Load testing methodology before the real PayFlow test |
-| React + TanStack Query mini product list (dummy API) | 25 | Frontend data-fetching pattern before AtlasMarket |
+| Shared component extraction (`Button`/`Card`) from 3 prior frontends | 25 | Componentization/reuse — the frontend analogue of Phase 1's layered architecture |
 
 ---
 
@@ -239,9 +250,12 @@ bootcamp's purpose).
 - Stripe's own idempotency documentation (stripe.com/docs/api/idempotent_requests)
   — read Week 23, it's the industry-reference implementation.
 - OWASP Top 10 (current edition) — read during Week 24's security week.
+- HashiCorp Vault docs — "Getting Started" + "Secrets Engines: KV" — Week 24.
 - `locust` official docs — Week 24.
-- React docs (new react.dev) — "Describing the UI" + "Managing State"
-  sections, TanStack Query "Quick Start" — Week 25.
+- React Router docs "Tutorial" — Week 25 (your first multi-page frontend;
+  the 3 prior React apps this year were single-view, so this is genuinely
+  new, unlike React/TanStack Query itself, which is a refresher by now).
+- React Testing Library docs "Example" — Week 25 (first real component test).
 - *The System Design Interview* volumes (Xu) — skim relevant chapters
   matching each mock interview topic during Week 26.
 
@@ -261,10 +275,13 @@ bootcamp's purpose).
 3. Secrets manager vs `.env` — what's the actual risk `.env` carries in
    production?
 
-**Week 25 — Marketplace architecture, frontend literacy**
+**Week 25 — Marketplace architecture, storefront**
 1. Why does `order_vendor_groups` exist instead of one flat order table?
 2. TanStack Query's cache — how is it similar to and different from your
    Redis cache-aside pattern from Phase 2?
+3. Client-side routing (React Router) vs server-side routing — what
+   actually changes on navigation in each, and why does it matter for
+   perceived performance?
 
 **Week 26 — Full system design (mock interviews)**
 1. Design a multi-vendor marketplace checkout system from scratch, 45
@@ -295,7 +312,7 @@ bootcamp's purpose).
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Mon (D139) | OWASP Top 10 relevant to your stack | OWASP Top 10 | — | Refunds endpoint + API-key auth for server-to-server callers | Test refund creates correct reversing journal entry | `feat: refunds + api-key auth` | Q1 | Counting Bits | PayFlow: refunds exceeding their original payment amount | 3.5h |
-| Tue (D140) | Secrets management patterns | — | — | Move webhook secret + API keys out of `.env` into a secrets-manager pattern | Verify no secret present in image/logs | `feat: secrets manager pattern` | — | Reverse Bits | PayFlow: same-day vs delayed refunds | 3.5h |
+| Tue (D140) | Secrets management with a real secrets manager (HashiCorp Vault) — dynamic secrets, leasing/rotation vs a static `.env` file | Vault docs "Getting Started" + "Secrets Engines" | Run Vault in dev mode, write/read one secret via the CLI, then via its HTTP API | Add `vault` to Docker Compose; move webhook secret + API keys out of `.env` into Vault's KV engine, app reads them via the API at startup | Verify no secret present in image/logs/env dump; test the app fails closed (refuses to start) if Vault is unreachable rather than falling back to a default | `feat: hashicorp vault for secrets, drop .env in prod` | — | Reverse Bits | PayFlow: same-day vs delayed refunds | 3.5h |
 | Wed (D141) | Audit logging | — | — | Append-only audit log for payment/refund state changes | Test audit entries recorded for every state change | `feat: append-only audit log` | Q2 | Missing Number | PayFlow: EXPLAIN ANALYZE the idempotency-key lookup under load | 3.5h |
 | Thu (D142) | Threat modeling | — | — | Write `docs/threat-model.md` (secret leak, key guessing, replay-after-expiry) | — | `docs: threat model` | — | Rotate Image | PayFlow: audit log for one payment_intent, ordered chronologically | 3.5h |
 | Fri (D143) | `locust` load testing | locust docs | Toy-endpoint locust scenario | Realistic-concurrency PayFlow load test, find + fix the bottleneck | Before/after benchmark recorded | `perf: fix idempotency-lookup bottleneck under load` | Q3 | Spiral Matrix | Find Followers Count | 3.5h |
@@ -303,15 +320,15 @@ bootcamp's purpose).
 
 ---
 
-## 10. Daily Plan — Week 25: AtlasMarket Architecture + Integration Sprint (part 1)
+## 10. Daily Plan — Week 25: AtlasMarket Architecture + Integration Sprint (part 1), Storefront
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Mon (D145) | Integration planning — what to reuse vs rebuild | — | — | New repo `atlasmarket/`, `docs/architecture.md` mapping each service to its origin project | — | `docs: atlasmarket architecture + service map` | Q1 | Set Matrix Zeroes | AtlasMarket: revenue per vendor this month | 3.5h |
 | Tue (D146) | Vendor-scoping the catalog | — | — | Adapt StockPilot's product model: add `vendor_id`, vendor onboarding endpoint | Test vendor-scoped product creation | `feat: vendor-scoped catalog` | — | Happy Number | Product Sales Analysis III | 3.5h |
 | Wed (D147) | Vendor-scoped search | — | — | Adapt DocuVault's ES sync pattern to index vendor-scoped products | Test search respects vendor filters | `feat: vendor-scoped catalog search` | Q2 | Plus One | AtlasMarket: vendors with no products listed | 3.5h |
-| Thu (D148) | React/TS fundamentals, Vite setup | react.dev "Describing the UI" | — | `storefront/` scaffold (Vite + React + TS), product list page with TanStack Query | Basic render test | `feat: storefront scaffold + product list` | — | Pow(x, n) | AtlasMarket: top 5 vendors by order count | 3.5h |
-| Fri (D149) | TanStack Query caching | TanStack Query "Quick Start" | Mini product list against a dummy API | Cart state (local component state) + cart UI | — | `feat: storefront cart` | Q3 | Merge Sorted Array | The Most Recent Three Orders | 3.5h |
+| Thu (D148) | Multi-page navigation with React Router — the one piece your 3 prior single-view frontends didn't need | React Router docs "Tutorial" | Extract a shared `Button`/`Card` component from copy-pasted markup across `carepoint-web`, `fleettrack-web`, `docuvault-web` into a tiny local component set `storefront/` can start from | `storefront/` scaffold (Vite + React + TS), React Router routes for product list / cart / checkout, product list page with TanStack Query | Basic render test per route | `feat: storefront scaffold + routed product list` | — | Pow(x, n) | AtlasMarket: top 5 vendors by order count | 3.5h |
+| Fri (D149) | TanStack Query caching, cart state design | TanStack Query "Quick Start" | Write one React Testing Library test for the cart's add/remove logic | Cart state (local component state) + cart UI, wired to the router's cart route | Testing Library test for cart add/remove passes | `feat: storefront cart + cart test` | Q3 | Merge Sorted Array | The Most Recent Three Orders | 3.5h |
 | Sat (D150) | **Review** | — | Explain TanStack Query cache vs your Redis cache-aside pattern, out loud | — | — | — | Answer Week-25 Qs unscripted | Review: redo Thursday's problem from memory — Pow(x, n) | Review: rewrite Tuesday's query from memory, then extend it — Product Sales Analysis III | 2.5h |
 
 ---
@@ -339,8 +356,8 @@ bootcamp's purpose).
 - [ ] AtlasMarket: vendor-scoped catalog + search, multi-vendor checkout,
       per-vendor ledger + fulfillment status, all reusing prior projects'
       logic (documented in `docs/architecture.md`'s service map)
-- [ ] Thin React/TS storefront: product list, cart, checkout, working
-      end-to-end against the real API
+- [ ] React/TS storefront: routed product list, cart, checkout, working
+      end-to-end against the real API — your fourth shipped frontend
 - [ ] `docs/atlasmarket-roadmap-post-bootcamp.md` — explicit deferred scope
 - [ ] 3 timed mock system-design interviews completed and logged
 - [ ] Tag: `v1.0-bootcamp-complete`
@@ -348,12 +365,15 @@ bootcamp's purpose).
 ## 13. Skills Acquired Checklist
 - [ ] Idempotency keys — implemented and race-tested
 - [ ] Webhook signature verification + idempotent webhook processing
+- [ ] HashiCorp Vault: dynamic secrets, KV engine, fail-closed startup — not just a tidier `.env`
 - [ ] Threat modeling as a concrete written exercise
 - [ ] Real load testing with `locust`, bottleneck found and fixed
 - [ ] Integrating multiple prior services into one coherent system, with
       honest scope discipline (documented deferrals, not silent scope creep)
-- [ ] React + TypeScript + Vite + TanStack Query — enough to build a thin
-      UI and communicate with frontend engineers as a peer
+- [ ] React + TypeScript + Vite + TanStack Query + React Router + React
+      Testing Library — four shipped apps in, enough to build a real UI
+      and ship a small frontend feature yourself, not just talk to a
+      frontend engineer as a peer
 - [ ] System design interview technique, rehearsed out loud, timed,
       grounded in your own 6 months of concrete decisions
 

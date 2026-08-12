@@ -22,6 +22,9 @@ By the end of Phase 7 you can:
   latency telemetry — before touching the prompt to "make it better."
 - Apply query rewriting, hybrid search, and re-ranking to materially improve
   retrieval quality, and measure that improvement instead of assuming it.
+- Tell the difference between a real A/B-test win and noise: compute a
+  confidence interval on a metric delta by hand and explain, in one
+  sentence, why "variant B scored higher" is meaningless without one.
 - Recognize and defend against the two RAG failure modes that actually
   matter in production: hallucinated/fabricated claims and prompt
   injection — with a guardrail you built and tested, not just a prompt
@@ -46,7 +49,10 @@ patterns (tool calling, ReAct reasoning loops, conversation memory) · RAG
 evaluation tooling (hit rate, MRR, LLM-as-judge faithfulness scoring,
 golden eval sets) · cost/latency/session telemetry for LLM calls · hand-
 rolled guardrails (prompt-injection detection, output validation, scope
-checks on tool calls).
+checks on tool calls) · hypothesis-testing fundamentals (null hypothesis,
+p-values, confidence intervals) applied to A/B-testing prompt/model
+variants — the statistics layer under the "A/B test it" instinct the
+plan otherwise leaves unexamined.
 
 Deliberately **not yet introduced**: building your own agent orchestration
 framework or MCP servers (that's Phase 8's territory — this phase teaches
@@ -422,6 +428,9 @@ both.
   ReAct loop (Week 28).
 - RAGAS docs (docs.ragas.io) — retrieval/generation evaluation metrics:
   hit rate, MRR, faithfulness, answer relevancy (Week 29).
+- *Practical Statistics for Data Scientists* (Bruce, Bruce & Gedeck) Ch.3
+  ("Statistical Experiments and Significance Testing") — read the Friday
+  of Week 29, before computing the A/B-test confidence interval by hand.
 - OWASP "Top 10 for Large Language Model Applications"
   (owasp.org/www-project-top-10-for-large-language-model-applications) —
   prompt injection and excessive-agency sections, read in Weeks 28 and 43.
@@ -524,7 +533,7 @@ both.
 | **Tue (D170)** | Implementing an offline eval harness — hit rate/MRR computed automatically against the golden set | — | — | `eval/retrieval_eval.py` runs the golden set through the semantic-search endpoint, reports hit rate@k and MRR | Test harness produces expected metric values on a hand-verified mini fixture | `feat: retrieval eval harness (hit rate, mrr)` | Q2 | 3.5h |
 | **Wed (D171)** | LLM-as-judge evaluation — using a model to grade answer quality/faithfulness | RAGAS docs "faithfulness"/"answer relevancy" | Hand-grade 5 answers yourself, then have an LLM judge grade the same 5, compare agreement | `eval/llm_judge.py` scores a generated answer's faithfulness-to-context on a 1–5 scale, wired into the harness | Test: judge output always parses into a valid score, even on malformed judge text | `feat: llm-as-judge faithfulness scoring` | Q3 | 3.5h |
 | **Thu (D172)** | Cost & latency tracking for LLM calls; logging chat sessions & feedback loops | OpenAI/Anthropic API docs — usage/token accounting | Log token counts + wall-clock latency for 10 sample calls, compute $ cost from published pricing | `rag/telemetry.py` wraps LLM + embedding calls, logs tokens/cost/latency (reusing Phase 1's structlog); `POST /documents/semantic-search/feedback` (thumbs up/down) | Test telemetry wrapper logs one entry per call with correct fields | `feat: llm cost/latency telemetry + feedback endpoint` | Q4 | 3.5h |
-| **Fri (D173)** | A/B testing prompts/models | OpenAI "Best practices for prompt engineering" | Write two candidate system prompts for answer generation, run both against the golden set, compare hit-rate/judge-score deltas | Prompt-variant flag on the search endpoint; log which variant served each request, feeding the eval harness | Test both variants are exercised roughly evenly (basic split-assignment test) | `feat: prompt variant a/b flag + eval comparison` | Q5 | 3.5h |
+| **Fri (D173)** | A/B testing prompts/models — the statistics underneath: null hypothesis, p-values, confidence intervals, and why a hit-rate delta on 30 golden-set queries usually isn't statistically significant | OpenAI "Best practices for prompt engineering" + Practical Statistics for Data Scientists Ch.3 (or Khan Academy "Significance tests" as a free alternative) | Compute a 95% confidence interval by hand on the two prompt variants' hit rates from Thu's golden set; decide honestly whether the delta is real or noise | Prompt-variant flag on the search endpoint; log which variant served each request, feeding the eval harness; `docs/ab-test-readout.md` reporting the confidence interval, not just "variant B looked better" | Test both variants are exercised roughly evenly (basic split-assignment test) | `feat: prompt variant a/b flag + eval comparison + statistical readout` | Q5 | 3.5h |
 | **Sat (D174)** | **Review** | — | Redo the hit-rate/MRR by-hand calculation from memory | Re-run the full eval harness + judge suite; review cost/latency numbers | Full suite re-run | — | Answer all Week-42 questions unscripted | 2.5h |
 
 ---
@@ -609,6 +618,8 @@ both.
       limits)
 - [ ] RAG evaluation: hit rate, MRR, LLM-as-judge faithfulness scoring
 - [ ] Cost/latency telemetry and A/B testing for LLM-backed endpoints
+- [ ] Hypothesis testing fundamentals: confidence intervals, statistical
+      significance — applied to a real metric delta, not just named
 - [ ] Guardrails: prompt-injection defenses, output validation,
       no-fabrication checks
 - [ ] Access-control-aware / multi-tenant-aware retrieval scoping

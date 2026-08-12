@@ -12,13 +12,18 @@
   "Inventory" and "Fulfillment" concerns shouldn't share one model.
 - Introduce RabbitMQ for real event-driven communication between two parts
   of WareFlow (warehouse stock events → fulfillment reservations).
+- Pin the shape of an event with a consumer-driven contract (Pact) so a
+  publisher-side schema change fails CI instead of silently breaking a
+  consumer in production — the first moment in the curriculum where two
+  independently-deployable parts of your own system can drift apart.
 - Get hands-on with Postgres isolation levels, MVCC, deadlocks, and table
   partitioning — no longer conceptual, but debugged live in WareFlow.
 
 ## 2. Technologies Introduced
 Celery Beat (scheduling/cron), RabbitMQ (producer/consumer, exchanges,
 queues, dead-letter queues), Kafka (conceptual intro + one hands-on mini
-project, contrasted with RabbitMQ), Repository/Service Layer/Unit of Work
+project, contrasted with RabbitMQ), Pact (consumer-driven contract testing,
+message pacts for event schemas), Repository/Service Layer/Unit of Work
 formalized, DDD-lite (bounded contexts, aggregates), Postgres isolation
 levels/MVCC/deadlocks/table partitioning, a custom mini-ORM exercise, a mini
 Dependency Injection container.
@@ -256,7 +261,7 @@ Inventory's domain layer.
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mon (D55) | Bounded contexts, aggregates | DDD Distilled Ch.1-3 | — | New repo `wareflow/`, define Inventory + Fulfillment context boundaries in `docs/architecture.md` | — | `docs: wareflow bounded contexts` | Q1 | Binary Tree Level Order Traversal | WareFlow: warehouses with more distinct products than average | 3.5h |
+| Mon (D55) | Bounded contexts, aggregates | DDD Distilled Ch.1-3 | — | New repo `wareflow/`, define Inventory + Fulfillment context boundaries in `docs/architecture.md` | — | `docs: wareflow bounded contexts` | Q1 | Warm-up: implement a queue from scratch; Binary Tree Level Order Traversal | WareFlow: warehouses with more distinct products than average | 3.5h |
 | Tue (D56) | Aggregate roots, entities vs value objects | DDD Distilled Ch.4-5 | — | `Warehouse`, `StockLevel` entities (Inventory context) | Domain model unit tests | `feat: inventory domain models` | — | Binary Tree Right Side View | WareFlow: products in one warehouse but not another | 3.5h |
 | Wed (D57) | Unit of Work pattern | Cosmic Python (free online) Ch.6 | UoW demo: 2 repos, 1 commit boundary | `UnitOfWork` class wrapping SQLAlchemy session | Test rollback on partial failure | `feat: unit of work implementation` | Q2 | Count Good Nodes in Binary Tree | Swap Salary | 3.5h |
 | Thu (D58) | Repository pattern formalized | Cosmic Python Ch.2 | — | `StockLevelRepository`, `WarehouseRepository` conforming to Phase 1's `Repository[T]` protocol | Repository tests | `feat: inventory repositories` | — | Validate Binary Search Tree | WareFlow: stock_movements reason breakdown | 3.5h |
@@ -271,7 +276,7 @@ Inventory's domain layer.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Mon (D61) | RabbitMQ concepts: exchange, queue, binding | RabbitMQ tutorial 1-3 | Standalone producer/consumer script | Add `rabbitmq` to Docker Compose | Verify management UI reachable | `chore: rabbitmq service` | Q1 | Construct Binary Tree from Preorder and Inorder Traversal | WareFlow: reservations pending longer than 1 hour | 3.5h |
 | Tue (D62) | Publishing domain events after commit | — | — | `event_bus.py`: publish `StockDispatched`/`StockReceived` after UoW commit | Test event published only on successful commit | `feat: event bus wrapper` | — | Binary Tree Maximum Path Sum | WareFlow: products most frequently reserved | 3.5h |
-| Wed (D63) | Consumer idempotency, ack/nack | RabbitMQ tutorial 4-5 | Duplicate-message idempotency demo | Fulfillment consumer for `StockDispatched` → creates `Reservation` | Test duplicate event doesn't double-reserve | `feat: fulfillment stock-dispatched consumer` | Q2 | Serialize and Deserialize Binary Tree | Human Traffic of Stadium | 3.5h |
+| Wed (D63) | Consumer idempotency, ack/nack; consumer-driven contract testing — why a schema change on the publisher side shouldn't silently break the consumer | RabbitMQ tutorial 4-5 + Pact docs "Message Pact" | Duplicate-message idempotency demo | Fulfillment consumer for `StockDispatched` → creates `Reservation`; Pact message-contract test pinning the `StockDispatched` payload shape between the WareFlow publisher and the fulfillment consumer | Test duplicate event doesn't double-reserve; contract test fails CI if either side changes the event schema without updating the pact | `feat: fulfillment stock-dispatched consumer + pact contract test` | Q2 | Serialize and Deserialize Binary Tree | Human Traffic of Stadium | 3.5h |
 | Thu (D64) | Dead-letter queues | RabbitMQ tutorial 6 (DLQ) | — | Configure DLQ, force a bad message, inspect it manually | Test message lands in DLQ after 3 failures | `feat: dead-letter queue config` | — | Implement Trie (Prefix Tree) | WareFlow: transfers stuck 'dispatched' over 24h | 3.5h |
 | Fri (D65) | Transfer receipt endpoint | — | — | `POST /transfers/{id}/receive` — confirms receipt, publishes `StockReceived` | Integration test full dispatch→receive flow | `feat: transfer receipt endpoint` | Q3 | Design Add and Search Words Data Structure | Friend Requests I: Overall Acceptance Rate | 3.5h |
 | Sat (D66) | **Review** | — | Redo idempotency demo from memory | Trace one event end-to-end by hand, write it in `docs/notes.md` | Full suite | — | Answer Week-11 Qs unscripted | Review: redo Thursday's problem from memory — Implement Trie (Prefix Tree) | Review: rewrite Tuesday's query from memory, then extend it — WareFlow: products most frequently reserved | 2.5h |
@@ -320,6 +325,7 @@ Inventory's domain layer.
 - [ ] Repository / Service Layer / Unit of Work as a named, deliberate pattern
 - [ ] DDD-lite: bounded contexts, aggregates
 - [ ] RabbitMQ: exchanges, queues, ack/nack, DLQ
+- [ ] Consumer-driven contract testing (Pact) on an event schema, wired into CI
 - [ ] Kafka basics, contrasted with RabbitMQ
 - [ ] Postgres MVCC, isolation levels, deadlocks — debugged firsthand
 - [ ] Table partitioning with measured before/after impact

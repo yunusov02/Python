@@ -9,17 +9,26 @@
   instead of reciting "microservices are better."
 - Ship a real CI/CD pipeline that builds, pushes, and deploys — not just
   tests — including a zero-downtime deploy technique.
+- Gate that same pipeline on supply-chain security — dependency CVEs,
+  committed secrets, vulnerable base images — and prove the gate actually
+  blocks a bad merge, not just that the tools are installed.
 - Stand up Prometheus + Grafana + Sentry and *use* them to find a real
   problem you inject on purpose, not just install them.
 - Handle file uploads properly via presigned URLs against S3/MinIO instead
   of routing file bytes through your API process.
+- Scaffold a real React + TypeScript frontend consuming your own API — the
+  first of four times this year, so it's a habit you build on rather than
+  a one-week crash course crammed in at the very end.
 
 ## 2. Technologies Introduced
 Nginx (reverse proxy, basic API Gateway routing), Docker Compose multi-
 service orchestration at real scale, GitHub Actions full CI/CD (build,
 push image, deploy), zero-downtime deploy technique (health-check gated
-rollover), Prometheus, Grafana, Sentry, structured health checks, S3/MinIO
-+ presigned URLs.
+rollover), `pip-audit`/`gitleaks`/Trivy as CI security gates (dependency,
+secret, and container-image scanning), Prometheus, Grafana, Sentry,
+structured health checks, S3/MinIO + presigned URLs, React + TypeScript +
+Vite + TanStack Query (first real frontend page, reused and extended in
+Phases 5 and 6).
 
 Deliberately not yet: Kubernetes (Phase 5), CQRS/Outbox/Saga (Phase 5),
 Elasticsearch (Phase 5).
@@ -274,6 +283,7 @@ without checking whether staleness is actually acceptable here (it isn't).
 - Prometheus docs: "Getting Started" + Grafana "Getting Started" (Week 17–18).
 - Sentry docs: Python SDK integration guide.
 - AWS S3 docs: presigned URL section; MinIO docs for local S3-compatible dev.
+- React docs (react.dev) "Quick Start"; TanStack Query docs "Quick Start" — Week 15.
 
 ---
 
@@ -323,7 +333,7 @@ without checking whether staleness is actually acceptable here (it isn't).
 | Mon (D85) | Object storage basics, MinIO local setup | MinIO docs | — | Add `minio` to Compose | Verify bucket reachable | `chore: minio service` | Q1 | Pacific Atlantic Water Flow | CarePoint: appointments in next 24h needing a reminder | 3.5h |
 | Tue (D86) | Presigned URLs | S3 presigned URL docs | Presigned upload/download demo | `POST /documents/presigned-upload` endpoint | Test URL expires correctly | `feat: presigned document upload` | — | Surrounded Regions | CarePoint: doctors with the most documents on their patients | 3.5h |
 | Wed (D87) | Mini API Gateway concept | — | Mini FastAPI gateway routing to 2 backend URLs | `GET /documents/{id}/presigned-download` | Integration test full upload→download flow | `feat: presigned document download` | Q2 | Course Schedule | Reformat Department Table | 3.5h |
-| Thu (D88) | Redis cache on doctor schedules | — | — | Cache `GET /appointments?doctor_id=&date=`, invalidate on booking/cancel | Cache invalidation test | `feat: cache doctor schedule lookups` | — | Course Schedule II | CarePoint: EXPLAIN ANALYZE the doctor-schedule query | 3.5h |
+| Thu (D88) | Redis cache on doctor schedules; frontend intro — React + TypeScript + Vite + TanStack Query scaffold, first real UI of the year | React docs "Quick Start" + TanStack Query "Quick Start" | — | Cache `GET /appointments?doctor_id=&date=`, invalidate on booking/cancel; new `carepoint-web/` (Vite + React + TS), one page: doctor's daily schedule fetched via TanStack Query against the endpoint just cached | Cache invalidation test; component renders loading/error/loaded states correctly against a mocked API response | `feat: cache doctor schedule lookups + carepoint-web schedule view` | — | Course Schedule II | CarePoint: EXPLAIN ANALYZE the doctor-schedule query | 3.5h |
 | Fri (D89) | Appointment reminder job | — | — | Celery Beat: 24h-before reminder task | `freezegun` schedule test | `feat: appointment reminder job` | Q3 | Redundant Connection | Queries Quality and Percentage | 3.5h |
 | Sat (D90) | **Review** | — | Redo presigned URL demo from memory | Tag `v0.1-carepoint` | Full suite | — | Answer Week-15 Qs unscripted | Review: redo Thursday's problem from memory — Course Schedule II | Review: rewrite Tuesday's query from memory, then extend it — CarePoint: doctors with the most documents on their patients | 2.5h |
 
@@ -346,7 +356,7 @@ without checking whether staleness is actually acceptable here (it isn't).
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Mon (D97) | GitHub Actions: build + push to GHCR | GitHub Actions Docker docs | — | CI builds and pushes images for all 4 services | Verify images appear in GHCR | `ci: build and push images to ghcr` | Q1 | Network Delay Time | LedgerBase: overdue unpaid invoices | 3.5h |
+| Mon (D97) | GitHub Actions: build + push to GHCR; supply-chain security gates — dependency, secret, and container scanning | GitHub Actions Docker docs + `pip-audit`/`gitleaks`/Trivy READMEs | Run `gitleaks detect` against this repo's own git history, confirm it doesn't false-positive on real config | CI builds and pushes images for all 4 services; add `pip-audit` (dependency CVEs), `gitleaks` (committed-secret scan), and Trivy (container image scan) as CI steps that fail the build on high-severity findings | Verify images appear in GHCR; verify the pipeline actually fails when a deliberately-vulnerable dependency/secret is introduced, then goes green once removed | `ci: build/push images to ghcr + dependency/secret/container scanning gates` | Q1 | Network Delay Time | LedgerBase: overdue unpaid invoices | 3.5h |
 | Tue (D98) | SSH deploy step, secrets management | GitHub Actions secrets docs | — | Deploy step: SSH to VPS, pull new images | Manual verify deploy runs end-to-end | `ci: ssh deploy step` | — | Swim in Rising Water | LedgerBase: monthly revenue trend from paid invoices | 3.5h |
 | Wed (D99) | Zero-downtime rollover mechanics | — | Zero-downtime deploy script (health-gated swap) | Apply the script: bring up new container, health-check gate, swap Nginx upstream, stop old | Test deploy causes zero dropped requests (hit endpoint continuously during deploy) | `feat: zero-downtime deploy script` | Q2 | Climbing Stairs | Replace Employee ID With The Unique Identifier | 3.5h |
 | Thu (D100) | Rollback path | — | — | Deliberately break new version's health check, confirm deploy aborts and old version stays live | Test the abort path explicitly | `feat: deploy rollback on failed health check` | — | Min Cost Climbing Stairs | LedgerBase: trial balance report | 3.5h |
@@ -389,8 +399,10 @@ without checking whether staleness is actually acceptable here (it isn't).
 - [ ] Money-as-integer-cents, felt through a real bug
 - [ ] Double-entry balance enforcement, app + DB layer
 - [ ] Full CI/CD pipeline: build, push, deploy
+- [ ] Supply-chain security gates in CI (dependency/secret/container scanning), proven to actually block a bad merge
 - [ ] Zero-downtime deploy technique, including tested rollback
 - [ ] Prometheus + Grafana + Sentry, used to find a real injected bug
+- [ ] React + TypeScript + Vite + TanStack Query: first real page consuming your own API
 
 ---
 

@@ -7,6 +7,12 @@ Check off each item as you finish it. **336 days total across 56 weeks / 11 phas
 
 Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's the most directly transferable skill for a backend engineer (you're wrapping API calls into services, not training models) — a low-friction on-ramp right after 6 months of backend work. AI Dev Tools follows immediately since it builds on LLM's agent/tool-calling fundamentals. Then ML Zoomcamp shifts into more theory/math-heavy classical ML, with MLOps following directly since it's literally productionizing the models just built. Data Engineering closes the program as a capstone unifying data from every system built across the year.
 
+> **Generated file — do not hand-edit.** This is derived from the daily-plan
+> tables in `phase-1-foundations.md` … `phase-11-data-engineering-zoomcamp.md`
+> by `scripts/gen_progress.py`. To change a day's content, edit the phase
+> file and rerun the generator. Checkbox state (`[ ]`/`[x]`) is preserved
+> across runs.
+
 ---
 
 ## Phase 1 — Foundations (Weeks 1-4)
@@ -31,7 +37,7 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: Class-based decorators, stacking order — *docs.python.org `functools`*
 - [ ] Mini Exercise: Combine `@timer` + `@retry`, verify stacking order
 - [ ] Project: Add `Supplier`, `StockMovement`, `Order`, `OrderItem` models + Alembic init migration
-- [ ] DSA: Two Sum
+- [ ] DSA: Warm-up: implement a hash table from scratch; Two Sum
 - [ ] SQL: StockPilot: products with no supplier
 
 **D4 (Thu)**
@@ -167,10 +173,10 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: Second Highest Salary
 
 **D22 (Thu)**
-- [ ] Theory: Pytest architecture: fixtures, factories, mocking philosophy — *pytest docs on fixtures*
-- [ ] Mini Exercise: Convert 3 hand-written test setups to `factory_boy` factories
-- [ ] Project: Add `factories.py`, replace manual test data across suite
-- [ ] DSA: Valid Parentheses
+- [ ] Theory: Pytest architecture: fixtures, factories, mocking philosophy; property-based testing with Hypothesis — testing invariants instead of hand-picked examples — *pytest docs on fixtures + Hypothesis "Quick start guide"*
+- [ ] Mini Exercise: Convert 3 hand-written test setups to `factory_boy` factories; write one Hypothesis test for `apply_discount(price, pct)` asserting the invariant `0 <= result <= price` across generated inputs
+- [ ] Project: Add `factories.py`, replace manual test data across suite; add `hypothesis` to dev deps, one property-based test on a pure pricing/stock-math function
+- [ ] DSA: Warm-up: implement a stack from scratch; Valid Parentheses
 - [ ] SQL: StockPilot: EXPLAIN ANALYZE the low-stock query
 
 **D23 (Fri)**
@@ -269,7 +275,7 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: Benchmarking, `hey`/`locust` basics
 - [ ] Mini Exercise: Load-test `/products` before/after cache, record p95
 - [ ] Project: Write `docs/caching-notes.md` with before/after numbers
-- [ ] DSA: Reverse Linked List
+- [ ] DSA: Warm-up: implement a singly linked list from scratch; Reverse Linked List
 - [ ] SQL: Consecutive Numbers
 
 **D36 (Sat)**
@@ -421,7 +427,7 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: Bounded contexts, aggregates — *DDD Distilled Ch.1-3*
 - [ ] Mini Exercise: —
 - [ ] Project: New repo `wareflow/`, define Inventory + Fulfillment context boundaries in `docs/architecture.md`
-- [ ] DSA: Binary Tree Level Order Traversal
+- [ ] DSA: Warm-up: implement a queue from scratch; Binary Tree Level Order Traversal
 - [ ] SQL: WareFlow: warehouses with more distinct products than average
 
 **D56 (Tue)**
@@ -476,9 +482,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: WareFlow: products most frequently reserved
 
 **D63 (Wed)**
-- [ ] Theory: Consumer idempotency, ack/nack — *RabbitMQ tutorial 4-5*
+- [ ] Theory: Consumer idempotency, ack/nack; consumer-driven contract testing — why a schema change on the publisher side shouldn't silently break the consumer — *RabbitMQ tutorial 4-5 + Pact docs "Message Pact"*
 - [ ] Mini Exercise: Duplicate-message idempotency demo
-- [ ] Project: Fulfillment consumer for `StockDispatched` → creates `Reservation`
+- [ ] Project: Fulfillment consumer for `StockDispatched` → creates `Reservation`; Pact message-contract test pinning the `StockDispatched` payload shape between the WareFlow publisher and the fulfillment consumer
 - [ ] DSA: Serialize and Deserialize Binary Tree
 - [ ] SQL: Human Traffic of Stadium
 
@@ -663,9 +669,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: Reformat Department Table
 
 **D88 (Thu)**
-- [ ] Theory: Redis cache on doctor schedules
+- [ ] Theory: Redis cache on doctor schedules; frontend intro — React + TypeScript + Vite + TanStack Query scaffold, first real UI of the year — *React docs "Quick Start" + TanStack Query "Quick Start"*
 - [ ] Mini Exercise: —
-- [ ] Project: Cache `GET /appointments?doctor_id=&date=`, invalidate on booking/cancel
+- [ ] Project: Cache `GET /appointments?doctor_id=&date=`, invalidate on booking/cancel; new `carepoint-web/` (Vite + React + TS), one page: doctor's daily schedule fetched via TanStack Query against the endpoint just cached
 - [ ] DSA: Course Schedule II
 - [ ] SQL: CarePoint: EXPLAIN ANALYZE the doctor-schedule query
 
@@ -730,9 +736,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 ### Week 17 — Full CI/CD, Zero-Downtime Deploy
 
 **D97 (Mon)**
-- [ ] Theory: GitHub Actions: build + push to GHCR — *GitHub Actions Docker docs*
-- [ ] Mini Exercise: —
-- [ ] Project: CI builds and pushes images for all 4 services
+- [ ] Theory: GitHub Actions: build + push to GHCR; supply-chain security gates — dependency, secret, and container scanning — *GitHub Actions Docker docs + `pip-audit`/`gitleaks`/Trivy READMEs*
+- [ ] Mini Exercise: Run `gitleaks detect` against this repo's own git history, confirm it doesn't false-positive on real config
+- [ ] Project: CI builds and pushes images for all 4 services; add `pip-audit` (dependency CVEs), `gitleaks` (committed-secret scan), and Trivy (container image scan) as CI steps that fail the build on high-severity findings
 - [ ] DSA: Network Delay Time
 - [ ] SQL: LedgerBase: overdue unpaid invoices
 
@@ -880,9 +886,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: Article Views I
 
 **D117 (Wed)**
-- [ ] Theory: Dispatcher dashboard endpoint
+- [ ] Theory: Dispatcher dashboard endpoint; frontend — second React/TS app, this time with polling for near-real-time data (reusing Phase 4's `carepoint-web` setup, not re-deriving it)
 - [ ] Mini Exercise: —
-- [ ] Project: `GET /dispatch/dashboard` reading only from `delivery_view`
+- [ ] Project: `GET /dispatch/dashboard` reading only from `delivery_view`; `fleettrack-web/` (Vite + React + TS + TanStack Query), one page: dispatcher table polling the dashboard endpoint every few seconds
 - [ ] DSA: Meeting Rooms
 - [ ] SQL: FleetTrack: drivers with the most cancelled deliveries
 
@@ -931,9 +937,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: DocuVault: documents tagged with more than 3 tags
 
 **D124 (Thu)**
-- [ ] Theory: Search query design
+- [ ] Theory: Search query design; frontend — third React/TS app, this time a controlled search input with debounced queries
 - [ ] Mini Exercise: —
-- [ ] Project: `GET /documents/search?q=&tags=`
+- [ ] Project: `GET /documents/search?q=&tags=`; `docuvault-web/` search page: debounced search box + tag filter chips calling the endpoint via TanStack Query
 - [ ] DSA: Hand of Straights
 - [ ] SQL: DocuVault: latest version per document
 
@@ -968,9 +974,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: Primary Department for Each Employee
 
 **D129 (Wed)**
-- [ ] Theory: Scaling replicas, rolling updates — *K8s docs pt.4-5*
+- [ ] Theory: Scaling replicas, rolling updates; GitOps (conceptual) — why `kubectl apply` by hand doesn't scale past one cluster, and how ArgoCD/Flux would reconcile cluster state from this same YAML in git instead — *K8s docs pt.4-5 + ArgoCD docs "Core Concepts" (read-only, not installed)*
 - [ ] Mini Exercise: —
-- [ ] Project: Scale to 2 replicas, do a rolling update, observe zero dropped requests
+- [ ] Project: Scale to 2 replicas, do a rolling update, observe zero dropped requests; commit the Deployment/Service YAML to a `k8s/` directory as if a GitOps controller were about to watch it
 - [ ] DSA: Coin Change II
 - [ ] SQL: DocuVault: tags frequently used together
 
@@ -1053,9 +1059,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: PayFlow: refunds exceeding their original payment amount
 
 **D140 (Tue)**
-- [ ] Theory: Secrets management patterns
-- [ ] Mini Exercise: —
-- [ ] Project: Move webhook secret + API keys out of `.env` into a secrets-manager pattern
+- [ ] Theory: Secrets management with a real secrets manager (HashiCorp Vault) — dynamic secrets, leasing/rotation vs a static `.env` file — *Vault docs "Getting Started" + "Secrets Engines"*
+- [ ] Mini Exercise: Run Vault in dev mode, write/read one secret via the CLI, then via its HTTP API
+- [ ] Project: Add `vault` to Docker Compose; move webhook secret + API keys out of `.env` into Vault's KV engine, app reads them via the API at startup
 - [ ] DSA: Reverse Bits
 - [ ] SQL: PayFlow: same-day vs delayed refunds
 
@@ -1087,7 +1093,7 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] DSA: Review: redo Thursday's problem from memory — Rotate Image
 - [ ] SQL: Review: rewrite Tuesday's query from memory, then extend it — PayFlow: same-day vs delayed refunds
 
-### Week 25 — AtlasMarket Architecture + Integration Sprint (part 1)
+### Week 25 — AtlasMarket Architecture + Integration Sprint (part 1), Storefront
 
 **D145 (Mon)**
 - [ ] Theory: Integration planning — what to reuse vs rebuild
@@ -1111,16 +1117,16 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: AtlasMarket: vendors with no products listed
 
 **D148 (Thu)**
-- [ ] Theory: React/TS fundamentals, Vite setup — *react.dev "Describing the UI"*
-- [ ] Mini Exercise: —
-- [ ] Project: `storefront/` scaffold (Vite + React + TS), product list page with TanStack Query
+- [ ] Theory: Multi-page navigation with React Router — the one piece your 3 prior single-view frontends didn't need — *React Router docs "Tutorial"*
+- [ ] Mini Exercise: Extract a shared `Button`/`Card` component from copy-pasted markup across `carepoint-web`, `fleettrack-web`, `docuvault-web` into a tiny local component set `storefront/` can start from
+- [ ] Project: `storefront/` scaffold (Vite + React + TS), React Router routes for product list / cart / checkout, product list page with TanStack Query
 - [ ] DSA: Pow(x, n)
 - [ ] SQL: AtlasMarket: top 5 vendors by order count
 
 **D149 (Fri)**
-- [ ] Theory: TanStack Query caching — *TanStack Query "Quick Start"*
-- [ ] Mini Exercise: Mini product list against a dummy API
-- [ ] Project: Cart state (local component state) + cart UI
+- [ ] Theory: TanStack Query caching, cart state design — *TanStack Query "Quick Start"*
+- [ ] Mini Exercise: Write one React Testing Library test for the cart's add/remove logic
+- [ ] Project: Cart state (local component state) + cart UI, wired to the router's cart route
 - [ ] DSA: Merge Sorted Array
 - [ ] SQL: The Most Recent Three Orders
 
@@ -1211,8 +1217,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo Wednesday's cosine-similarity-by-hand exercise from memory
 - [ ] Project: Re-read `rag/ingest.py` for anything hard-coded that shouldn't be
 
----
-
 ### Week 28 — Agents, PeopleOps HR-Policy Agent
 
 **D163 (Mon)**
@@ -1245,8 +1249,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo the ReAct loop trace from memory
 - [ ] Project: Re-read `agent/loop.py` for the exact failure modes discussed this week
 
----
-
 ### Week 29 — Evaluation + Monitoring on DocuVault Semantic Search
 
 **D169 (Mon)**
@@ -1270,16 +1272,14 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Project: `rag/telemetry.py` wraps LLM + embedding calls, logs tokens/cost/latency (reusing Phase 1's structlog); `POST /documents/semantic-search/feedback` (thumbs up/down)
 
 **D173 (Fri)**
-- [ ] Theory: A/B testing prompts/models — *OpenAI "Best practices for prompt engineering"*
-- [ ] Mini Exercise: Write two candidate system prompts for answer generation, run both against the golden set, compare hit-rate/judge-score deltas
-- [ ] Project: Prompt-variant flag on the search endpoint; log which variant served each request, feeding the eval harness
+- [ ] Theory: A/B testing prompts/models — the statistics underneath: null hypothesis, p-values, confidence intervals, and why a hit-rate delta on 30 golden-set queries usually isn't statistically significant — *OpenAI "Best practices for prompt engineering" + Practical Statistics for Data Scientists Ch.3 (or Khan Academy "Significance tests" as a free alternative)*
+- [ ] Mini Exercise: Compute a 95% confidence interval by hand on the two prompt variants' hit rates from Thu's golden set; decide honestly whether the delta is real or noise
+- [ ] Project: Prompt-variant flag on the search endpoint; log which variant served each request, feeding the eval harness; `docs/ab-test-readout.md` reporting the confidence interval, not just "variant B looked better"
 
 **D174 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the hit-rate/MRR by-hand calculation from memory
 - [ ] Project: Re-run the full eval harness + judge suite; review cost/latency numbers
-
----
 
 ### Week 30 — Best Practices, Project Example — CarePoint Prototype
 
@@ -1313,8 +1313,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo the RRF/hybrid fusion math from memory
 - [ ] Project: Re-run all injection tests; re-read the decision record for gaps before next week's build
 
----
-
 ### Week 31 — Project 1 — CarePoint Patient-FAQ Assistant (Full Build)
 
 **D181 (Mon)**
@@ -1347,8 +1345,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Mock-answer all Week-44 questions timed
 - [ ] Project: `docs/postmortem-carepoint-faq.md`, tag `v0.1-carepoint-faq`
 
----
-
 ### Week 32 — Project 2 (DocuVault Chat) + Project 3 (AtlasMarket Assistant), Phase Wrap
 
 **D187 (Mon)**
@@ -1380,8 +1376,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Phase 7 wrap review**
 - [ ] Mini Exercise: Mock-answer all Phase-7 questions timed, no notes
 - [ ] Project: `docs/postmortem-phase7.md` comparing all three assistants; tag `v0.7-phase7`
-
----
 
 ---
 
@@ -1419,8 +1413,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo Wednesday's `CLAUDE.md` from memory, compare against the real one
 - [ ] Project: Re-read your own retro doc, note one thing you'd do differently next time
 
----
-
 ### Week 34 — MCP Fundamentals, Custom MCP Server, Minimal Coding Agent
 
 **D199 (Mon)**
@@ -1452,8 +1444,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the tool-loop stop-condition logic from memory, explain it out loud
 - [ ] Project: Re-read the run log from Friday's session, note anything surprising
-
----
 
 ### Week 35 — AI-Assisted CI/CD, Low-Code Automation, Guardrails
 
@@ -1487,8 +1477,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo the guardrails policy doc from memory
 - [ ] Project: Re-read both automations (PR bot + n8n workflow) for any scope creep
 
----
-
 ### Week 36 — Project 1 — StockPilot Bug-Fix Coding Agent
 
 **D211 (Mon)**
@@ -1521,8 +1509,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo the classifier's decision rules from memory
 - [ ] Project: Write `docs/bugfix-agent-retro.md` — what worked, what you'd tighten
 
----
-
 ### Week 37 — Project 2 — Reconciliation Pipeline; Project 3 — Freeform Capstone; Phase Wrap
 
 **D217 (Mon)**
@@ -1554,8 +1540,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Phase 8 wrap review**
 - [ ] Mini Exercise: Explain your bug-fix agent's full pipeline out loud, start to finish, from memory
 - [ ] Project: Write `docs/postmortem-phase8.md` (what's deferred to Phase 11, what you'd harden first); tag `v0.8-phase8`
-
----
 
 ---
 
@@ -1593,8 +1577,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo the normal-equation regression from memory, no notes
 - [ ] Project: Re-read the feature table for anything that smells like leaked future information
 
----
-
 ### Week 39 — Classification, Evaluation, QuickServe Churn Predictor
 
 **D229 (Mon)**
@@ -1626,8 +1608,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the manual confusion-matrix calculation from memory
 - [ ] Project: Re-read the Week-28 model comparison notes for anything you'd argue differently now
-
----
 
 ### Week 40 — Deployment, Trees, Churn Predictor Dockerized + Ensembles
 
@@ -1661,8 +1641,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo the bagging demo from memory, explain variance reduction out loud
 - [ ] Project: Re-read the model comparison table and confirm the winner is justified, not just the last one tried
 
----
-
 ### Week 41 — Deep Learning, CarePoint Document-Image Classifier
 
 **D241 (Mon)**
@@ -1694,8 +1672,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the transfer-learning freeze/fine-tune setup from memory
 - [ ] Project: Re-read the model card and confirm the stated limitations are actually true
-
----
 
 ### Week 42 — Serverless, Kubernetes, KServe — Three-Way Deployment
 
@@ -1729,8 +1705,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Explain the Lambda-vs-K8s-vs-KServe tradeoffs out loud, unscripted
 - [ ] Project: Re-read `docs/serving-comparison.md` for anything you'd argue differently now
 
----
-
 ### Week 43 — Project 1 Finalize — StockPilot Demand Forecaster
 
 **D253 (Mon)**
@@ -1763,8 +1737,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Explain the full demand-forecaster pipeline end to end, out loud, unscripted
 - [ ] Project: Re-read the postmortem and confirm every "deferred" item is genuinely deferred, not silently done
 
----
-
 ### Week 44 — Project 2 Finalize + Project 3 — Churn Predictor & CarePoint No-Show Predictor
 
 **D259 (Mon)**
@@ -1796,8 +1768,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Phase-wide review**
 - [ ] Mini Exercise: Explain, unscripted, why each of the three projects picked the metric it picked
 - [ ] Project: `docs/postmortem-phase9.md` — full phase retrospective across all 3 projects and all 3 serving methods; tag `v0.9-phase9`
-
----
 
 ---
 
@@ -1835,8 +1805,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo the toy MLflow instrumentation from memory, no notes
 - [ ] Project: Re-read the registered model's run params, verify you can explain every choice made this week
 
----
-
 ### Week 46 — Orchestration, Churn Predictor Scheduled Flow
 
 **D271 (Mon)**
@@ -1868,8 +1836,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the toy retry-and-recover flow from memory
 - [ ] Project: Re-trace the full churn DAG on paper without opening the code
-
----
 
 ### Week 47 — Deployment Patterns, No-Show Predictor Dual Deploy
 
@@ -1903,8 +1869,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo the batch-scoring toy script from memory
 - [ ] Project: Re-read the finished decision doc, argue the opposite recommendation out loud, then explain why you didn't pick it
 
----
-
 ### Week 48 — Monitoring + Best Practices, Demand Forecaster Drift + CI Gate
 
 **D283 (Mon)**
@@ -1936,8 +1900,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the toy Evidently drift-report run from memory
 - [ ] Project: Re-read the CI-gate workflow file, explain every step out loud without looking
-
----
 
 ### Week 49 — Project 1 — Demand Forecaster, Fully Productionized
 
@@ -1971,8 +1933,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Explain the full tracking → orchestration → deployment → monitoring pipeline out loud, unscripted
 - [ ] Project: Write `docs/retrospective-project1.md`: what took longer than expected, what you'd change to build Projects 2 and 3 faster
 
----
-
 ### Week 50 — Project 2 — Churn Predictor, Project 3 — No-Show Predictor, Phase Wrap
 
 **D295 (Mon)**
@@ -2004,8 +1964,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Phase 10 wrap review**
 - [ ] Mini Exercise: Explain, unscripted, the full tracking → orchestration → deployment → monitoring pipeline for all 3 models back to back
 - [ ] Project: Write `docs/postmortem-phase10.md` (what's deferred: full IaC/Terraform, Kubernetes-based serving, feature stores, A/B testing infra), tag `v0.10-phase10`
-
----
 
 ---
 
@@ -2043,7 +2001,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo Tuesday's dataset provisioning from memory, no notes
 - [ ] Project: Re-read `docs/architecture.md` for anything under-specified
 
-
 ### Week 52 — Workflow Orchestration (Airflow)
 
 **D307 (Mon)**
@@ -2075,7 +2032,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the MERGE-upsert idempotency test from memory
 - [ ] Project: Trace one row from StockPilot Postgres through to `staging` by hand
-
 
 ### Week 53 — Data Warehouse + Analytics Engineering (dbt)
 
@@ -2109,7 +2065,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo Wednesday's `dbt init` from memory
 - [ ] Project: Re-read the lineage graph for anything mis-joined
 
-
 ### Week 54 — Data Platforms + Batch Processing (Spark)
 
 **D319 (Mon)**
@@ -2142,7 +2097,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Mini Exercise: Redo the broadcast-join tuning from memory
 - [ ] Project: Re-read `docs/spark-vs-warehouse-sql.md` for a decision you'd now make differently
 
-
 ### Week 55 — Streaming
 
 **D325 (Mon)**
@@ -2174,7 +2128,6 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the idempotent-upsert fix from memory
 - [ ] Project: Re-watch the dashboard while manually firing a few test events
-
 
 ### Week 56 — Project 1 + Project 2 + Project 3, Full Program Wrap
 

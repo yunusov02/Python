@@ -37,6 +37,13 @@ letters, same counts, any order).
 ### D3 — Two Sum
 *Difficulty: Easy · Pattern: Hashing*
 
+**Warm-up (do this first, ~20 min):** implement a hash table from scratch —
+a fixed-size array of buckets, a hash function (`hash(key) % capacity`),
+and separate chaining for collisions (`insert`, `get`, `delete`). This is
+the one time all year you build the thing Python's `dict` normally hides
+from you — every hashing problem after today just uses `dict`/`set`
+directly, on purpose, since re-deriving it every time would be noise.
+
 Given an array `nums` and an integer `target`, return the indices of the two
 numbers that add up to `target`. Exactly one valid answer exists; you may not
 use the same element twice.
@@ -183,6 +190,13 @@ Given strings `s1` and `s2`, return `true` if `s2` contains a permutation of
 ### D22 — Valid Parentheses
 *Difficulty: Easy · Pattern: Stack*
 
+**Warm-up (do this first, ~15 min):** implement a stack from scratch,
+array-backed (`push`, `pop`, `peek`, `is_empty`, all `O(1)`), then a second
+version backed by a singly linked list — and write one sentence on why
+Python's `list.append`/`list.pop` already behave like the array-backed
+version, which is exactly why you'll use a plain `list` as a stack from
+tomorrow on, not reimplement this.
+
 Given a string `s` containing only `(){}[]`, determine if the brackets are
 properly matched and nested.
 
@@ -268,6 +282,13 @@ index, or `-1`, in `O(log n)`.
 
 ### D35 — Reverse Linked List
 *Difficulty: Easy · Pattern: Linked List*
+
+**Warm-up (do this first, ~20 min):** implement a singly linked list from
+scratch — a `Node` class (`value`, `next`) and a `LinkedList` class with
+`insert_head`, `insert_tail`, `delete(value)`, and `traverse()`. Every
+linked-list problem for the next 3 weeks assumes you can picture `Node`
+and pointer reassignment without hesitating — this is where that muscle
+memory gets built.
 
 Given the head of a singly linked list, reverse it and return the new head.
 
@@ -381,6 +402,15 @@ lowest common ancestor.
 
 ### D55 — Binary Tree Level Order Traversal
 *Difficulty: Medium · Pattern: Trees / BFS*
+
+**Warm-up (do this first, ~20 min):** implement a queue from scratch, two
+ways — (1) backed by your Week-4 linked list (`enqueue` at tail, `dequeue`
+at head, both `O(1)`), and (2) the classic "two stacks" queue, using
+Week-4's stack — then explain out loud why a list-backed queue
+(`list.pop(0)`) is `O(n)` and should never be your first choice. This is
+the last from-scratch structure this year; `collections.deque` is what
+you'll actually reach for starting today's BFS below and every graph
+problem after it.
 
 Return the level-order traversal of a binary tree's values (left to right,
 level by level) as a list of lists.
