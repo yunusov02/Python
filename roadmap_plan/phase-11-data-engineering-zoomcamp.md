@@ -1,5 +1,5 @@
 # PHASE 11 — Data Engineering Zoomcamp: Unified Analytics Platform
-### Weeks 51–56 · ~3.5h weekdays, ~2.5h Saturdays · 36 working days (D301–D336)
+### Weeks 56–61 · ~3.5h weekdays, ~2.5h Saturdays · 36 working days (D331–D366)
 
 *This is the final phase of the 12-month program. It follows the real
 DataTalksClub "Data Engineering Zoomcamp" curriculum module-by-module
@@ -67,7 +67,7 @@ purpose, so you feel the tradeoff), a lakehouse table format (Iceberg/
 Delta), and running Airflow on a managed service (Cloud Composer/MWAA)
 instead of local Docker Compose — all three are real "what you'd do at a
 company" callouts, written down in `docs/platform-roadmap.md` so scope
-creep doesn't eat Week 56.
+creep doesn't eat Week 61.
 
 ---
 
@@ -121,9 +121,9 @@ LedgerBase Postgres  ─┘        └▶ load → MERGE into `staging` (idempot
                       fct_journal_entries, dim_employees, dim_date)
                                           │
                                           ▼
-                          Grafana dashboard (unified view, Week 56)
+                          Grafana dashboard (unified view, Week 61)
 ```
-Terraform (Week 51) provisions `raw`, `staging`, and `marts` datasets plus
+Terraform (Week 56) provisions `raw`, `staging`, and `marts` datasets plus
 one dataset-scoped service account before any pipeline code runs. **Not
 connected in this phase, documented rather than silently dropped:**
 WareFlow, CarePoint, DocuVault, and PayFlow — the same honest-deferral
@@ -305,7 +305,7 @@ AtlasMarket Postgres --(Airflow, same DAG pattern as Project 11)--> raw --> stag
 No new Terraform, no new Airflow infrastructure, no new Kafka topic —
 this is intentionally the smallest of the three projects, because it's an
 *extension* of infrastructure that already exists, the same compression
-Phase 7/9's Week-32/44 project pairs also used once their own base
+Phase 7/9's Week-36/49 project pairs also used once their own base
 infrastructure was already standing.
 
 **Testing Strategy:** a reconciliation test asserting `fct_vendor_revenue`
@@ -357,29 +357,29 @@ duplicates logic and can silently drift from the canonical number.
   → Batch → Streaming); read each module's own README the week you're in it.
 - Terraform docs (developer.hashicorp.com/terraform/docs) —
   "Configuration Language" and the Google Cloud provider's
-  `bigquery_dataset`/`google_service_account` resources — Week 51.
+  `bigquery_dataset`/`google_service_account` resources — Week 56.
 - Apache Airflow documentation (airflow.apache.org/docs) — "Core
-  Concepts: DAGs", "Scheduling & Triggers", "Backfill" — Week 52.
+  Concepts: DAGs", "Scheduling & Triggers", "Backfill" — Week 57.
 - Google BigQuery documentation (cloud.google.com/bigquery/docs) —
   "Partitioned tables", "Clustered tables", "Query optimization best
-  practices" — Week 53 (concepts transfer to any columnar warehouse).
+  practices" — Week 58 (concepts transfer to any columnar warehouse).
 - dbt documentation (docs.getdbt.com) — "Build your first models",
-  "Testing", "How we structure our dbt projects" — Week 53.
+  "Testing", "How we structure our dbt projects" — Week 58.
 - Apache Spark documentation (spark.apache.org/docs/latest) — "RDD
   Programming Guide", "SQL, DataFrames and Datasets Guide", "Performance
-  Tuning" — Week 54.
+  Tuning" — Week 59.
 - Confluent ksqlDB documentation
   (docs.confluent.io/platform/current/ksqldb) + Kafka's own "Message
-  Delivery Semantics" design doc — Week 55.
+  Delivery Semantics" design doc — Week 60.
 - *Fundamentals of Data Engineering* (Reis & Housley, O'Reilly) — read
-  alongside Week 54's lakehouse/data-platform topics; it's the
+  alongside Week 59's lakehouse/data-platform topics; it's the
   book-length version of the same argument.
 
 ---
 
 ## 8. Weekly Interview Question Sets
 
-**Week 51 — Docker & Terraform**
+**Week 56 — Docker & Terraform**
 1. What's the difference between `terraform plan` and `terraform apply`,
    and why should you always read the plan?
 2. What does Terraform state track, and why is losing the state file
@@ -391,7 +391,7 @@ duplicates logic and can silently drift from the canonical number.
 5. How do you keep local dev and cloud environments in parity without
    duplicating config?
 
-**Week 52 — Workflow Orchestration**
+**Week 57 — Workflow Orchestration**
 1. DAG vs a plain cron script — what does Airflow actually add?
 2. Why must an extract-load task be idempotent, and how did you make
    yours idempotent (MERGE vs INSERT)?
@@ -402,7 +402,7 @@ duplicates logic and can silently drift from the canonical number.
 5. How would you handle a source table with no reliable `updated_at`
    watermark?
 
-**Week 53 — Data Warehouse + Analytics Engineering**
+**Week 58 — Data Warehouse + Analytics Engineering**
 1. Why does clustering/partitioning reduce bytes scanned, concretely?
 2. Columnar vs row storage — why does one favor `SELECT col FROM
    huge_table` and the other doesn't care?
@@ -413,7 +413,7 @@ duplicates logic and can silently drift from the canonical number.
 5. Why build an intermediate layer instead of joining straight from
    staging to mart?
 
-**Week 54 — Data Platforms + Batch (Spark)**
+**Week 59 — Data Platforms + Batch (Spark)**
 1. RDD vs DataFrame — why do DataFrames usually win for analytics
    workloads today?
 2. What triggers a Spark shuffle, and why is it expensive?
@@ -423,7 +423,7 @@ duplicates logic and can silently drift from the canonical number.
 5. Explain the medallion (bronze/silver/gold) architecture in your own
    words, mapped to this platform's raw/staging/marts.
 
-**Week 55 — Streaming**
+**Week 60 — Streaming**
 1. At-least-once vs exactly-once delivery — where does the
    "exactly-once" claim usually hide extra work (idempotent consumers)?
 2. Kafka Streams/ksqlDB vs a hand-rolled consumer doing the same
@@ -435,7 +435,7 @@ duplicates logic and can silently drift from the canonical number.
 5. What breaks in your streaming consumer if the Kafka topic is
    reprocessed from offset 0?
 
-**Week 56 — Final Capstone / Program Wrap**
+**Week 61 — Final Capstone / Program Wrap**
 1. Walk through the full pipeline for one row of data, from a StockPilot
    Postgres insert to it appearing on the unified dashboard, naming every
    hop.
@@ -445,90 +445,90 @@ duplicates logic and can silently drift from the canonical number.
    infrastructure paid for itself the most times over?
 4. If you had to onboard a new data engineer onto this platform tomorrow,
    what's the first doc you'd hand them?
-5. Looking back at Day 1 vs Day 336 — what's the biggest gap that closed?
+5. Looking back at Day 1 vs Day 366 — what's the biggest gap that closed?
 
 ---
 
-## 9. Daily Plan — Week 51: Docker & Terraform, Warehouse Provisioning
+## 9. Daily Plan — Week 56: Docker & Terraform, Warehouse Provisioning
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D301)** | IaC concepts, Terraform basics: providers, resources, HCL | Terraform docs "What is Terraform" + "Configuration Language" | Throwaway `.tf` file provisioning a local `null_resource`, run plan/apply/destroy | Init `year2-analytics-platform/` repo, `terraform/` scaffold, document local-state backend decision | Run `terraform validate` locally | `chore: repo scaffold + terraform init` | Q1 | 3.5h |
-| **Tue (D302)** | Terraform state + providers deep dive; provisioning a warehouse dataset | Terraform docs "State" + Google provider `bigquery_dataset` resource | `plan`/`apply`/`destroy` a real dataset twice, read the state file by hand once | `main.tf` provisioning `raw` + `staging` BigQuery datasets | Confirm datasets visible via `bq ls`/console after apply | `feat: terraform-provisioned raw + staging datasets` | Q2 | 3.5h |
-| **Wed (D303)** | Containerizing data pipelines (reusing Phase 1 Docker skills) | Docker Compose docs (recap) | Dockerfile for a tiny Python script reading Postgres, writing a CSV | `docker-compose.yml` scaffold: local Postgres mirror + placeholder Airflow service | Verify `docker compose up` boots cleanly | `chore: docker compose scaffold for pipeline services` | Q3 | 3.5h |
-| **Thu (D304)** | Local vs cloud dev environment parity | Terraform docs workspaces/environments pattern | Config loader switching between a local Postgres "fake warehouse" and real BigQuery via one env flag | `warehouse_client.py` abstraction so later pipeline code is warehouse-agnostic | Unit test both backends against a stub | `feat: warehouse client abstraction (local/cloud parity)` | Q4 | 3.5h |
-| **Fri (D305)** | Provisioning the real cloud warehouse end-to-end + least-privilege IAM | Terraform docs `google_service_account` + dataset IAM binding | `terraform validate` + apply against a real GCP sandbox project | Finalize `raw`/`staging`/`marts` datasets + one dataset-scoped service account; write `docs/architecture.md` | Confirm the service account can't touch datasets outside its scope | `feat: warehouse IAM + marts dataset provisioned` | Q5 | 3.5h |
-| **Sat (D306)** | **Review** | — | Redo Tuesday's dataset provisioning from memory, no notes | Re-read `docs/architecture.md` for anything under-specified | `terraform plan` shows zero drift | — | Answer all 5 Week-51 questions out loud, unscripted | 2.5h |
+| **Mon (D331)** | IaC concepts, Terraform basics: providers, resources, HCL | Terraform docs "What is Terraform" + "Configuration Language" | Throwaway `.tf` file provisioning a local `null_resource`, run plan/apply/destroy | Init `year2-analytics-platform/` repo, `terraform/` scaffold, document local-state backend decision | Run `terraform validate` locally | `chore: repo scaffold + terraform init` | Q1 | 3.5h |
+| **Tue (D332)** | Terraform state + providers deep dive; provisioning a warehouse dataset | Terraform docs "State" + Google provider `bigquery_dataset` resource | `plan`/`apply`/`destroy` a real dataset twice, read the state file by hand once | `main.tf` provisioning `raw` + `staging` BigQuery datasets | Confirm datasets visible via `bq ls`/console after apply | `feat: terraform-provisioned raw + staging datasets` | Q2 | 3.5h |
+| **Wed (D333)** | Containerizing data pipelines (reusing Phase 1 Docker skills) | Docker Compose docs (recap) | Dockerfile for a tiny Python script reading Postgres, writing a CSV | `docker-compose.yml` scaffold: local Postgres mirror + placeholder Airflow service | Verify `docker compose up` boots cleanly | `chore: docker compose scaffold for pipeline services` | Q3 | 3.5h |
+| **Thu (D334)** | Local vs cloud dev environment parity | Terraform docs workspaces/environments pattern | Config loader switching between a local Postgres "fake warehouse" and real BigQuery via one env flag | `warehouse_client.py` abstraction so later pipeline code is warehouse-agnostic | Unit test both backends against a stub | `feat: warehouse client abstraction (local/cloud parity)` | Q4 | 3.5h |
+| **Fri (D335)** | Provisioning the real cloud warehouse end-to-end + least-privilege IAM | Terraform docs `google_service_account` + dataset IAM binding | `terraform validate` + apply against a real GCP sandbox project | Finalize `raw`/`staging`/`marts` datasets + one dataset-scoped service account; write `docs/architecture.md` | Confirm the service account can't touch datasets outside its scope | `feat: warehouse IAM + marts dataset provisioned` | Q5 | 3.5h |
+| **Sat (D336)** | **Review** | — | Redo Tuesday's dataset provisioning from memory, no notes | Re-read `docs/architecture.md` for anything under-specified | `terraform plan` shows zero drift | — | Answer all 5 Week-56 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 10. Daily Plan — Week 52: Workflow Orchestration (Airflow)
+## 10. Daily Plan — Week 57: Workflow Orchestration (Airflow)
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D307)** | Orchestration concepts: DAGs, operators, scheduler | Airflow docs "Core Concepts: DAGs" | Hello-world DAG, 2 `PythonOperator` tasks with a dependency | Bring up local Airflow via Docker Compose (webserver+scheduler+metadata DB) | Confirm DAG appears and runs green in the UI | `chore: local airflow via docker compose` | Q1 | 3.5h |
-| **Tue (D308)** | Extract step: incremental pulls via an `updated_at` watermark | Airflow docs "Connections & Hooks" (`PostgresHook`) | Script pulling rows from StockPilot's `orders` where `updated_at > last_watermark` | `extract_load_stockpilot.py`: extract task landing StockPilot into `raw` | Test extraction returns zero new rows on a second run with no source changes | `feat: stockpilot extract task` | Q2 | 3.5h |
-| **Wed (D309)** | Load step: landing raw data into staging | BigQuery docs "Loading data" | Load a CSV into a staging table via the BigQuery Python client | Complete StockPilot's load task into `staging`; add QuickServe's extract task | Integration test: run the full StockPilot DAG once end-to-end | `feat: stockpilot load task + quickserve extract` | Q3 | 3.5h |
-| **Thu (D310)** | Idempotent, retriable pipeline design (MERGE vs INSERT) | BigQuery docs "MERGE statement" | Rerun the same DAG run twice, assert no duplicate rows land | Convert QuickServe + PeopleOps loads to idempotent `MERGE`-based upserts | Test: rerunning a load task twice leaves row counts unchanged | `fix: idempotent MERGE upserts for quickserve + peopleops` | Q4 | 3.5h |
-| **Fri (D311)** | Backfills, `schedule_interval`, catchup | Airflow docs "DAG Runs" + backfill command reference | Backfill a toy DAG over a 7-day historical window | Finalize `@daily` schedules for all 3 DAGs; run one real historical backfill | Verify backfilled rows match a manual source-side count | `feat: nightly schedule + historical backfill` | Q5 | 3.5h |
-| **Sat (D312)** | **Review** | — | Redo the MERGE-upsert idempotency test from memory | Trace one row from StockPilot Postgres through to `staging` by hand | Full DAG re-run, all green | — | Answer all 5 Week-52 questions out loud, unscripted | 2.5h |
+| **Mon (D337)** | Orchestration concepts: DAGs, operators, scheduler | Airflow docs "Core Concepts: DAGs" | Hello-world DAG, 2 `PythonOperator` tasks with a dependency | Bring up local Airflow via Docker Compose (webserver+scheduler+metadata DB) | Confirm DAG appears and runs green in the UI | `chore: local airflow via docker compose` | Q1 | 3.5h |
+| **Tue (D338)** | Extract step: incremental pulls via an `updated_at` watermark | Airflow docs "Connections & Hooks" (`PostgresHook`) | Script pulling rows from StockPilot's `orders` where `updated_at > last_watermark` | `extract_load_stockpilot.py`: extract task landing StockPilot into `raw` | Test extraction returns zero new rows on a second run with no source changes | `feat: stockpilot extract task` | Q2 | 3.5h |
+| **Wed (D339)** | Load step: landing raw data into staging | BigQuery docs "Loading data" | Load a CSV into a staging table via the BigQuery Python client | Complete StockPilot's load task into `staging`; add QuickServe's extract task | Integration test: run the full StockPilot DAG once end-to-end | `feat: stockpilot load task + quickserve extract` | Q3 | 3.5h |
+| **Thu (D340)** | Idempotent, retriable pipeline design (MERGE vs INSERT) | BigQuery docs "MERGE statement" | Rerun the same DAG run twice, assert no duplicate rows land | Convert QuickServe + PeopleOps loads to idempotent `MERGE`-based upserts | Test: rerunning a load task twice leaves row counts unchanged | `fix: idempotent MERGE upserts for quickserve + peopleops` | Q4 | 3.5h |
+| **Fri (D341)** | Backfills, `schedule_interval`, catchup | Airflow docs "DAG Runs" + backfill command reference | Backfill a toy DAG over a 7-day historical window | Finalize `@daily` schedules for all 3 DAGs; run one real historical backfill | Verify backfilled rows match a manual source-side count | `feat: nightly schedule + historical backfill` | Q5 | 3.5h |
+| **Sat (D342)** | **Review** | — | Redo the MERGE-upsert idempotency test from memory | Trace one row from StockPilot Postgres through to `staging` by hand | Full DAG re-run, all green | — | Answer all 5 Week-57 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 11. Daily Plan — Week 53: Data Warehouse + Analytics Engineering (dbt)
+## 11. Daily Plan — Week 58: Data Warehouse + Analytics Engineering (dbt)
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D313)** | Warehouse fundamentals: columnar storage, partitioning, clustering | BigQuery docs "Partitioned tables" | Create a date-partitioned+clustered table, compare bytes-scanned with/without a partition filter | Apply date-partitioning + clustering to `stg_orders`, `stg_stock_movements` | Confirm a partition-filtered query scans a fraction of the bytes | `perf: partition + cluster staging tables` | Q1 | 3.5h |
-| **Tue (D314)** | Query optimization on a columnar warehouse vs Postgres tuning | BigQuery docs "Query optimization best practices" | Rewrite a `SELECT *` into a column-pruned query, compare bytes-scanned estimates | Audit and fix 3 wasteful queries in the Week 52 load tasks | Record before/after bytes-scanned for each | `perf: column-pruned load queries` | Q2 | 3.5h |
-| **Wed (D315)** | dbt fundamentals: models, sources, tests | dbt docs "Build your first models" | `dbt init`, one source + one staging model + one `not_null`/`unique` test | `dbt/` project scaffold, `sources.yml` pointing at `raw`/`staging` | `dbt test` passes on the first model | `feat: dbt project scaffold + first source` | Q3 | 3.5h |
-| **Thu (D316)** | Staging → intermediate → marts layering | dbt docs "How we structure our dbt projects" | Build one intermediate model joining 2 staging models | `stg_stockpilot__orders`, `stg_quickserve__sales`, `stg_peopleops__leave_requests`, `int_orders_enriched` | `dbt run` + `dbt test` green across all new models | `feat: staging + intermediate dbt models` | Q4 | 3.5h |
-| **Fri (D317)** | dbt tests + docs, lineage graph | dbt docs "Testing" + "Documentation" | Add one singular test, run `dbt docs generate`, browse the lineage graph | Build `marts`: `fct_orders`, `dim_products`, `fct_leave_requests` with schema tests | `dbt docs generate` produces a clean lineage graph, no orphan models | `feat: marts layer + dbt docs site` | Q5 | 3.5h |
-| **Sat (D318)** | **Review** | — | Redo Wednesday's `dbt init` from memory | Re-read the lineage graph for anything mis-joined | `dbt test` full suite green | — | Answer all 5 Week-53 questions out loud, unscripted | 2.5h |
+| **Mon (D343)** | Warehouse fundamentals: columnar storage, partitioning, clustering | BigQuery docs "Partitioned tables" | Create a date-partitioned+clustered table, compare bytes-scanned with/without a partition filter | Apply date-partitioning + clustering to `stg_orders`, `stg_stock_movements` | Confirm a partition-filtered query scans a fraction of the bytes | `perf: partition + cluster staging tables` | Q1 | 3.5h |
+| **Tue (D344)** | Query optimization on a columnar warehouse vs Postgres tuning | BigQuery docs "Query optimization best practices" | Rewrite a `SELECT *` into a column-pruned query, compare bytes-scanned estimates | Audit and fix 3 wasteful queries in the Week 57 load tasks | Record before/after bytes-scanned for each | `perf: column-pruned load queries` | Q2 | 3.5h |
+| **Wed (D345)** | dbt fundamentals: models, sources, tests | dbt docs "Build your first models" | `dbt init`, one source + one staging model + one `not_null`/`unique` test | `dbt/` project scaffold, `sources.yml` pointing at `raw`/`staging` | `dbt test` passes on the first model | `feat: dbt project scaffold + first source` | Q3 | 3.5h |
+| **Thu (D346)** | Staging → intermediate → marts layering | dbt docs "How we structure our dbt projects" | Build one intermediate model joining 2 staging models | `stg_stockpilot__orders`, `stg_quickserve__sales`, `stg_peopleops__leave_requests`, `int_orders_enriched` | `dbt run` + `dbt test` green across all new models | `feat: staging + intermediate dbt models` | Q4 | 3.5h |
+| **Fri (D347)** | dbt tests + docs, lineage graph | dbt docs "Testing" + "Documentation" | Add one singular test, run `dbt docs generate`, browse the lineage graph | Build `marts`: `fct_orders`, `dim_products`, `fct_leave_requests` with schema tests | `dbt docs generate` produces a clean lineage graph, no orphan models | `feat: marts layer + dbt docs site` | Q5 | 3.5h |
+| **Sat (D348)** | **Review** | — | Redo Wednesday's `dbt init` from memory | Re-read the lineage graph for anything mis-joined | `dbt test` full suite green | — | Answer all 5 Week-58 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 12. Daily Plan — Week 54: Data Platforms + Batch Processing (Spark)
+## 12. Daily Plan — Week 59: Data Platforms + Batch Processing (Spark)
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D319)** | Lakehouse concepts / data platform architecture (bronze/silver/gold) | Databricks "What is a data lakehouse" overview | Map this platform's raw/staging/marts onto bronze/silver/gold in one paragraph | Update `docs/architecture.md` with the lakehouse-terms mapping | — | `docs: map platform to lakehouse (bronze/silver/gold) terms` | Q1 | 3.5h |
-| **Tue (D320)** | Spark fundamentals: RDDs vs DataFrames, SparkSession | Spark docs "RDD Programming Guide" + "SQL, DataFrames and Datasets Guide" | Local PySpark script: read a CSV, `groupBy().agg()`, `.show()` | `spark/` scaffold; PySpark job skeleton reading from BigQuery via the Spark-BigQuery connector | Job runs locally against a small sample table | `feat: spark job scaffold + bigquery connector` | Q2 | 3.5h |
-| **Wed (D321)** | Batch aggregation: yearly stock-movement/order analytics | Spark docs "DataFrame aggregation functions" | Aggregate a synthetic multi-million-row CSV by month+product, time it | `yearly_stock_movement_agg.py`: joins StockPilot stock movements + QuickServe sales for the full year, writes to a `marts` table | Row-count + spot-check totals against a manual dbt query | `feat: yearly stock-movement spark aggregation job` | Q3 | 3.5h |
-| **Thu (D322)** | Spark joins & performance tuning: broadcast join, shuffle | Spark docs "Performance Tuning" | Compare a shuffle join vs a broadcast join on skewed synthetic data via `.explain()` | Tune the yearly aggregation job: broadcast `dim_products`, repartition on `product_id` | Record before/after runtime and shuffle-stage count | `perf: broadcast join + repartition for yearly agg job` | Q4 | 3.5h |
-| **Fri (D323)** | Choosing warehouse-SQL vs Spark for a given batch job | — | — | `docs/spark-vs-warehouse-sql.md`; re-implement one small job as a plain dbt SQL model for comparison | Compare runtime + cost of the Spark version vs the SQL version | `docs: spark vs warehouse-sql decision record` | Q5 | 3.5h |
-| **Sat (D324)** | **Review** | — | Redo the broadcast-join tuning from memory | Re-read `docs/spark-vs-warehouse-sql.md` for a decision you'd now make differently | Full Spark job re-run, timings recorded | — | Answer all 5 Week-54 questions out loud, unscripted | 2.5h |
+| **Mon (D349)** | Lakehouse concepts / data platform architecture (bronze/silver/gold) | Databricks "What is a data lakehouse" overview | Map this platform's raw/staging/marts onto bronze/silver/gold in one paragraph | Update `docs/architecture.md` with the lakehouse-terms mapping | — | `docs: map platform to lakehouse (bronze/silver/gold) terms` | Q1 | 3.5h |
+| **Tue (D350)** | Spark fundamentals: RDDs vs DataFrames, SparkSession | Spark docs "RDD Programming Guide" + "SQL, DataFrames and Datasets Guide" | Local PySpark script: read a CSV, `groupBy().agg()`, `.show()` | `spark/` scaffold; PySpark job skeleton reading from BigQuery via the Spark-BigQuery connector | Job runs locally against a small sample table | `feat: spark job scaffold + bigquery connector` | Q2 | 3.5h |
+| **Wed (D351)** | Batch aggregation: yearly stock-movement/order analytics | Spark docs "DataFrame aggregation functions" | Aggregate a synthetic multi-million-row CSV by month+product, time it | `yearly_stock_movement_agg.py`: joins StockPilot stock movements + QuickServe sales for the full year, writes to a `marts` table | Row-count + spot-check totals against a manual dbt query | `feat: yearly stock-movement spark aggregation job` | Q3 | 3.5h |
+| **Thu (D352)** | Spark joins & performance tuning: broadcast join, shuffle | Spark docs "Performance Tuning" | Compare a shuffle join vs a broadcast join on skewed synthetic data via `.explain()` | Tune the yearly aggregation job: broadcast `dim_products`, repartition on `product_id` | Record before/after runtime and shuffle-stage count | `perf: broadcast join + repartition for yearly agg job` | Q4 | 3.5h |
+| **Fri (D353)** | Choosing warehouse-SQL vs Spark for a given batch job | — | — | `docs/spark-vs-warehouse-sql.md`; re-implement one small job as a plain dbt SQL model for comparison | Compare runtime + cost of the Spark version vs the SQL version | `docs: spark vs warehouse-sql decision record` | Q5 | 3.5h |
+| **Sat (D354)** | **Review** | — | Redo the broadcast-join tuning from memory | Re-read `docs/spark-vs-warehouse-sql.md` for a decision you'd now make differently | Full Spark job re-run, timings recorded | — | Answer all 5 Week-59 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 13. Daily Plan — Week 55: Streaming
+## 13. Daily Plan — Week 60: Streaming
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D325)** | Streaming concepts recap, bridging Phase 3's Kafka | Kafka docs "Introduction" (recap) + ksqlDB docs "Overview" | Stand up local Kafka (Phase 3 compose), produce/consume 10 test messages | Add a Kafka broker service back into this repo's compose, pointed at FleetTrack's existing topic | Confirm 10 messages round-trip correctly | `chore: kafka broker wired into platform compose` | Q1 | 3.5h |
-| **Tue (D326)** | Kafka Streams / ksqlDB for real-time aggregation | ksqlDB docs "Create a Stream" + "Aggregate Streaming Data" | A ksqlDB stream + rolling `GROUP BY` count on a toy topic | `deliveries_stream.sql`: ksqlDB stream over FleetTrack's `delivery_events` topic | Query the stream, confirm counts update as new events arrive | `feat: ksqldb stream over fleettrack delivery_events` | Q2 | 3.5h |
-| **Wed (D327)** | Streaming FleetTrack's events into the warehouse | BigQuery docs "Streaming data" (insert API) | Minimal consumer inserting one row per event via the streaming-insert API | `streaming/consumer.py` consuming `delivery_events`, upserting into `deliveries_in_progress` | Manual test: fire 5 events, confirm 5 rows land within seconds | `feat: kafka-to-warehouse streaming consumer` | Q3 | 3.5h |
-| **Thu (D328)** | Exactly-once vs at-least-once semantics | Kafka docs "Message Delivery Semantics" | Reprocess the same message twice, observe the duplicate, then fix it | Make the consumer idempotent: `MERGE` keyed on `delivery_id` + `event_type` | Test: same event delivered 3x results in exactly one row | `fix: idempotent upsert for streaming consumer` | Q4 | 3.5h |
-| **Fri (D329)** | Real-time dashboard on streamed data (Grafana, Phase 4 stack) | Grafana docs "Add a data source" | Point Grafana at the warehouse table, one panel: live in-progress count | `dashboards/grafana/deliveries-in-progress.json`, panel refreshing every 10s | Confirm panel updates within one refresh cycle of a new event | `feat: real-time deliveries-in-progress dashboard` | Q5 | 3.5h |
-| **Sat (D330)** | **Review** | — | Redo the idempotent-upsert fix from memory | Re-watch the dashboard while manually firing a few test events | Full streaming pipeline smoke test | — | Answer all 5 Week-55 questions out loud, unscripted | 2.5h |
+| **Mon (D355)** | Streaming concepts recap, bridging Phase 3's Kafka | Kafka docs "Introduction" (recap) + ksqlDB docs "Overview" | Stand up local Kafka (Phase 3 compose), produce/consume 10 test messages | Add a Kafka broker service back into this repo's compose, pointed at FleetTrack's existing topic | Confirm 10 messages round-trip correctly | `chore: kafka broker wired into platform compose` | Q1 | 3.5h |
+| **Tue (D356)** | Kafka Streams / ksqlDB for real-time aggregation | ksqlDB docs "Create a Stream" + "Aggregate Streaming Data" | A ksqlDB stream + rolling `GROUP BY` count on a toy topic | `deliveries_stream.sql`: ksqlDB stream over FleetTrack's `delivery_events` topic | Query the stream, confirm counts update as new events arrive | `feat: ksqldb stream over fleettrack delivery_events` | Q2 | 3.5h |
+| **Wed (D357)** | Streaming FleetTrack's events into the warehouse | BigQuery docs "Streaming data" (insert API) | Minimal consumer inserting one row per event via the streaming-insert API | `streaming/consumer.py` consuming `delivery_events`, upserting into `deliveries_in_progress` | Manual test: fire 5 events, confirm 5 rows land within seconds | `feat: kafka-to-warehouse streaming consumer` | Q3 | 3.5h |
+| **Thu (D358)** | Exactly-once vs at-least-once semantics | Kafka docs "Message Delivery Semantics" | Reprocess the same message twice, observe the duplicate, then fix it | Make the consumer idempotent: `MERGE` keyed on `delivery_id` + `event_type` | Test: same event delivered 3x results in exactly one row | `fix: idempotent upsert for streaming consumer` | Q4 | 3.5h |
+| **Fri (D359)** | Real-time dashboard on streamed data (Grafana, Phase 4 stack) | Grafana docs "Add a data source" | Point Grafana at the warehouse table, one panel: live in-progress count | `dashboards/grafana/deliveries-in-progress.json`, panel refreshing every 10s | Confirm panel updates within one refresh cycle of a new event | `feat: real-time deliveries-in-progress dashboard` | Q5 | 3.5h |
+| **Sat (D360)** | **Review** | — | Redo the idempotent-upsert fix from memory | Re-watch the dashboard while manually firing a few test events | Full streaming pipeline smoke test | — | Answer all 5 Week-60 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 14. Daily Plan — Week 56: Project 1 + Project 2 + Project 3, Full Program Wrap
+## 14. Daily Plan — Week 61: Project 1 + Project 2 + Project 3, Full Program Wrap
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D331)** | Project 1 integration: run the full batch pipeline top to bottom for the first time | dbt docs "dbt run" / orchestrating dbt (recap) | — | `terraform apply` → trigger all 4 Airflow DAGs → `dbt run && dbt test`; record total run time | Full pipeline run, zero failed tasks, all dbt tests green | `feat: first full end-to-end platform run` | Q1 | 3.5h |
-| **Tue (D332)** | Project 1: unified BI-style dashboard (StockPilot+QuickServe+PeopleOps+LedgerBase) | Grafana docs "Panels" (recap) | — | Build the unified dashboard: revenue, inventory value, headcount/leave, ledger balance, all from `marts` | Manually verify each panel's number against a hand-run SQL query | `feat: unified year-2 analytics dashboard` | Q2 | 3.5h |
-| **Wed (D333)** | Project 1: hardening — remaining dbt tests, docs, milestone tag | dbt docs "dbt-utils" package (recap) | — | Add referential-integrity + `accepted_values` tests, `dbt docs generate`, tag `v0.1-year2-analytics-platform` | Full `dbt test` suite green, docs site builds clean | `docs: dbt docs + test hardening, tag v0.1` | Q3 | 3.5h |
-| **Thu (D334)** | Project 2 (smaller, faster — extends Project 1's infra): land the streaming layer as a first-class part of the platform | — | — | Fold Week 55's streaming consumer + dashboard panel officially into this repo; finalize its dbt tests/docs; tag `v0.2-plus-streaming` | Duplicate-event + freshness tests both green | `feat: streaming layer finalized, tag v0.2` | Q4 | 3.5h |
-| **Fri (D335)** | Project 3 (smaller still — extends Project 1's infra): freeform extension — AtlasMarket vendor analytics | — | — | Extract AtlasMarket vendor/order data, `fct_vendor_revenue` dbt model, one new dashboard panel, tag `v0.3-plus-vendor-analytics` | Reconciliation test: `fct_vendor_revenue` sums to `fct_orders` total | `feat: vendor analytics extension, tag v0.3` | Q5 | 3.5h |
-| **Sat (D336)** | **FULL 12-MONTH PROGRAM WRAP** | — | — | Write `docs/program-retrospective.md`: a phase-by-phase retrospective across all 11 phases and every project, from StockPilot's first decorator to this platform's last dbt model; tag `v2.0-year-plan-complete` | Run the entire platform (all 3 projects) one final time, end to end, everything green | `docs: full 12-month program retrospective, tag v2.0-year-plan-complete` | Full mock behavioral + "walk me through your year" round, timed, no notes | 2.5h |
+| **Mon (D361)** | Project 1 integration: run the full batch pipeline top to bottom for the first time | dbt docs "dbt run" / orchestrating dbt (recap) | — | `terraform apply` → trigger all 4 Airflow DAGs → `dbt run && dbt test`; record total run time | Full pipeline run, zero failed tasks, all dbt tests green | `feat: first full end-to-end platform run` | Q1 | 3.5h |
+| **Tue (D362)** | Project 1: unified BI-style dashboard (StockPilot+QuickServe+PeopleOps+LedgerBase) | Grafana docs "Panels" (recap) | — | Build the unified dashboard: revenue, inventory value, headcount/leave, ledger balance, all from `marts` | Manually verify each panel's number against a hand-run SQL query | `feat: unified year-2 analytics dashboard` | Q2 | 3.5h |
+| **Wed (D363)** | Project 1: hardening — remaining dbt tests, docs, milestone tag | dbt docs "dbt-utils" package (recap) | — | Add referential-integrity + `accepted_values` tests, `dbt docs generate`, tag `v0.1-year2-analytics-platform` | Full `dbt test` suite green, docs site builds clean | `docs: dbt docs + test hardening, tag v0.1` | Q3 | 3.5h |
+| **Thu (D364)** | Project 2 (smaller, faster — extends Project 1's infra): land the streaming layer as a first-class part of the platform | — | — | Fold Week 60's streaming consumer + dashboard panel officially into this repo; finalize its dbt tests/docs; tag `v0.2-plus-streaming` | Duplicate-event + freshness tests both green | `feat: streaming layer finalized, tag v0.2` | Q4 | 3.5h |
+| **Fri (D365)** | Project 3 (smaller still — extends Project 1's infra): freeform extension — AtlasMarket vendor analytics | — | — | Extract AtlasMarket vendor/order data, `fct_vendor_revenue` dbt model, one new dashboard panel, tag `v0.3-plus-vendor-analytics` | Reconciliation test: `fct_vendor_revenue` sums to `fct_orders` total | `feat: vendor analytics extension, tag v0.3` | Q5 | 3.5h |
+| **Sat (D366)** | **FULL 12-MONTH PROGRAM WRAP** | — | — | Write `docs/program-retrospective.md`: a phase-by-phase retrospective across all 11 phases and every project, from StockPilot's first decorator to this platform's last dbt model; tag `v2.0-year-plan-complete` | Run the entire platform (all 3 projects) one final time, end to end, everything green | `docs: full 12-month program retrospective, tag v2.0-year-plan-complete` | Full mock behavioral + "walk me through your year" round, timed, no notes | 2.5h |
 
 *Note on pacing:* Project 2 (Thursday) and Project 3 (Friday) are
 deliberately smaller and faster than Project 1 (Monday–Wednesday) — they
 extend infrastructure Project 1 already built rather than starting fresh,
-the same compression Phase 7's Week-32 and Phase 9's Week-44 project pairs
+the same compression Phase 7's Week-36 and Phase 9's Week-49 project pairs
 used once *their* base infrastructure was already standing.
 
 ---

@@ -1,5 +1,5 @@
-# PHASE 9 — LLM Zoomcamp
-### Weeks 27–32 (6 weeks) · ~4h weekdays, ~2–3h Saturdays · 36 working days
+# PHASE 7 — LLM Zoomcamp
+### Weeks 31–36 (6 weeks) · ~4h weekdays, ~2–3h Saturdays · 36 working days
 
 ---
 
@@ -67,7 +67,7 @@ such a framework honestly later, on your own terms.
 This phase is the applied, hands-on counterpart to DataTalksClub's **LLM
 Zoomcamp** curriculum (github.com/DataTalksClub/llm-zoomcamp) — its module
 sequence (Intro, Vector Search, Agents, Evaluation, Monitoring, Best
-Practices, Project examples) maps directly onto Weeks 27–32 below, applied
+Practices, Project examples) maps directly onto Weeks 31–36 below, applied
 to CarePoint, PeopleOps, DocuVault, and AtlasMarket instead of the
 Zoomcamp's own sample dataset.
 
@@ -90,7 +90,7 @@ guessing.
 ### Requirements
 **Functional**
 - Ingest CarePoint's FAQ + policy documents into a hybrid retrieval index
-  (Elasticsearch keyword + Qdrant vector, built in Week 30).
+  (Elasticsearch keyword + Qdrant vector, built in Week 34).
 - `POST /patient-faq/ask`: multi-turn chat, grounded answers with source
   citations back to the specific FAQ/policy chunk.
 - Query rewriting for conversational follow-ups ("what about weekends?").
@@ -146,7 +146,7 @@ POST /patient-faq/feedback       # thumbs up/down on an answer
   hit rate@5 and MRR tracked in CI.
 - LLM-as-judge faithfulness score on generated answers, threshold-gated
   in CI.
-- Injection-attack regression suite (the strings from Week 30) must always
+- Injection-attack regression suite (the strings from Week 34) must always
   be caught.
 - Integration test proving low-confidence retrieval escalates instead of
   answering.
@@ -198,7 +198,7 @@ question it shouldn't.
 ## 4. PROJECT 2 — DocuVault "Ask Your Documents" RAG Chatbot
 
 ### Business Problem
-DocuVault's Week 27 semantic search returns chunks; employees still have
+DocuVault's Week 31 semantic search returns chunks; employees still have
 to read them and piece together an answer themselves. A genuinely useful
 "ask your documents" experience lets employees have a conversation about
 the corpus — "what's our refund policy?", "what changed in the vendor
@@ -208,7 +208,7 @@ exposing content from documents they don't have permission to read.
 ### Requirements
 **Functional**
 - Multi-turn chat endpoint over the full DocuVault corpus, hybrid
-  retrieval + rerank (reusing Week 30's pattern).
+  retrieval + rerank (reusing Week 34's pattern).
 - Citations back to specific document + version.
 - Access-control-aware retrieval: filter by the requesting user's document
   permissions *before* chunks reach the prompt, not after generation.
@@ -377,7 +377,7 @@ not just an internal metric.
 
 ### Deployment
 New service alongside AtlasMarket's existing marketplace services
-(Phase 6), sharing the single Qdrant instance introduced in Week 27/30
+(Phase 6), sharing the single Qdrant instance introduced in Week 31/30
 rather than deploying a separate one per feature.
 
 ### Common Interview Questions
@@ -419,27 +419,27 @@ both.
   (qdrant.tech/documentation).
 - Elasticsearch docs: "Dense vector field type," "kNN search," "Hybrid
   search" (elastic.co/guide) — read as a direct continuation of Phase 5.
-- Ollama docs (ollama.com) — running open-weight models locally, Week 27's
+- Ollama docs (ollama.com) — running open-weight models locally, Week 31's
   open-vs-closed comparison.
 - *Prompt Engineering Guide* (promptingguide.ai) — general reference,
-  read alongside Weeks 27 and 43.
+  read alongside Weeks 31 and 34.
 - "ReAct: Synergizing Reasoning and Acting in Language Models" (Yao et
   al., arXiv:2210.03629) — read Section 3 the same week you build the
-  ReAct loop (Week 28).
+  ReAct loop (Week 32).
 - RAGAS docs (docs.ragas.io) — retrieval/generation evaluation metrics:
-  hit rate, MRR, faithfulness, answer relevancy (Week 29).
+  hit rate, MRR, faithfulness, answer relevancy (Week 33).
 - *Practical Statistics for Data Scientists* (Bruce, Bruce & Gedeck) Ch.3
   ("Statistical Experiments and Significance Testing") — read the Friday
-  of Week 29, before computing the A/B-test confidence interval by hand.
+  of Week 33, before computing the A/B-test confidence interval by hand.
 - OWASP "Top 10 for Large Language Model Applications"
   (owasp.org/www-project-top-10-for-large-language-model-applications) —
-  prompt injection and excessive-agency sections, read in Weeks 28 and 43.
+  prompt injection and excessive-agency sections, read in Weeks 32 and 34.
 
 ---
 
 ## 7. Weekly Interview Question Sets
 
-**Week 27 — Intro, Vector Search**
+**Week 31 — Intro, Vector Search**
 1. Explain RAG in one paragraph — what problem does it solve that a bigger
    context window or fine-tuning doesn't?
 2. What's the difference between a dense embedding and a sparse
@@ -450,7 +450,7 @@ both.
    search doesn't scale.
 5. Open-weight vs closed-API models — what are you actually trading off?
 
-**Week 28 — Agents**
+**Week 32 — Agents**
 1. What is function/tool calling, mechanically, from the model's
    perspective?
 2. Explain the ReAct loop (Reason → Act → Observe) and where it can fail.
@@ -460,7 +460,7 @@ both.
 5. Name one concrete failure mode of multi-step agents (looping,
    hallucinated tool args) and how you'd detect it.
 
-**Week 29 — Evaluation, Monitoring**
+**Week 33 — Evaluation, Monitoring**
 1. Define hit rate and MRR for a RAG retrieval evaluation set.
 2. What is "LLM-as-judge" and what's its biggest weakness?
 3. How do you build a golden evaluation set without hand-labeling
@@ -470,7 +470,7 @@ both.
 5. How would you A/B test two prompts in production without users
    noticing?
 
-**Week 30 — Best Practices, Project Example**
+**Week 34 — Best Practices, Project Example**
 1. What is query rewriting solving, and what's a scenario it fails on?
 2. Hybrid search: how do you combine sparse keyword and dense vector
    results?
@@ -478,7 +478,7 @@ both.
 4. What's a basic mitigation for prompt injection in a RAG system?
 5. When is caching an LLM response safe versus unsafe?
 
-**Week 31 — Project 1 (CarePoint Patient-FAQ Assistant)**
+**Week 35 — Project 1 (CarePoint Patient-FAQ Assistant)**
 1. Walk through your CarePoint pipeline end-to-end, one request.
 2. Where exactly could this system hallucinate, and what stops it?
 3. How did you evaluate retrieval quality before touching the prompt?
@@ -486,7 +486,7 @@ both.
 5. How do you know your guardrail catches a prompt-injection attempt, in
    your test suite specifically?
 
-**Week 32 — Projects 2 & 3, Phase Wrap**
+**Week 36 — Projects 2 & 3, Phase Wrap**
 1. Compare DocuVault's document chatbot to CarePoint's FAQ assistant —
    what's structurally different?
 2. Why is AtlasMarket's product Q&A assistant scoped per-vendor, and what
@@ -499,88 +499,88 @@ both.
 
 ---
 
-## 8. Daily Plan — Week 27: Intro, Vector Search, DocuVault Semantic Search
+## 8. Daily Plan — Week 31: Intro, Vector Search, DocuVault Semantic Search
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D157)** | LLM basics & prompting fundamentals — tokens, context window, temperature, zero/few-shot; open vs closed models | OpenAI "Prompt engineering" guide + Ollama docs intro | Run the same question through a closed API model and a local Ollama model, compare answer/latency/cost | New `docuvault/rag/` module scaffold; `docs/llm-provider-decision.md` picking a primary API provider + Ollama as free dev fallback | Smoke-test both API clients return a response for a fixed prompt | `feat: rag module scaffold + llm provider decision` | Q1 | 3.5h |
-| **Tue (D158)** | RAG architecture overview — why RAG over fine-tuning/bigger context; retrieval+generation pipeline shape | DataTalksClub llm-zoomcamp Module 1 README | Sketch the full pipeline diagram in `docs/rag-architecture.md` before writing any code | `docs/rag-architecture.md` for DocuVault: ingestion pipeline + query pipeline diagram | — | `docs: docuvault rag architecture diagram` | Q2 | 3.5h |
-| **Wed (D159)** | Embeddings & vector representations — how text becomes a vector, cosine similarity, embedding model choice | OpenAI "Embeddings" guide | Embed 10 sample sentences, compute pairwise cosine similarity by hand with numpy, sanity-check similar pairs score higher | `rag/embeddings.py` wraps the chosen embedding model, batches DocuVault chunk text | Unit test: correct vector dimension, deterministic for same input | `feat: embedding client wrapper` | Q3 | 3.5h |
-| **Thu (D160)** | Vector databases — Qdrant collections/points/payload, distance metrics, HNSW; brief comparison to Elasticsearch dense_vector | Qdrant docs "Collections" + "Points"; Elastic docs "Dense vector field type" (Phase 5 refresher) | Spin up local Qdrant via Docker, create a collection, upsert 20 fake vectors, run a `search` query | Add `qdrant` service to DocuVault's compose; create `documents_chunks` collection sized to the embedding model's dimension | Integration test: collection exists, dimension/distance metric match config | `feat: qdrant service + documents_chunks collection` | Q4 | 3.5h |
-| **Fri (D161)** | Building a basic semantic search endpoint — chunking strategy, indexing pipeline, query-time retrieval | Qdrant docs "Search"; vector-DB vendor chunking-strategies guide | Chunk one long document 3 ways (fixed-size, fixed-size+overlap, paragraph-based), compare chunk counts/quality | `rag/ingest.py` (chunk existing documents → embed → upsert to Qdrant) + `GET /documents/semantic-search?q=` endpoint | Integration test: index 5 known documents, assert the semantically relevant one ranks top-1 for a paraphrase query | `feat: docuvault semantic search endpoint` | Q5 | 3.5h |
-| **Sat (D162)** | **Review** | — | Redo Wednesday's cosine-similarity-by-hand exercise from memory | Re-read `rag/ingest.py` for anything hard-coded that shouldn't be | Full suite re-run | — | Answer all Week-40 questions unscripted | 2.5h |
+| **Mon (D181)** | LLM basics & prompting fundamentals — tokens, context window, temperature, zero/few-shot; open vs closed models | OpenAI "Prompt engineering" guide + Ollama docs intro | Run the same question through a closed API model and a local Ollama model, compare answer/latency/cost | New `docuvault/rag/` module scaffold; `docs/llm-provider-decision.md` picking a primary API provider + Ollama as free dev fallback | Smoke-test both API clients return a response for a fixed prompt | `feat: rag module scaffold + llm provider decision` | Q1 | 3.5h |
+| **Tue (D182)** | RAG architecture overview — why RAG over fine-tuning/bigger context; retrieval+generation pipeline shape | DataTalksClub llm-zoomcamp Module 1 README | Sketch the full pipeline diagram in `docs/rag-architecture.md` before writing any code | `docs/rag-architecture.md` for DocuVault: ingestion pipeline + query pipeline diagram | — | `docs: docuvault rag architecture diagram` | Q2 | 3.5h |
+| **Wed (D183)** | Embeddings & vector representations — how text becomes a vector, cosine similarity, embedding model choice | OpenAI "Embeddings" guide | Embed 10 sample sentences, compute pairwise cosine similarity by hand with numpy, sanity-check similar pairs score higher | `rag/embeddings.py` wraps the chosen embedding model, batches DocuVault chunk text | Unit test: correct vector dimension, deterministic for same input | `feat: embedding client wrapper` | Q3 | 3.5h |
+| **Thu (D184)** | Vector databases — Qdrant collections/points/payload, distance metrics, HNSW; brief comparison to Elasticsearch dense_vector | Qdrant docs "Collections" + "Points"; Elastic docs "Dense vector field type" (Phase 5 refresher) | Spin up local Qdrant via Docker, create a collection, upsert 20 fake vectors, run a `search` query | Add `qdrant` service to DocuVault's compose; create `documents_chunks` collection sized to the embedding model's dimension | Integration test: collection exists, dimension/distance metric match config | `feat: qdrant service + documents_chunks collection` | Q4 | 3.5h |
+| **Fri (D185)** | Building a basic semantic search endpoint — chunking strategy, indexing pipeline, query-time retrieval | Qdrant docs "Search"; vector-DB vendor chunking-strategies guide | Chunk one long document 3 ways (fixed-size, fixed-size+overlap, paragraph-based), compare chunk counts/quality | `rag/ingest.py` (chunk existing documents → embed → upsert to Qdrant) + `GET /documents/semantic-search?q=` endpoint | Integration test: index 5 known documents, assert the semantically relevant one ranks top-1 for a paraphrase query | `feat: docuvault semantic search endpoint` | Q5 | 3.5h |
+| **Sat (D186)** | **Review** | — | Redo Wednesday's cosine-similarity-by-hand exercise from memory | Re-read `rag/ingest.py` for anything hard-coded that shouldn't be | Full suite re-run | — | Answer all Week-31 questions unscripted | 2.5h |
 
 ---
 
-## 9. Daily Plan — Week 28: Agents, PeopleOps HR-Policy Agent
+## 9. Daily Plan — Week 32: Agents, PeopleOps HR-Policy Agent
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D163)** | Agentic patterns — tool use / function calling, how a model decides to call a tool | OpenAI "Function calling" guide / Anthropic "Tool use" docs | Give a model one fake tool (`get_weather(city)`), confirm it emits a correctly structured tool call for an ambiguous prompt | New `peopleops/agent/` scaffold; tool schema for `get_leave_balance(employee_id)` wrapping PeopleOps' existing leave-balance API | Unit test: tool schema validates against the provider's function-calling spec | `feat: peopleops agent scaffold + leave-balance tool schema` | Q1 | 3.5h |
-| **Tue (D164)** | ReAct-style reasoning loops — Reason → Act → Observe, why this beats a single forced tool call | ReAct paper (Yao et al., arXiv:2210.03629), abstract + §3 | Trace one ReAct loop by hand on paper for a 2-step question before writing code | `agent/loop.py` — basic ReAct loop: model reasons, optionally calls `get_leave_balance`, observes result, responds | Test: loop terminates within a max-steps bound on a scripted fake model response | `feat: react loop for hr agent` | Q2 | 3.5h |
-| **Wed (D165)** | Multi-step agents with memory — carrying conversation + tool-result history without blowing the context window | OpenAI/Anthropic docs on context management | Simulate a 10-turn conversation, measure token growth, implement a sliding-window/summary trim | Add session memory (last N turns + running summary) to the HR agent | Test memory trims correctly at the configured limit without dropping the current turn | `feat: agent conversation memory with trimming` | Q3 | 3.5h |
-| **Thu (D166)** | Agent guardrails & failure modes — looping, hallucinated tool args, calling tools it shouldn't | OWASP Top 10 for LLM Applications — excessive-agency section | Provoke the unguarded agent into calling `get_leave_balance` with a malformed/unauthorized `employee_id`, observe the failure | Add tool-arg validation + max-step limit + a scope check ("agent may only look up the requesting employee's own balance") | Test: agent refuses/errors cleanly on an out-of-scope employee_id instead of leaking data | `feat: agent guardrails — scope check, arg validation, step limit` | Q4 | 3.5h |
-| **Fri (D167)** | Orchestrating an agent that calls an external API as a tool — end-to-end wiring, error handling on tool failure | PeopleOps' own API docs + provider tool-use error-handling docs | Simulate the leave-balance API returning a 500/timeout, confirm the agent surfaces a clean fallback instead of crashing | `POST /hr-assistant/ask` endpoint wiring the full agent (HR-policy Q&A + leave-balance tool) into PeopleOps | Integration test: policy-only question answers from docs (no tool call); balance question triggers the tool and returns correct data | `feat: hr-assistant ask endpoint` | Q5 | 3.5h |
-| **Sat (D168)** | **Review** | — | Redo the ReAct loop trace from memory | Re-read `agent/loop.py` for the exact failure modes discussed this week | Full suite, all guardrail tests re-run | — | Answer all Week-41 questions unscripted | 2.5h |
+| **Mon (D187)** | Agentic patterns — tool use / function calling, how a model decides to call a tool | OpenAI "Function calling" guide / Anthropic "Tool use" docs | Give a model one fake tool (`get_weather(city)`), confirm it emits a correctly structured tool call for an ambiguous prompt | New `peopleops/agent/` scaffold; tool schema for `get_leave_balance(employee_id)` wrapping PeopleOps' existing leave-balance API | Unit test: tool schema validates against the provider's function-calling spec | `feat: peopleops agent scaffold + leave-balance tool schema` | Q1 | 3.5h |
+| **Tue (D188)** | ReAct-style reasoning loops — Reason → Act → Observe, why this beats a single forced tool call | ReAct paper (Yao et al., arXiv:2210.03629), abstract + §3 | Trace one ReAct loop by hand on paper for a 2-step question before writing code | `agent/loop.py` — basic ReAct loop: model reasons, optionally calls `get_leave_balance`, observes result, responds | Test: loop terminates within a max-steps bound on a scripted fake model response | `feat: react loop for hr agent` | Q2 | 3.5h |
+| **Wed (D189)** | Multi-step agents with memory — carrying conversation + tool-result history without blowing the context window | OpenAI/Anthropic docs on context management | Simulate a 10-turn conversation, measure token growth, implement a sliding-window/summary trim | Add session memory (last N turns + running summary) to the HR agent | Test memory trims correctly at the configured limit without dropping the current turn | `feat: agent conversation memory with trimming` | Q3 | 3.5h |
+| **Thu (D190)** | Agent guardrails & failure modes — looping, hallucinated tool args, calling tools it shouldn't | OWASP Top 10 for LLM Applications — excessive-agency section | Provoke the unguarded agent into calling `get_leave_balance` with a malformed/unauthorized `employee_id`, observe the failure | Add tool-arg validation + max-step limit + a scope check ("agent may only look up the requesting employee's own balance") | Test: agent refuses/errors cleanly on an out-of-scope employee_id instead of leaking data | `feat: agent guardrails — scope check, arg validation, step limit` | Q4 | 3.5h |
+| **Fri (D191)** | Orchestrating an agent that calls an external API as a tool — end-to-end wiring, error handling on tool failure | PeopleOps' own API docs + provider tool-use error-handling docs | Simulate the leave-balance API returning a 500/timeout, confirm the agent surfaces a clean fallback instead of crashing | `POST /hr-assistant/ask` endpoint wiring the full agent (HR-policy Q&A + leave-balance tool) into PeopleOps | Integration test: policy-only question answers from docs (no tool call); balance question triggers the tool and returns correct data | `feat: hr-assistant ask endpoint` | Q5 | 3.5h |
+| **Sat (D192)** | **Review** | — | Redo the ReAct loop trace from memory | Re-read `agent/loop.py` for the exact failure modes discussed this week | Full suite, all guardrail tests re-run | — | Answer all Week-32 questions unscripted | 2.5h |
 
 ---
 
-## 10. Daily Plan — Week 29: Evaluation + Monitoring on DocuVault Semantic Search
+## 10. Daily Plan — Week 33: Evaluation + Monitoring on DocuVault Semantic Search
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D169)** | RAG evaluation — offline metrics: hit rate, MRR | RAGAS docs "Metrics" | Compute hit rate and MRR by hand on a 5-query toy retrieval result set | Golden eval set for DocuVault semantic search (20–30 query→expected-doc pairs) in `eval/golden_set.json` | — | `feat: docuvault retrieval golden eval set` | Q1 | 3.5h |
-| **Tue (D170)** | Implementing an offline eval harness — hit rate/MRR computed automatically against the golden set | — | — | `eval/retrieval_eval.py` runs the golden set through the semantic-search endpoint, reports hit rate@k and MRR | Test harness produces expected metric values on a hand-verified mini fixture | `feat: retrieval eval harness (hit rate, mrr)` | Q2 | 3.5h |
-| **Wed (D171)** | LLM-as-judge evaluation — using a model to grade answer quality/faithfulness | RAGAS docs "faithfulness"/"answer relevancy" | Hand-grade 5 answers yourself, then have an LLM judge grade the same 5, compare agreement | `eval/llm_judge.py` scores a generated answer's faithfulness-to-context on a 1–5 scale, wired into the harness | Test: judge output always parses into a valid score, even on malformed judge text | `feat: llm-as-judge faithfulness scoring` | Q3 | 3.5h |
-| **Thu (D172)** | Cost & latency tracking for LLM calls; logging chat sessions & feedback loops | OpenAI/Anthropic API docs — usage/token accounting | Log token counts + wall-clock latency for 10 sample calls, compute $ cost from published pricing | `rag/telemetry.py` wraps LLM + embedding calls, logs tokens/cost/latency (reusing Phase 1's structlog); `POST /documents/semantic-search/feedback` (thumbs up/down) | Test telemetry wrapper logs one entry per call with correct fields | `feat: llm cost/latency telemetry + feedback endpoint` | Q4 | 3.5h |
-| **Fri (D173)** | A/B testing prompts/models — the statistics underneath: null hypothesis, p-values, confidence intervals, and why a hit-rate delta on 30 golden-set queries usually isn't statistically significant | OpenAI "Best practices for prompt engineering" + Practical Statistics for Data Scientists Ch.3 (or Khan Academy "Significance tests" as a free alternative) | Compute a 95% confidence interval by hand on the two prompt variants' hit rates from Thu's golden set; decide honestly whether the delta is real or noise | Prompt-variant flag on the search endpoint; log which variant served each request, feeding the eval harness; `docs/ab-test-readout.md` reporting the confidence interval, not just "variant B looked better" | Test both variants are exercised roughly evenly (basic split-assignment test) | `feat: prompt variant a/b flag + eval comparison + statistical readout` | Q5 | 3.5h |
-| **Sat (D174)** | **Review** | — | Redo the hit-rate/MRR by-hand calculation from memory | Re-run the full eval harness + judge suite; review cost/latency numbers | Full suite re-run | — | Answer all Week-42 questions unscripted | 2.5h |
+| **Mon (D193)** | RAG evaluation — offline metrics: hit rate, MRR | RAGAS docs "Metrics" | Compute hit rate and MRR by hand on a 5-query toy retrieval result set | Golden eval set for DocuVault semantic search (20–30 query→expected-doc pairs) in `eval/golden_set.json` | — | `feat: docuvault retrieval golden eval set` | Q1 | 3.5h |
+| **Tue (D194)** | Implementing an offline eval harness — hit rate/MRR computed automatically against the golden set | — | — | `eval/retrieval_eval.py` runs the golden set through the semantic-search endpoint, reports hit rate@k and MRR | Test harness produces expected metric values on a hand-verified mini fixture | `feat: retrieval eval harness (hit rate, mrr)` | Q2 | 3.5h |
+| **Wed (D195)** | LLM-as-judge evaluation — using a model to grade answer quality/faithfulness | RAGAS docs "faithfulness"/"answer relevancy" | Hand-grade 5 answers yourself, then have an LLM judge grade the same 5, compare agreement | `eval/llm_judge.py` scores a generated answer's faithfulness-to-context on a 1–5 scale, wired into the harness | Test: judge output always parses into a valid score, even on malformed judge text | `feat: llm-as-judge faithfulness scoring` | Q3 | 3.5h |
+| **Thu (D196)** | Cost & latency tracking for LLM calls; logging chat sessions & feedback loops | OpenAI/Anthropic API docs — usage/token accounting | Log token counts + wall-clock latency for 10 sample calls, compute $ cost from published pricing | `rag/telemetry.py` wraps LLM + embedding calls, logs tokens/cost/latency (reusing Phase 1's structlog); `POST /documents/semantic-search/feedback` (thumbs up/down) | Test telemetry wrapper logs one entry per call with correct fields | `feat: llm cost/latency telemetry + feedback endpoint` | Q4 | 3.5h |
+| **Fri (D197)** | A/B testing prompts/models — the statistics underneath: null hypothesis, p-values, confidence intervals, and why a hit-rate delta on 30 golden-set queries usually isn't statistically significant | OpenAI "Best practices for prompt engineering" + Practical Statistics for Data Scientists Ch.3 (or Khan Academy "Significance tests" as a free alternative) | Compute a 95% confidence interval by hand on the two prompt variants' hit rates from Thu's golden set; decide honestly whether the delta is real or noise | Prompt-variant flag on the search endpoint; log which variant served each request, feeding the eval harness; `docs/ab-test-readout.md` reporting the confidence interval, not just "variant B looked better" | Test both variants are exercised roughly evenly (basic split-assignment test) | `feat: prompt variant a/b flag + eval comparison + statistical readout` | Q5 | 3.5h |
+| **Sat (D198)** | **Review** | — | Redo the hit-rate/MRR by-hand calculation from memory | Re-run the full eval harness + judge suite; review cost/latency numbers | Full suite re-run | — | Answer all Week-33 questions unscripted | 2.5h |
 
 ---
 
-## 11. Daily Plan — Week 30: Best Practices, Project Example — CarePoint Prototype
+## 11. Daily Plan — Week 34: Best Practices, Project Example — CarePoint Prototype
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D175)** | Query rewriting — reformulating a user's raw question for better retrieval (resolving pronouns, expanding acronyms) | Qdrant docs: Q&A/RAG tutorial | Take 5 real conversational follow-ups ("what about the second one?") and hand-write the rewritten standalone version | New `carepoint/rag/` scaffold; query-rewrite step using conversation history before embedding | Test: a pronoun-referencing follow-up resolves correctly against a fixture history | `feat: carepoint rag scaffold + query rewriting` | Q1 | 3.5h |
-| **Tue (D176)** | Hybrid search — combining sparse keyword (Elasticsearch) + dense vector (Qdrant) results | Elastic docs "Hybrid search"; Qdrant docs on combining with keyword search | Run the same query keyword-only, vector-only, and naively combined; compare top-5 results | Ingest CarePoint's FAQ/policy docs into both ES and Qdrant; implement hybrid retrieval (weighted score fusion / RRF) | Test: hybrid retrieval outperforms either single method on a small labeled query set | `feat: carepoint hybrid retrieval (elasticsearch + qdrant)` | Q2 | 3.5h |
-| **Wed (D177)** | Re-ranking retrieved chunks before generation | Cross-encoder re-ranking overview | Re-rank Tuesday's hybrid top-20 down to top-5 using a simple cross-encoder or LLM-scored rerank, compare ordering | Add a re-ranking step to CarePoint's retrieval pipeline before prompt assembly | Test: re-ranked top-1 matches the golden answer more often than pre-rerank top-1 on the eval set | `feat: re-ranking step for carepoint retrieval` | Q3 | 3.5h |
-| **Thu (D178)** | Caching LLM responses to cut cost; guardrails — prompt injection basics & output validation | OWASP Top 10 for LLM Applications — prompt injection section | Try 3 basic prompt-injection strings ("ignore previous instructions and...") against the unguarded pipeline, observe what breaks | Semantic response cache (normalized-query+context hash) + output validator rejecting injected instructions/unsupported claims | Test: the 3 injection strings are now caught by the validator; cache hit returns identical answer without a new LLM call | `feat: response cache + prompt-injection output guardrail` | Q4 | 3.5h |
-| **Fri (D179)** | Reference end-to-end RAG project walkthrough mapped onto CarePoint; writing a short decision record for the chosen stack | DataTalksClub llm-zoomcamp "Project examples" module | — | Prototype the full CarePoint patient-FAQ assistant end-to-end (hybrid retrieval + rerank + generation + injection guardrail) behind `POST /patient-faq/ask`; `docs/carepoint-rag-decision-record.md` | End-to-end integration test: ask a real FAQ question, assert a grounded answer with citation and no guardrail trip | `feat: carepoint patient-faq prototype (end-to-end)` | Q5 | 3.5h |
-| **Sat (D180)** | **Review** | — | Redo the RRF/hybrid fusion math from memory | Re-run all injection tests; re-read the decision record for gaps before next week's build | Full suite re-run | — | Answer all Week-43 questions unscripted | 2.5h |
+| **Mon (D199)** | Query rewriting — reformulating a user's raw question for better retrieval (resolving pronouns, expanding acronyms) | Qdrant docs: Q&A/RAG tutorial | Take 5 real conversational follow-ups ("what about the second one?") and hand-write the rewritten standalone version | New `carepoint/rag/` scaffold; query-rewrite step using conversation history before embedding | Test: a pronoun-referencing follow-up resolves correctly against a fixture history | `feat: carepoint rag scaffold + query rewriting` | Q1 | 3.5h |
+| **Tue (D200)** | Hybrid search — combining sparse keyword (Elasticsearch) + dense vector (Qdrant) results | Elastic docs "Hybrid search"; Qdrant docs on combining with keyword search | Run the same query keyword-only, vector-only, and naively combined; compare top-5 results | Ingest CarePoint's FAQ/policy docs into both ES and Qdrant; implement hybrid retrieval (weighted score fusion / RRF) | Test: hybrid retrieval outperforms either single method on a small labeled query set | `feat: carepoint hybrid retrieval (elasticsearch + qdrant)` | Q2 | 3.5h |
+| **Wed (D201)** | Re-ranking retrieved chunks before generation | Cross-encoder re-ranking overview | Re-rank Tuesday's hybrid top-20 down to top-5 using a simple cross-encoder or LLM-scored rerank, compare ordering | Add a re-ranking step to CarePoint's retrieval pipeline before prompt assembly | Test: re-ranked top-1 matches the golden answer more often than pre-rerank top-1 on the eval set | `feat: re-ranking step for carepoint retrieval` | Q3 | 3.5h |
+| **Thu (D202)** | Caching LLM responses to cut cost; guardrails — prompt injection basics & output validation | OWASP Top 10 for LLM Applications — prompt injection section | Try 3 basic prompt-injection strings ("ignore previous instructions and...") against the unguarded pipeline, observe what breaks | Semantic response cache (normalized-query+context hash) + output validator rejecting injected instructions/unsupported claims | Test: the 3 injection strings are now caught by the validator; cache hit returns identical answer without a new LLM call | `feat: response cache + prompt-injection output guardrail` | Q4 | 3.5h |
+| **Fri (D203)** | Reference end-to-end RAG project walkthrough mapped onto CarePoint; writing a short decision record for the chosen stack | DataTalksClub llm-zoomcamp "Project examples" module | — | Prototype the full CarePoint patient-FAQ assistant end-to-end (hybrid retrieval + rerank + generation + injection guardrail) behind `POST /patient-faq/ask`; `docs/carepoint-rag-decision-record.md` | End-to-end integration test: ask a real FAQ question, assert a grounded answer with citation and no guardrail trip | `feat: carepoint patient-faq prototype (end-to-end)` | Q5 | 3.5h |
+| **Sat (D204)** | **Review** | — | Redo the RRF/hybrid fusion math from memory | Re-run all injection tests; re-read the decision record for gaps before next week's build | Full suite re-run | — | Answer all Week-34 questions unscripted | 2.5h |
 
 ---
 
-## 12. Daily Plan — Week 31: Project 1 — CarePoint Patient-FAQ Assistant (Full Build)
+## 12. Daily Plan — Week 35: Project 1 — CarePoint Patient-FAQ Assistant (Full Build)
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D181)** | Formalizing the ingestion pipeline for production — versioned re-index, source-doc tracking | Revisit Phase 5 DocuVault reindex notes | — | Production-grade ingestion: `POST /patient-faq/reindex` (rebuild ES + Qdrant from source docs, DocuVault-style recovery), chunk versioning metadata | Test: wiping Qdrant/ES and reindexing fully restores search | `feat: carepoint faq reindex endpoint` | Q1 | 3.5h |
-| **Tue (D182)** | Hardening the retrieval+generation API — auth, rate limiting, per-session conversation state | Revisit Phase 1/4 auth & rate-limiting notes | — | Add auth to `/patient-faq/ask`, per-session short conversation memory, rate limiting per patient account | Test: unauthenticated request rejected; rate limit triggers after N requests | `feat: auth, session memory, rate limiting on patient-faq api` | Q2 | 3.5h |
-| **Wed (D183)** | Full evaluation suite wired to CI — hit rate, MRR, LLM-judge faithfulness, injection-guardrail regression | — | — | Wire Week 29's eval harness + Week 30's injection tests into CI as a required check on every PR | CI fails if hit-rate/MRR/faithfulness regress below a set threshold | `ci: wire rag eval + guardrail regression suite` | Q3 | 3.5h |
-| **Thu (D184)** | Monitoring — cost/latency dashboards, escalation logging (when the assistant hands off to a human) | Revisit Phase 4 Grafana/Prometheus stack docs | — | Grafana panel for cost/latency/hit-rate over time; explicit "escalate to staff" path logged separately on low confidence | Test: a low-retrieval-confidence question triggers escalation, not a guessed answer | `feat: monitoring dashboard + escalation path` | Q4 | 3.5h |
-| **Fri (D185)** | Deployment — containerize and ship the assistant inside CarePoint's existing service mesh | Revisit Phase 4/5 deployment notes (Compose/K8s) | — | Add `patient-faq` service to CarePoint's compose/K8s manifests; deploy and smoke-test in the local cluster | End-to-end smoke test against the deployed service | `feat: deploy carepoint patient-faq assistant` | Q5 | 3.5h |
-| **Sat (D186)** | **Review/retrospective** | — | Mock-answer all Week-44 questions timed | `docs/postmortem-carepoint-faq.md`, tag `v0.1-carepoint-faq` | Full suite, full CI, deployed smoke test | `docs: carepoint patient-faq postmortem` | Mock-answer all Week-44 questions timed | 2.5h |
+| **Mon (D205)** | Formalizing the ingestion pipeline for production — versioned re-index, source-doc tracking | Revisit Phase 5 DocuVault reindex notes | — | Production-grade ingestion: `POST /patient-faq/reindex` (rebuild ES + Qdrant from source docs, DocuVault-style recovery), chunk versioning metadata | Test: wiping Qdrant/ES and reindexing fully restores search | `feat: carepoint faq reindex endpoint` | Q1 | 3.5h |
+| **Tue (D206)** | Hardening the retrieval+generation API — auth, rate limiting, per-session conversation state | Revisit Phase 1/4 auth & rate-limiting notes | — | Add auth to `/patient-faq/ask`, per-session short conversation memory, rate limiting per patient account | Test: unauthenticated request rejected; rate limit triggers after N requests | `feat: auth, session memory, rate limiting on patient-faq api` | Q2 | 3.5h |
+| **Wed (D207)** | Full evaluation suite wired to CI — hit rate, MRR, LLM-judge faithfulness, injection-guardrail regression | — | — | Wire Week 33's eval harness + Week 34's injection tests into CI as a required check on every PR | CI fails if hit-rate/MRR/faithfulness regress below a set threshold | `ci: wire rag eval + guardrail regression suite` | Q3 | 3.5h |
+| **Thu (D208)** | Monitoring — cost/latency dashboards, escalation logging (when the assistant hands off to a human) | Revisit Phase 4 Grafana/Prometheus stack docs | — | Grafana panel for cost/latency/hit-rate over time; explicit "escalate to staff" path logged separately on low confidence | Test: a low-retrieval-confidence question triggers escalation, not a guessed answer | `feat: monitoring dashboard + escalation path` | Q4 | 3.5h |
+| **Fri (D209)** | Deployment — containerize and ship the assistant inside CarePoint's existing service mesh | Revisit Phase 4/5 deployment notes (Compose/K8s) | — | Add `patient-faq` service to CarePoint's compose/K8s manifests; deploy and smoke-test in the local cluster | End-to-end smoke test against the deployed service | `feat: deploy carepoint patient-faq assistant` | Q5 | 3.5h |
+| **Sat (D210)** | **Review/retrospective** | — | Mock-answer all Week-35 questions timed | `docs/postmortem-carepoint-faq.md`, tag `v0.1-carepoint-faq` | Full suite, full CI, deployed smoke test | `docs: carepoint patient-faq postmortem` | Mock-answer all Week-35 questions timed | 2.5h |
 
 ---
 
-## 13. Daily Plan — Week 32: Project 2 (DocuVault Chat) + Project 3 (AtlasMarket Assistant), Phase Wrap
+## 13. Daily Plan — Week 36: Project 2 (DocuVault Chat) + Project 3 (AtlasMarket Assistant), Phase Wrap
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D187)** | Formalizing Weeks 27/29's DocuVault prototype into a conversational "ask your documents" chatbot (multi-turn, citations) | Revisit own Week 27/29 notes + provider multi-turn chat docs | — | `POST /documents/chat` — multi-turn RAG chat over the DocuVault corpus, reusing Week 30's hybrid+rerank pipeline, with per-document citation | Integration test: a multi-turn conversation with a follow-up question resolves correctly via query rewriting | `feat: docuvault ask-your-documents chat endpoint` | Q1 | 3.5h |
-| **Tue (D188)** | Access-control-aware retrieval — never answer from a document the requester can't read (the Phase 5 deferred concern, solved now) | Revisit Phase 5 DocuVault "Possible Improvements" note | — | Filter Qdrant/ES retrieval results by the requesting user's document permissions before they ever reach the prompt | Test: a user without access to Document X never receives its content, even indirectly, via the chat answer | `feat: access-control-aware retrieval filter` | Q2 | 3.5h |
-| **Wed (D189)** | Evaluation + deployment for the DocuVault chatbot | — | — | Wire DocuVault chat into Week 29's eval harness (new golden set for conversational queries); deploy alongside existing DocuVault services | CI eval check + end-to-end deployment smoke test | `feat: docuvault chat eval + deploy`, tag `v0.1-docuvault-chat` | Q3 | 3.5h |
-| **Thu (D190)** | AtlasMarket product Q&A — scoping retrieval per-vendor, ingesting product catalog + reviews as the knowledge base | Revisit Phase 6 AtlasMarket vendor-scoping notes + Qdrant/ES metadata-filtering docs | — | Ingest AtlasMarket product descriptions/specs/reviews with `vendor_id`/`product_id` payload; vendor/product-scoped retrieval | Test: a question about vendor A's product never retrieves vendor B's chunks | `feat: atlasmarket product qa ingestion + scoped retrieval` | Q4 | 3.5h |
-| **Fri (D191)** | Generation + guardrails + API for the buyer-facing support assistant — no invented specs/prices, escalate to vendor when unsure | — | — | `POST /support/ask` — generation with a strict "answer only from retrieved product data" system prompt + output guardrail rejecting invented prices/specs; escalation path to vendor support | Test: a question with no matching product data triggers escalation, not a fabricated answer | `feat: atlasmarket support assistant api + no-fabrication guardrail` | Q5 | 3.5h |
-| **Sat (D192)** | **Phase 7 wrap review** | — | Mock-answer all Phase-7 questions timed, no notes | `docs/postmortem-phase7.md` comparing all three assistants; tag `v0.7-phase7` | Full suite, full CI, all three services deployed and smoke-tested | `docs: phase 7 postmortem + retrospective` | Mock-answer all Phase-7 questions timed | 2.5h |
+| **Mon (D211)** | Formalizing Weeks 31/29's DocuVault prototype into a conversational "ask your documents" chatbot (multi-turn, citations) | Revisit own Week 31/29 notes + provider multi-turn chat docs | — | `POST /documents/chat` — multi-turn RAG chat over the DocuVault corpus, reusing Week 34's hybrid+rerank pipeline, with per-document citation | Integration test: a multi-turn conversation with a follow-up question resolves correctly via query rewriting | `feat: docuvault ask-your-documents chat endpoint` | Q1 | 3.5h |
+| **Tue (D212)** | Access-control-aware retrieval — never answer from a document the requester can't read (the Phase 5 deferred concern, solved now) | Revisit Phase 5 DocuVault "Possible Improvements" note | — | Filter Qdrant/ES retrieval results by the requesting user's document permissions before they ever reach the prompt | Test: a user without access to Document X never receives its content, even indirectly, via the chat answer | `feat: access-control-aware retrieval filter` | Q2 | 3.5h |
+| **Wed (D213)** | Evaluation + deployment for the DocuVault chatbot | — | — | Wire DocuVault chat into Week 33's eval harness (new golden set for conversational queries); deploy alongside existing DocuVault services | CI eval check + end-to-end deployment smoke test | `feat: docuvault chat eval + deploy`, tag `v0.1-docuvault-chat` | Q3 | 3.5h |
+| **Thu (D214)** | AtlasMarket product Q&A — scoping retrieval per-vendor, ingesting product catalog + reviews as the knowledge base | Revisit Phase 6 AtlasMarket vendor-scoping notes + Qdrant/ES metadata-filtering docs | — | Ingest AtlasMarket product descriptions/specs/reviews with `vendor_id`/`product_id` payload; vendor/product-scoped retrieval | Test: a question about vendor A's product never retrieves vendor B's chunks | `feat: atlasmarket product qa ingestion + scoped retrieval` | Q4 | 3.5h |
+| **Fri (D215)** | Generation + guardrails + API for the buyer-facing support assistant — no invented specs/prices, escalate to vendor when unsure | — | — | `POST /support/ask` — generation with a strict "answer only from retrieved product data" system prompt + output guardrail rejecting invented prices/specs; escalation path to vendor support | Test: a question with no matching product data triggers escalation, not a fabricated answer | `feat: atlasmarket support assistant api + no-fabrication guardrail` | Q5 | 3.5h |
+| **Sat (D216)** | **Phase 7 wrap review** | — | Mock-answer all Phase-7 questions timed, no notes | `docs/postmortem-phase7.md` comparing all three assistants; tag `v0.7-phase7` | Full suite, full CI, all three services deployed and smoke-tested | `docs: phase 7 postmortem + retrospective` | Mock-answer all Phase-7 questions timed | 2.5h |
 
 ---
 
 ## 14. Deliverables & GitHub Milestones
 
 **Milestone: `Phase 7 — CarePoint FAQ v0.1 + DocuVault Chat v0.1 + AtlasMarket Support v0.1`**
-- [ ] DocuVault semantic search over Qdrant (Week 27) with a golden eval
+- [ ] DocuVault semantic search over Qdrant (Week 31) with a golden eval
       set and CI-gated hit rate/MRR
 - [ ] LLM-as-judge faithfulness scoring wired into the eval harness
 - [ ] Cost/latency telemetry + feedback logging on every LLM-backed

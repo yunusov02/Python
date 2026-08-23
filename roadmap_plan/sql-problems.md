@@ -1,7 +1,10 @@
 # SQL Practice — Full Problem Bank
 
-130 problems, one per weekday across the 6-month roadmap (D1–D155), mixing
-two kinds of practice:
+130 problems, one per weekday across most of Track A (D1–D131, D145–D167),
+mixing two kinds of practice. Weeks 23–24 (Phase 5, Raft implementation)
+and Weeks 29–30 (Phase 6, system-design real builds) deliberately drop
+this daily grind — the day's own algorithmic/systems work already carries
+that load; see those weeks' framing in their phase files.
 
 - **Generic** problems are well-known LeetCode-SQL-style exercises. They're
   **paraphrased here with their own self-contained mini schema** (not copied
@@ -878,32 +881,32 @@ doesn't start with `'M'` — everyone else gets `0`.
 
 ---
 
-## Week 23 (Phase 6) — PayFlow Idempotency
+## Week 25 (Phase 6) — PayFlow Idempotency
 
-### D133 — PayFlow: duplicate idempotency keys with different request hashes
+### D145 — PayFlow: duplicate idempotency keys with different request hashes
 *Technique: Aggregation / integrity check*
 
 Find any `idempotency_key` associated with more than one distinct request
 hash — should return zero rows.
 
-### D134 — LeetCode SQL: Duplicate Emails revisited
+### D146 — LeetCode SQL: Duplicate Emails revisited
 *Technique: Aggregation*
 
 Apply the exact pattern from D23 to PayFlow's own `webhook_events` table,
 keyed on `provider_event_id` instead of email.
 
-### D135 — PayFlow: webhook_events received more than once per provider_event_id
+### D147 — PayFlow: webhook_events received more than once per provider_event_id
 *Technique: Aggregation*
 
-Same query as D134 — this is the dedup check your idempotent webhook
+Same query as D146 — this is the dedup check your idempotent webhook
 handler needs to satisfy.
 
-### D136 — PayFlow: payment_intents stuck 'pending' longer than 10 minutes
+### D148 — PayFlow: payment_intents stuck 'pending' longer than 10 minutes
 *Technique: Date filtering*
 
 Return payment intents that have been pending for more than 10 minutes.
 
-### D137 — LeetCode SQL: Employees Whose Manager Left the Company
+### D149 — LeetCode SQL: Employees Whose Manager Left the Company
 *Technique: Anti-join*
 Mini schema: `Employees(employee_id, name, manager_id, salary)`
 
@@ -912,33 +915,33 @@ table.
 
 ---
 
-## Week 24 (Phase 6) — PayFlow Security & Load Testing
+## Week 26 (Phase 6) — PayFlow Security & Load Testing
 
-### D139 — PayFlow: refunds exceeding their original payment amount
+### D151 — PayFlow: refunds exceeding their original payment amount
 *Technique: Join + integrity check*
 
 Find refunds whose amount exceeds the original payment's amount — should
 return zero rows.
 
-### D140 — PayFlow: same-day vs delayed refunds
+### D152 — PayFlow: same-day vs delayed refunds
 *Technique: Conditional aggregation*
 
 Label each refund `same-day` or `delayed` relative to its original payment,
 then count each group.
 
-### D141 — PayFlow: EXPLAIN ANALYZE the idempotency-key lookup under load
+### D153 — PayFlow: EXPLAIN ANALYZE the idempotency-key lookup under load
 *Technique: Query planning*
 
 Run `EXPLAIN ANALYZE` on the idempotency-key lookup, confirm it uses an
 index, then test what happens to the plan without one — that's the
 bottleneck the load test is supposed to find.
 
-### D142 — PayFlow: audit log for one payment_intent, ordered chronologically
+### D154 — PayFlow: audit log for one payment_intent, ordered chronologically
 *Technique: Filtering + ordering*
 
 Return every audit-log entry for a single `payment_intent`, oldest first.
 
-### D143 — LeetCode SQL: Find Followers Count
+### D155 — LeetCode SQL: Find Followers Count
 *Technique: Aggregation*
 Mini schema: `Followers(user_id, follower_id)`
 
@@ -947,30 +950,30 @@ Return each user's follower count. Then apply the same shape to PayFlow's
 
 ---
 
-## Week 25 (Phase 6) — AtlasMarket Vendor Scoping
+## Week 27 (Phase 6) — AtlasMarket Vendor Scoping
 
-### D145 — AtlasMarket: revenue per vendor this month
+### D157 — AtlasMarket: revenue per vendor this month
 *Technique: Join + aggregation*
 
 Return each vendor's total revenue for the current month.
 
-### D146 — LeetCode SQL: Product Sales Analysis III
+### D158 — LeetCode SQL: Product Sales Analysis III
 *Technique: Window function*
 Mini schema: `Sales(sale_id, product_id, year, quantity, price)`
 
 Return the sales rows from the first year each product was ever sold.
 
-### D147 — AtlasMarket: vendors with no products listed
+### D159 — AtlasMarket: vendors with no products listed
 *Technique: Anti-join*
 
 Return vendors who haven't listed a single product yet.
 
-### D148 — AtlasMarket: top 5 vendors by order count
+### D160 — AtlasMarket: top 5 vendors by order count
 *Technique: Aggregation*
 
 Return the 5 vendors with the most distinct orders.
 
-### D149 — LeetCode SQL: The Most Recent Three Orders
+### D161 — LeetCode SQL: The Most Recent Three Orders
 *Technique: Window function*
 Mini schema: `Customers(customer_id, name)`,
 `Orders(order_id, order_date, customer_id)`
@@ -979,26 +982,26 @@ Return each customer's 3 most recent orders.
 
 ---
 
-## Week 26 (Phase 6) — AtlasMarket Checkout & Capstone Review
+## Week 28 (Phase 6) — AtlasMarket Checkout & Capstone Review
 
-### D151 — AtlasMarket: orders split across 2+ vendors
+### D163 — AtlasMarket: orders split across 2+ vendors
 *Technique: Aggregation*
 
 Return orders that were split across two or more vendors.
 
-### D152 — AtlasMarket: per-vendor payout reconciliation
+### D164 — AtlasMarket: per-vendor payout reconciliation
 *Technique: Join + comparison*
 
 For each vendor, compare their ledger payout total against their expected
 order total, and flag any mismatch.
 
-### D153 — Capstone review: rewrite Week 12's partition-aware query from memory
+### D165 — Capstone review: rewrite Week 14's partition-aware query from memory
 Redo D68 without looking it up.
 
-### D154 — Capstone review: rewrite Week 6's window-function ranking query from memory
+### D166 — Capstone review: rewrite Week 8's window-function ranking query from memory
 Redo D31 without looking it up.
 
-### D155 — Capstone: the one query you'd hand an interviewer
+### D167 — Capstone: the one query you'd hand an interviewer
 Write, cleanly and from scratch, the query for "top vendor by revenue this
 month" — no notes this time. It should be something you'd be comfortable
 reading aloud, cold, in a live interview.

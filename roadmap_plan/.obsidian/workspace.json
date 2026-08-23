@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "dsa-problems.md",
+                "file": "phase-7-llm-zoomcamp.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "dsa-problems"
+              "title": "phase-7-llm-zoomcamp"
             }
           }
         ]
@@ -187,19 +187,25 @@
   },
   "active": "3d6e600ecffb8c50",
   "lastOpenFiles": [
-    "scripts/gen_progress.py.tmp.7618.4d98baca9b18",
-    "scripts/__pycache__/gen_progress.cpython-312.pyc",
-    "scripts/__pycache__",
-    "dsa-problems.md.tmp.7618.48649bb55006",
-    "dsa-problems.md.tmp.7618.e9eefaa5d3e2",
-    "dsa-problems.md.tmp.7618.f2f4fb1006fc",
-    "dsa-problems.md.tmp.7618.3e62c18330e3",
+    "phase-6-capstone.md",
+    "phase-5-scaling-architecture.md",
+    "sedoGx0PY",
+    "sedzR0Zwz",
+    "sedIDImKu",
+    "00-curriculum-overview.md.tmp.5862.ff7c854b4867",
+    "00-curriculum-overview.md.tmp.5862.19ded7408925",
+    "00-curriculum-overview.md.tmp.5862.54d63d1e9949",
+    "00-curriculum-overview.md.tmp.5862.a8cab18d72f5",
+    "00-curriculum-overview.md.tmp.5862.ce1b3e37dc8b",
+    "00-curriculum-overview.md.tmp.5862.fb010ef6a411",
+    "sedLxAXrG",
+    "phase-4-microservices-infra.md",
+    "phase-2-concurrency-django-caching.md",
     "phase-1-foundations.md",
+    "dsa-problems.md",
     "phase-7-llm-zoomcamp.md",
     "phase-3-distributed-systems.md",
-    "phase-2-concurrency-django-caching.md",
     "phase-9-ml-zoomcamp.md",
-    "phase-6-capstone.md",
     "00-curriculum-overview.md",
     "phase-7-ml-zoomcamp.md"
   ]

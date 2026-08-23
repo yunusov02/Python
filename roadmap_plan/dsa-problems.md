@@ -1,12 +1,16 @@
 # DSA Practice — Full Problem Bank
 
-130 problems, one per weekday across the 6-month roadmap (D1–D155), ordered as a
-beginner-paced progression (roughly NeetCode150 order): arrays/hashing → two
-pointers → sliding window → stacks → binary search → linked lists → trees →
-tries/heaps → backtracking → graphs → 1-D DP → intervals/greedy → 2-D DP → bit
-manipulation/math → mixed hard review. Saturdays have no new problem — they
-link back to the week's Thursday problem for a from-memory redo (see the phase
-files).
+130 problems, one per weekday across most of Track A (D1–D131, D145–D167),
+ordered as a beginner-paced progression (roughly NeetCode150 order):
+arrays/hashing → two pointers → sliding window → stacks → binary search →
+linked lists → trees → tries/heaps → backtracking → graphs → 1-D DP →
+intervals/greedy → 2-D DP → bit manipulation/math → mixed hard review.
+Saturdays have no new problem — they link back to the week's Thursday
+problem for a from-memory redo (see the phase files). Weeks 23–24
+(Phase 5, Raft implementation) and Weeks 29–30 (Phase 6, system-design
+real builds) deliberately drop this daily grind — the day's own
+algorithmic/systems work already carries that load; see those weeks'
+framing in their phase files.
 
 Each entry names the problem, its difficulty/pattern, and a full statement of
 what to build — solve it however you like (any language, but do it in Python
@@ -862,33 +866,33 @@ Given strings `s1`, `s2`, `s3`, determine if `s3` is formed by interleaving
 
 ---
 
-## Week 23 (Phase 6) — 2-D DP III & Bit Manipulation I
+## Week 25 (Phase 6) — 2-D DP III & Bit Manipulation I
 
-### D133 — Longest Increasing Path in a Matrix
+### D145 — Longest Increasing Path in a Matrix
 *Difficulty: Hard · Pattern: DFS + Memoization*
 
 Given an `m x n` matrix, return the length of the longest strictly
 increasing path, moving up/down/left/right.
 
-### D134 — Distinct Subsequences
+### D146 — Distinct Subsequences
 *Difficulty: Hard · Pattern: 2-D DP*
 
 Given strings `s` and `t`, return the number of distinct subsequences of `s`
 that equal `t`.
 
-### D135 — Edit Distance
+### D147 — Edit Distance
 *Difficulty: Medium · Pattern: 2-D DP*
 
 Given `word1` and `word2`, return the minimum number of insert/delete/
 replace operations to convert `word1` into `word2`.
 
-### D136 — Single Number
+### D148 — Single Number
 *Difficulty: Easy · Pattern: Bit Manipulation*
 
 Given a non-empty array where every element appears twice except for one,
 find that single element. (XOR is your friend.)
 
-### D137 — Number of 1 Bits
+### D149 — Number of 1 Bits
 *Difficulty: Easy · Pattern: Bit Manipulation*
 
 Given an unsigned integer, return the number of `1` bits in its binary
@@ -896,66 +900,66 @@ representation (Hamming weight).
 
 ---
 
-## Week 24 (Phase 6) — Bit Manipulation II & Math/Geometry I
+## Week 26 (Phase 6) — Bit Manipulation II & Math/Geometry I
 
-### D139 — Counting Bits
+### D151 — Counting Bits
 *Difficulty: Easy · Pattern: Bit Manipulation / DP*
 
 Given `n`, return an array `ans` where `ans[i]` is the number of `1` bits in
 `i`, for every `0 ≤ i ≤ n`.
 
-### D140 — Reverse Bits
+### D152 — Reverse Bits
 *Difficulty: Easy · Pattern: Bit Manipulation*
 
 Reverse the bits of a given 32-bit unsigned integer.
 
-### D141 — Missing Number
+### D153 — Missing Number
 *Difficulty: Easy · Pattern: Bit Manipulation / Math*
 
 Given an array containing `n` distinct numbers from `0` to `n`, find the one
 number missing from the range.
 
-### D142 — Rotate Image
+### D154 — Rotate Image
 *Difficulty: Medium · Pattern: Math / Matrix*
 
 Given an `n x n` 2D matrix representing an image, rotate it 90 degrees
 clockwise **in place**.
 
-### D143 — Spiral Matrix
+### D155 — Spiral Matrix
 *Difficulty: Medium · Pattern: Math / Matrix*
 
 Given an `m x n` matrix, return all its elements in spiral order.
 
 ---
 
-## Week 25 (Phase 6) — Math/Geometry II
+## Week 27 (Phase 6) — Math/Geometry II
 
-### D145 — Set Matrix Zeroes
+### D157 — Set Matrix Zeroes
 *Difficulty: Medium · Pattern: Matrix*
 
 Given an `m x n` matrix, if an element is `0`, set its entire row and column
 to `0`. Bonus: do it with `O(1)` extra space.
 
-### D146 — Happy Number
+### D158 — Happy Number
 *Difficulty: Easy · Pattern: Math / Hashing*
 
 Repeatedly replace a number with the sum of the squares of its digits. If
 this reaches `1`, the number is "happy." Determine if a given number is
 happy (watch for infinite loops).
 
-### D147 — Plus One
+### D159 — Plus One
 *Difficulty: Easy · Pattern: Math*
 
 Given a large integer represented as an array of digits, increment the
 integer by one and return the resulting array.
 
-### D148 — Pow(x, n)
+### D160 — Pow(x, n)
 *Difficulty: Medium · Pattern: Math / Binary Exponentiation*
 
 Implement `pow(x, n)` — compute `x` raised to the power `n` in `O(log n)`
 time.
 
-### D149 — Merge Sorted Array
+### D161 — Merge Sorted Array
 *Difficulty: Easy · Pattern: Two Pointers*
 
 Given two sorted arrays `nums1` (with extra trailing space) and `nums2`,
@@ -963,23 +967,23 @@ merge `nums2` into `nums1` in place as one sorted array.
 
 ---
 
-## Week 26 (Phase 6) — Mixed Hard Review
+## Week 28 (Phase 6) — Mixed Hard Review
 
-### D151 — Design Twitter
+### D163 — Design Twitter
 *Difficulty: Medium · Pattern: Design / Heap*
 
 Design a simplified Twitter: post tweets, follow/unfollow users, and
 retrieve the 10 most recent tweet IDs in a user's news feed (their own posts
 plus everyone they follow).
 
-### D152 — LFU Cache
+### D164 — LFU Cache
 *Difficulty: Hard · Pattern: Design / Hashing*
 
 Design a Least Frequently Used cache with `get`/`put` in `O(1)` average
 time; on eviction, remove the least frequently used key, breaking ties by
 least recently used.
 
-### D153 — Word Search II
+### D165 — Word Search II
 *Difficulty: Hard · Pattern: Backtracking + Trie*
 
 Given an `m x n` board of characters and a list of `words`, return every
@@ -987,12 +991,12 @@ word that can be built from sequentially adjacent cells (no cell reused per
 word). Build a Trie of the word list first — this is the payoff for Week
 11's Trie problems.
 
-### D154 — Merge k Sorted Lists
+### D166 — Merge k Sorted Lists
 *Difficulty: Hard · Pattern: Heap / Divide & Conquer*
 
 Given an array of `k` sorted linked lists, merge them into one sorted list.
 
-### D155 — Alien Dictionary
+### D167 — Alien Dictionary
 *Difficulty: Hard · Pattern: Graphs / Topological Sort*
 
 Given a list of words that are sorted lexicographically according to the

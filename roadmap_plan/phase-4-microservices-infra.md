@@ -21,14 +21,18 @@
   a one-week crash course crammed in at the very end.
 
 ## 2. Technologies Introduced
-Nginx (reverse proxy, basic API Gateway routing), Docker Compose multi-
-service orchestration at real scale, GitHub Actions full CI/CD (build,
-push image, deploy), zero-downtime deploy technique (health-check gated
-rollover), `pip-audit`/`gitleaks`/Trivy as CI security gates (dependency,
-secret, and container-image scanning), Prometheus, Grafana, Sentry,
-structured health checks, S3/MinIO + presigned URLs, React + TypeScript +
-Vite + TanStack Query (first real frontend page, reused and extended in
-Phases 5 and 6).
+Nginx (reverse proxy, basic API Gateway routing), networking fundamentals
+(TCP/UDP, HTTP/1.1 vs HTTP/2, TLS handshake, DNS resolution), Docker
+Compose multi-service orchestration at real scale, resilience patterns
+(retry with backoff+jitter, a hand-rolled circuit breaker) applied to the
+system's first real synchronous service-to-service call, gRPC + Protobuf
+(one internal call rebuilt and benchmarked against REST), GitHub Actions
+full CI/CD (build, push image, deploy), zero-downtime deploy technique
+(health-check gated rollover), `pip-audit`/`gitleaks`/Trivy as CI security
+gates (dependency, secret, and container-image scanning), Prometheus,
+Grafana, Sentry, structured health checks, S3/MinIO + presigned URLs,
+React + TypeScript + Vite + TanStack Query (first real frontend page,
+reused and extended in Phases 5 and 6).
 
 Deliberately not yet: Kubernetes (Phase 5), CQRS/Outbox/Saga (Phase 5),
 Elasticsearch (Phase 5).
@@ -96,7 +100,10 @@ two concurrent bookings and watch the DB reject the second one).
 **Authentication & Permissions:** `auth-service` issues the JWT,
 `clinic-service` validates it via a shared secret/public key — your first
 taste of auth as a *separate service* other services trust rather than
-re-implement.
+re-implement. Validation itself is local (no network call per request);
+the first genuine synchronous service-to-service call — and the one that
+actually needs resilience patterns — shows up next week, in LedgerBase's
+`invoicing-service` → `ledger-service` write.
 
 **Caching:** doctor schedule lookups cached with Redis, invalidated on any
 booking/cancellation for that doctor+date.
@@ -236,7 +243,9 @@ exception tracking across all services. You inject a deliberate bug
 (unbalanced entry slipping through App validation) and find it via Sentry
 before checking the code.
 
-**Deployment:** zero-downtime deploy, live.
+**Deployment:** zero-downtime deploy, live — still a single VPS, though;
+real cloud infrastructure (IAM, VPC, a managed database) is a Phase 6
+topic, once AtlasMarket is the system worth the setup cost.
 
 **Scaling Strategy:** written notes on read-replica strategy for
 `trial-balance` reporting once write volume grows — a concrete Phase 5
@@ -250,6 +259,8 @@ callback (replication).
 4. What does Sentry catch that your logs alone wouldn't have surfaced as
    fast?
 5. Why didn't you cache account balances?
+6. Walk through your circuit breaker's three states — what moves it
+   between them, and why retry-with-backoff alone isn't enough?
 
 **Possible Improvements:** multi-currency ledger, accountant-facing
 export (CSV/PDF), automated bank reconciliation import.
@@ -274,42 +285,63 @@ without checking whether staleness is actually acceptable here (it isn't).
 | Presigned URL demo against MinIO (upload/download without API in the middle) | 15 | Object storage, presigned URL security model |
 | Zero-downtime deploy script (health-check-gated container swap) | 17 | The actual mechanics behind "zero downtime" |
 | Custom health-check aggregator (checks DB+Redis+RabbitMQ, one `/health`) | 18 | Composability of health checks |
+| Minimal gRPC "hello service" + rebuild `invoicing-service` → `ledger-service` as gRPC, benchmark payload size/p95 latency vs the REST version | 18 | Protobuf schema + codegen basics; an honest, measured answer to "would gRPC have been better here," not a guess |
 
 ---
 
 ## 6. Books & Documentation
 - Nginx docs: reverse proxy + load balancing guide (Weeks 14–15).
+- *High Performance Browser Networking* (Ilya Grigorik, free online,
+  hpbn.co) — Ch.2 (TCP) + the TLS chapter, read alongside the Saturday of
+  Week 14.
+- *Release It!* (Michael Nygard) — Stability Patterns chapter (retry,
+  circuit breaker) — Week 16, the day `invoicing-service` first calls
+  `ledger-service` for real.
 - *Building Microservices* (Newman) Ch. 6 (Deployment) during Week 17.
 - Prometheus docs: "Getting Started" + Grafana "Getting Started" (Week 17–18).
 - Sentry docs: Python SDK integration guide.
 - AWS S3 docs: presigned URL section; MinIO docs for local S3-compatible dev.
+- gRPC docs (grpc.io/docs) — "Introduction to gRPC," Python quickstart —
+  Week 18, for the gRPC-vs-REST mini-project.
 - React docs (react.dev) "Quick Start"; TanStack Query docs "Quick Start" — Week 15.
 
 ---
 
 ## 7. Weekly Interview Question Sets
 
-**Week 14 — Service split, Nginx**
+**Week 14 — Service split, Nginx, networking**
 1. What's the actual cost of splitting `auth-service` out — be specific.
 2. Reverse proxy vs load balancer vs API Gateway — where's the line?
+3. HTTP/1.1 vs HTTP/2 — what problem does the second one actually fix?
+4. Walk through what happens, step by step, in a TLS handshake.
 
 **Week 15 — Object storage, presigned URLs**
 1. Why not stream file bytes through your API for uploads?
 2. What does a presigned URL actually authorize, and for how long should
    it be valid?
+3. Why test a scheduled Celery Beat task with `freezegun` instead of
+   waiting for real time to pass?
 
-**Week 16 — Double-entry accounting, money-as-integers**
+**Week 16 — Double-entry accounting, money-as-integers, resilience**
 1. Show, concretely, a float rounding bug in financial math.
 2. Why enforce balance at both the app and DB layer?
+3. Why retry only idempotent calls — what breaks if you naively retry a
+   non-idempotent write to `ledger-service`?
+4. Walk through your circuit breaker's closed/open/half-open states.
 
 **Week 17 — CI/CD, zero-downtime deploy**
 1. Walk through your deploy pipeline step by step, failure modes included.
 2. What's the rollback path if the new version's health check never
    passes?
+3. What's the difference between what `pip-audit`, `gitleaks`, and Trivy
+   each catch, and why is a high-severity finding a build failure instead
+   of a warning?
 
-**Week 18 — Monitoring**
+**Week 18 — Monitoring, gRPC**
 1. What's the difference between a metric, a log, and a trace?
 2. How did Sentry help you find a bug faster than logs would have?
+3. What did your gRPC-vs-REST benchmark actually show, and where would
+   you NOT recommend gRPC based on it?
 
 ---
 
@@ -322,7 +354,7 @@ without checking whether staleness is actually acceptable here (it isn't).
 | Wed (D81) | `EXCLUDE` constraints in Postgres | Postgres docs `btree_gist` | — | `Appointment` model with `EXCLUDE` constraint on overlapping slots | Test overlapping booking rejected at DB level | `feat: appointment model with exclude constraint` | Q2 | Clone Graph | CarePoint: appointment count per doctor per day | 3.5h |
 | Thu (D82) | Concurrent booking race | — | — | `POST /appointments` endpoint, deliberately fire 2 concurrent identical bookings | Integration test: exactly one succeeds | `feat: appointment booking endpoint` | — | Islands and Treasure (Walls and Gates) | CarePoint: patients with no documents on file | 3.5h |
 | Fri (D83) | Wiring Nginx as the single entrypoint | — | — | `nginx.conf` routing `/auth/*` → auth-service, rest → clinic-service, added to Compose | Manual + automated smoke test through Nginx | `feat: nginx gateway routing` | Q3 | Rotting Oranges | The Most Recent Orders for Each Product | 3.5h |
-| Sat (D84) | **Review** | — | Redo nginx.conf from memory | — | Full suite | — | Answer Week-14 Qs unscripted | Review: redo Thursday's problem from memory — Islands and Treasure (Walls and Gates) | Review: rewrite Tuesday's query from memory, then extend it — Patients With a Condition | 2.5h |
+| Sat (D84) | **Review**; networking primer — TCP vs UDP, HTTP/1.1 vs HTTP/2, the TLS handshake, DNS resolution (what Nginx is actually terminating/proxying) | *High Performance Browser Networking* (free online) Ch.2 + TLS chapter | Redo nginx.conf from memory; capture a real TLS handshake with `openssl s_client` against a local HTTPS endpoint | — | Full suite | — | Answer Week-14 Qs unscripted | Review: redo Thursday's problem from memory — Islands and Treasure (Walls and Gates) | Review: rewrite Tuesday's query from memory, then extend it — Patients With a Condition | 3h |
 
 ---
 
@@ -346,9 +378,9 @@ without checking whether staleness is actually acceptable here (it isn't).
 | Mon (D91) | Double-entry bookkeeping fundamentals | (any intro accounting primer) | — | New repo `ledgerbase/`, `Account`, `JournalEntry`, `JournalLine` models — **float version, on purpose** | Test that reveals float drift after many entries | `feat: ledger models (float version — deliberate bug)` | Q1 | Number of Connected Components in an Undirected Graph | LedgerBase: verify every journal_entry balances | 3.5h |
 | Tue (D92) | Why floats break money math | — | — | Fix: convert all money fields to integer cents | Regression test proving the float bug is gone | `fix: money as integer cents` | — | Graph Valid Tree | LedgerBase: account balance = debits minus credits | 3.5h |
 | Wed (D93) | Enforcing balance: app + DB layer | Postgres `CHECK` constraint docs | — | `CHECK` constraint on `journal_lines`, app-level balance validation in service | Test unbalanced entry rejected both ways | `feat: enforce balanced entries (app + db)` | Q2 | Word Ladder | Rising Temperature — window function version | 3.5h |
-| Thu (D94) | Invoicing domain | — | — | `Invoice`, `Payment` models, `invoicing-service` calling `ledger-service` internally | Integration test invoice→payment→journal entry | `feat: invoicing service + ledger integration` | — | Reconstruct Itinerary | LedgerBase: unbalanced entries that slipped through | 3.5h |
+| Thu (D94) | Invoicing domain; resilient service-to-service calls — retry with exponential backoff+jitter, a hand-rolled circuit breaker (closed/open/half-open) | *Release It!* (Nygard) stability patterns chapter | Toy flaky endpoint (fails 50% of the time), wrap it in retry+circuit-breaker, force it to trip and recover | `Invoice`, `Payment` models, `invoicing-service` calling `ledger-service` internally, wrapped in retry-with-backoff + a circuit breaker (this is the system's first real synchronous cross-service call, so it's also the first to get resilience) | Integration test invoice→payment→journal entry | `feat: invoicing service + ledger integration (resilient: retry + circuit breaker)` | — | Reconstruct Itinerary | LedgerBase: unbalanced entries that slipped through | 3.5h |
 | Fri (D95) | Trial balance report | — | — | `GET /reports/trial-balance` | Test report reconciles to zero | `feat: trial balance report` | Q3 | Min Cost to Connect All Points | Movie Rating | 3.5h |
-| Sat (D96) | **Review** | — | Redo the float-bug repro from memory, explain the fix | Add `ledgerbase` to Nginx routing | Full suite | — | Answer Week-16 Qs unscripted | Review: redo Thursday's problem from memory — Reconstruct Itinerary | Review: rewrite Tuesday's query from memory, then extend it — LedgerBase: account balance = debits minus credits | 2.5h |
+| Sat (D96) | **Review**; fault injection on the resilient invoicing→ledger call | — | Redo the float-bug repro from memory, explain the fix | Add `ledgerbase` to Nginx routing; kill `ledger-service` mid-call, confirm the circuit trips and `invoicing-service` fails clean (409/503) instead of hanging | Full suite | — | Answer Week-16 Qs unscripted | Review: redo Thursday's problem from memory — Reconstruct Itinerary | Review: rewrite Tuesday's query from memory, then extend it — LedgerBase: account balance = debits minus credits | 3h |
 
 ---
 
@@ -390,6 +422,10 @@ without checking whether staleness is actually acceptable here (it isn't).
 - [ ] Full CI/CD: build, push, zero-downtime deploy, verified rollback path
 - [ ] Prometheus + Grafana + Sentry wired across all services, one bug
       found via Sentry and documented
+- [ ] `invoicing-service` → `ledger-service` call wrapped in retry+backoff
+      and a circuit breaker, proven to trip under fault injection
+- [ ] One internal call rebuilt as gRPC, benchmarked against its REST
+      equivalent
 - [ ] Tag: `v0.4-phase4`
 
 ## 14. Skills Acquired Checklist
@@ -403,6 +439,9 @@ without checking whether staleness is actually acceptable here (it isn't).
 - [ ] Zero-downtime deploy technique, including tested rollback
 - [ ] Prometheus + Grafana + Sentry, used to find a real injected bug
 - [ ] React + TypeScript + Vite + TanStack Query: first real page consuming your own API
+- [ ] Networking fundamentals: TCP vs UDP, HTTP/1.1 vs HTTP/2, TLS handshake, DNS — a real handshake captured and read, not just named
+- [ ] Retry-with-backoff + a hand-rolled circuit breaker, applied to a real service-to-service call and proven to trip under fault injection
+- [ ] gRPC + Protobuf — one real internal call rebuilt and benchmarked against its REST equivalent
 
 ---
 

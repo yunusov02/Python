@@ -202,18 +202,25 @@ Celery in Phase 3.
 4. What determines a good Redis TTL for a given endpoint?
 5. How does DRF's permission class chain execute?
 
-**Week 7 — Queues, locks, early Celery**
-1. Why does an unbounded `queue.Queue` risk memory blowup, and how do you
-   bound it safely?
-2. What happens to a Celery task if the worker crashes mid-execution?
-3. At-least-once vs exactly-once task delivery — which is realistic and why?
-4. When would you choose a `Lock` over a `Semaphore`?
-
-**Week 8 — JWT refresh, throttling, review**
+**Week 7 — JWT refresh, throttling, queues**
 1. Why rotate refresh tokens, and what's the risk if you don't?
 2. How would you rate-limit per-user vs per-IP, and when does each matter?
-3. What's the tradeoff of storing sessions in Redis vs stateless JWT?
-4. Explain the exact request path when a cached response is served vs missed.
+3. Why does an unbounded `queue.Queue` risk memory blowup, and how do you
+   bound it safely?
+4. When would you choose a `Lock` over a `Semaphore`?
+5. What's the actual permission check that stops a non-manager from
+   approving a leave request, and where does it live?
+
+**Week 8 — Celery, idempotent tasks, review**
+1. Why are synchronous side-effects inside a request dangerous — what's
+   the concrete failure mode you measured this week?
+2. What happens to a Celery task if the worker crashes mid-execution?
+3. At-least-once vs exactly-once task delivery — how does `retry(3)`
+   relate to making the email task idempotent?
+4. How would you make a monthly accrual calculation safe to run twice
+   without double-crediting an employee?
+5. Walk through your CI pipeline now that Redis and a Celery worker are
+   required service containers — what would break if either were missing?
 
 ---
 

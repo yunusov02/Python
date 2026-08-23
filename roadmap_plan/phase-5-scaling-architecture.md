@@ -1,5 +1,5 @@
 # PHASE 5 — Scaling & Advanced Architecture
-### Weeks 19–22 (4 weeks) · 24 working days
+### Weeks 19–24 (6 weeks) · 36 working days
 
 ---
 
@@ -21,16 +21,26 @@
   DocuVault's search page) reusing Phase 4's setup instead of relearning
   it — polling and debounced-input patterns, the two UI problems these
   particular backends actually create.
+- Go past *watching* consensus happen on etcd (Week 22) to *implementing*
+  it: build a working Raft node from scratch — leader election, log
+  replication, and the safety properties that make it correct — tested
+  under a real simulated network partition, not just narrated in an
+  interview answer.
 
 ## 2. Technologies Introduced
 Outbox pattern, CQRS, Saga (overview + one hands-on choreographed example),
 Elasticsearch/OpenSearch, database replication (read replicas), sharding
-(conceptual + one hands-on partitioning-by-key exercise), Kubernetes
-(`kind`/`minikube`, Pods, Deployments, Services, ConfigMaps, Secrets),
-GitOps (conceptual — ArgoCD/Flux reconciliation model, contrasted with
-manual `kubectl apply`), React + TypeScript + TanStack Query (continued
-from Phase 4 — polling for FleetTrack's dashboard, debounced search input
-for DocuVault).
+(conceptual + one hands-on partitioning-by-key exercise), consistent
+hashing (hand-rolled ring with virtual nodes, benchmarked against naive
+modulo hashing), Kubernetes (`kind`/`minikube`, Pods, Deployments,
+Services, ConfigMaps, Secrets), Raft/consensus — conceptual fluency via a
+real local 3-node etcd cluster (Week 22), *then* a from-scratch Raft
+implementation (Weeks 23–24: leader election, log replication, safety
+properties, partition testing), GitOps (conceptual — ArgoCD/Flux
+reconciliation model, contrasted with manual `kubectl apply`), React +
+TypeScript + TanStack Query (continued from Phase 4 — polling for
+FleetTrack's dashboard, a WebSocket-push stretch alternative, debounced
+search input for DocuVault).
 
 Deliberately not yet: Event Sourcing as a full system (overview only, in
 Week 20), full production Kubernetes (Helm, operators — named as "beyond
@@ -71,7 +81,11 @@ table) rebuilt from the same events the outbox relay publishes — kept
 eventually consistent, explicitly *not* real-time-guaranteed, and you write
 down why that tradeoff is acceptable here (a few seconds of staleness on a
 dashboard is fine; it would not be fine for the stock-reservation logic
-back in WareFlow).
+back in WareFlow). The dashboard itself polls for updates (below) rather
+than pushing them — a second, honest "not yet" call: Week 20's stretch
+mini-project rebuilds the same read model behind a WebSocket push instead,
+specifically so the polling-vs-push tradeoff is something you've felt on
+both sides, not just picked once and never revisited.
 
 **Saga (overview, one hands-on example):** a delivery cancellation after
 pickup needs to: reverse a driver assignment, notify the customer, and
@@ -205,7 +219,13 @@ services as Pods behind a Service, config via ConfigMap, secrets via
 Secret objects, and a Deployment with 2 replicas — enough to explain in an
 interview what each object does and why, explicitly scoped as
 fundamentals, not production operations (no Helm, no operators, no
-autoscaling — named as next steps beyond this bootcamp).
+autoscaling — named as next steps beyond this bootcamp). What makes
+Kubernetes's own control plane agree on cluster state across nodes —
+Raft-based consensus, the same primitive underneath RabbitMQ clustering
+and Kafka's controller election — is used here without being explained on
+Monday; Tuesday opens that box for real with a 3-node local etcd cluster
+(etcd runs Raft under the hood, and is in fact what `kind`'s own control
+plane uses one instance of).
 
 **Replication/Sharding (conceptual + one hands-on piece):** set up a
 Postgres read replica locally, route the search-indexing consumer's reads
@@ -213,7 +233,12 @@ to the replica, and write a decision record on what you'd shard by if
 `document_versions` ever needed it (document_id is the natural shard key)
 — sharding itself is not implemented, deliberately, since it's rarely
 justified below very large scale and you should be able to say so in an
-interview.
+interview. *How* you'd distribute those shards (consistent hashing vs
+naive `hash(key) % N`) is answered with a real, hand-built consistent-
+hashing ring (virtual nodes included) benchmarked against naive modulo
+hashing on a synthetic key set — the decision record's shard-key
+recommendation gets a measured redistribution-percentage number behind it,
+not just an assertion.
 
 **Testing Strategy:** test that the Elasticsearch index recovers from a
 missed event (a `reindex` endpoint you build specifically for this — since
@@ -222,9 +247,12 @@ ES is derived data, it must always be rebuildable from Postgres).
 **Common Interview Questions**
 1. Why is Elasticsearch never the source of truth here?
 2. Walk through what a Kubernetes Deployment gives you over `docker run`.
-3. What would you shard `document_versions` by, and why?
+3. What would you shard `document_versions` by, and why — and what does
+   your consistent-hashing benchmark add to that answer over a hand-wave?
 4. How do you keep a derived search index consistent with its source of
    truth over time?
+5. What does Kubernetes's own control plane use consensus for, and what
+   would you expect to happen if you killed its etcd leader?
 
 **Possible Improvements:** access-control-aware search (don't show
 documents the requester can't read — a real production concern, deferred
@@ -242,50 +270,213 @@ that ordering mattered); sharding prematurely.
 
 ---
 
-## 5. Mini-Projects
+## 5. PROJECT — Raft Consensus, Implemented From Scratch
+
+**Business Problem (why this earns two weeks):** Week 22 had you watch a
+3-node etcd cluster elect a leader and survive a kill — genuinely useful,
+but it's the same gap as reading about a deadlock instead of reproducing
+one, which is exactly why Phase 3 made you reproduce a real deadlock
+instead of just describing MVCC. Kubernetes's control plane, RabbitMQ
+clustering (named in Phase 3), and Kafka's controller election all lean on
+this same primitive. "I've read the Raft paper" and "I've implemented
+leader election and watched it survive a partition I induced myself" are
+different interview answers, and only one of them survives a follow-up
+question.
+
+**Scope, stated honestly:** this is not a production-grade consensus
+library — no dynamic membership changes, no log compaction/snapshotting,
+no optimized batching. It is a correct, tested implementation of the core
+of the Raft paper (Ongaro & Ousterhout): leader election, log replication,
+and the five safety properties, running as real separate processes
+communicating over local HTTP, not a single-process simulation.
+
+**Architecture (3–5 node cluster, one process per node)**
+```
+Each node: Follower | Candidate | Leader  (state machine, one of three)
+
+RequestVote RPC   — candidate asks for votes during an election
+AppendEntries RPC — leader replicates log entries AND serves as heartbeat
+                     (empty AppendEntries = heartbeat, when no new entries)
+
+Node state (persisted conceptually, in-memory here):
+  currentTerm, votedFor, log[] (each entry: term, command)
+Volatile state:
+  commitIndex, lastApplied  (all nodes)
+  nextIndex[], matchIndex[]  (leader only, per follower)
+```
+
+**Week 23 — Leader Election & Log Replication**
+Build the state machine (Follower/Candidate/Leader transitions), the
+election timeout (randomized, per the paper, specifically to make
+split-votes rare rather than impossible — and you'll cause one on purpose
+to see why randomization matters), `RequestVote` RPC handling and term
+comparison, then `AppendEntries` for both heartbeats and real log
+replication, `nextIndex`/`matchIndex` tracking, and the leader's commit-
+index advancement rule (a majority must have replicated an entry before
+it's committed). By Friday, five real processes on your machine elect a
+leader and replicate a client-submitted command to a majority.
+
+**Week 24 — Safety Properties Under Fault**
+The Raft paper names five safety properties (Election Safety, Leader
+Append-Only, Log Matching, Leader Completeness, State Machine Safety) —
+Monday is spent stating each in your own words with a concrete scenario
+where violating it would corrupt the system. Tuesday–Thursday you build a
+fault-injection harness: drop messages between a chosen subset of nodes
+(simulating a network partition), kill a node process outright, and kill
+the leader specifically mid-replication — then assert, automatically, that
+no committed log entry is ever lost, overwritten, or observed differently
+by two nodes. Friday applies the implementation to something concrete: it
+becomes the coordination layer for a toy leader-election use case (which
+of N workers is allowed to run a scheduled job right now) — the exact
+mechanism `system-design-problems.md`'s SD14 (Distributed Job Scheduler)
+asks you to design on paper, and the direct foundation for Phase 6's real
+Distributed Job Scheduler build (Week 30).
+
+**Testing Strategy:** unit tests for the state machine's transition rules
+(what turns a Follower into a Candidate, what turns a Candidate back into a
+Follower on discovering a higher term); an integration test that starts a
+5-node cluster, kills the leader, and asserts a new leader is elected
+within a bounded number of election timeouts; a partition test that splits
+5 nodes into a 3-node majority and a 2-node minority and asserts *only* the
+majority side can elect a leader and commit entries (the minority must not
+— this is the concrete, testable meaning of "split-brain prevention");
+a "torture test" that randomly kills and restarts nodes and drops
+messages for an extended run, asserting log consistency holds throughout,
+not just at the end.
+
+**Common Interview Questions**
+1. Why is the election timeout randomized, specifically — what goes wrong
+   with a fixed timeout?
+2. Walk through exactly what makes a log entry "committed," and why a
+   leader can't unilaterally commit an entry the moment it appends it
+   locally.
+3. Two nodes have logs that disagree past a certain index — walk through
+   how `nextIndex` converges them to agreement.
+4. In your partition test, why does the minority side correctly fail to
+   elect a leader instead of just running slower?
+5. What does Raft NOT give you that a real production system (etcd, your
+   Week 22 exercise) adds on top?
+
+**Possible Improvements:** log compaction/snapshotting (an unbounded log is
+the most obvious gap versus production Raft), dynamic cluster membership
+changes (adding/removing a node without downtime), batching multiple
+client commands per `AppendEntries` round trip for throughput.
+
+**What Companies Usually Do Differently:** nobody hand-rolls Raft for a
+real system — they reach for etcd, Consul, or a Raft library (`hashicorp/
+raft`, `etcd-io/raft`) exactly because getting the edge cases (log
+compaction, membership changes, network partitions lasting arbitrarily
+long) production-correct is a multi-year effort. You build it once, by
+hand, specifically so reaching for the library later is an informed
+choice, not a black box — the same reasoning Phase 8 uses for not
+adopting LangChain until you've built a tool loop by hand first.
+
+**Common Mistakes:** committing a log entry based on it merely being
+*sent* to a majority instead of *acknowledged* by a majority; forgetting
+that a candidate must revert to follower the instant it sees a higher term
+in any RPC, even a rejected one; not resetting the election timer on a
+valid heartbeat, causing spurious elections; testing only the happy path
+and never actually inducing a partition or a leader kill mid-replication.
+
+---
+
+## 6. Mini-Projects
 
 | Mini-project | Week | Teaches |
 |---|---|---|
 | Outbox pattern mini demo (standalone, before FleetTrack) | 19 | The pattern in isolation, no domain noise |
 | Mini CQRS read-model projector (rebuild a view table from an event log) | 20 | CQRS mechanics |
+| WebSocket push upgrade for the FleetTrack dispatcher dashboard (contrast with Wednesday's polling version, before/after request-volume + staleness numbers) | 20 | Polling vs push, felt on both sides of the same read model |
 | Elasticsearch indexing demo (index 1000 fake documents, query, tune analyzer) | 21 | ES fundamentals before applying to DocuVault |
 | Mini load balancer (round-robin over 2 backend processes) | 22 | What Kubernetes Services/kube-proxy do underneath |
 
 ---
 
-## 6. Books & Documentation
+## 7. Books & Documentation
 - Martin Fowler's blog: "What do you mean by Event-Driven?" and the Outbox
   pattern write-up (microservices.io/patterns/data/transactional-outbox.html).
 - *Building Microservices* (Newman) Ch. 5 (data) for CQRS/Saga sections.
+- WebSocket protocol overview (MDN) — Week 20, for the dispatcher-dashboard
+  push stretch mini-project.
 - Elasticsearch "Getting Started" official docs (Week 21).
 - Kubernetes docs: "Learn Kubernetes Basics" interactive tutorial (Week 22).
+- etcd documentation (etcd.io/docs) — "Understand failovers" (Week 22).
+- *Designing Data-Intensive Applications* (Kleppmann) Ch. 6 (Partitioning,
+  for consistent hashing) and Ch. 9 (Consistency and Consensus, for Raft)
+  — Week 22.
 - Postgres docs: replication chapter (Week 22).
+- Ongaro & Ousterhout, "In Search of an Understandable Consensus
+  Algorithm (Extended Version)" (raft.github.io/raft.pdf) — the full
+  paper, read across Weeks 23-24, the same section the same day you
+  implement it, not all at once up front.
+- The Secret Lives of Data (thesecretlivesofdata.com/raft) — the
+  interactive Raft visualization, useful for Week 23's election/
+  replication debugging when your own cluster does something you can't
+  explain from logs alone.
 
 ---
 
-## 7. Weekly Interview Question Sets
+## 8. Weekly Interview Question Sets
 
 **Week 19 — Outbox**
 1. What exact failure does the outbox pattern prevent that a direct
    publish-after-commit doesn't?
 2. Why must the outbox insert share a transaction with the state change?
+3. Also work `system-design-problems.md` SD1 (URL Shortener) and SD2 (Rate
+   Limiter) this week — the first two entries in the bank, chosen as
+   warm-ups.
 
 **Week 20 — CQRS, Saga**
 1. When is CQRS overkill — give a concrete example from your own projects.
 2. Choreographed vs orchestrated saga — tradeoffs?
+3. What does your WebSocket-push stretch version change about the
+   dispatcher dashboard's failure modes versus polling (what happens on
+   disconnect)?
+4. Also work SD7 (News Feed/Timeline) and SD8 (Chat System) this week —
+   SD8 pairs directly with the WebSocket mini-project above.
 
 **Week 21 — Elasticsearch**
 1. Why does `LIKE '%term%'` fail at scale, mechanically?
 2. Inverted index — explain it in one paragraph.
+3. Also work SD5 (Web Crawler) and SD15 (Typeahead/Autocomplete) this
+   week — both search-shaped problems.
 
-**Week 22 — Kubernetes, replication, sharding**
+**Week 22 — Kubernetes, consensus, replication, sharding, consistent hashing**
 1. Pod vs Deployment vs Service — what does each actually do?
-2. Read replica vs sharding — different problems, which is which?
-3. What would you shard DocuVault's data by, and why that key?
+2. Explain Raft leader election in your own words — what did killing the
+   etcd leader actually look like?
+3. Read replica vs sharding — different problems, which is which?
+4. What would you shard DocuVault's data by, and why that key?
+5. Consistent hashing vs `hash(key) % N` — what specifically breaks with
+   the naive version when a node is added or removed, and what did your
+   benchmark show?
+6. Also work SD3 (Distributed Cache), SD4 (Key-Value Store, Dynamo-Style),
+   SD6 (Unique ID Generator), and SD14 (Distributed Job Scheduler) this
+   week — SD14's leader-election deep-dive is a direct callback to
+   Tuesday's etcd cluster.
+
+**Week 23 — Raft: leader election, log replication**
+1. Why randomize the election timeout instead of using a fixed value?
+2. Walk through exactly what makes a log entry "committed."
+3. How does `nextIndex` converge two disagreeing logs to agreement?
+4. What's the difference between an `AppendEntries` heartbeat and a real
+   replication call, mechanically?
+
+**Week 24 — Raft: safety properties, partition testing**
+1. State one of the five safety properties in your own words, with a
+   concrete violation scenario.
+2. Walk through your partition test — why does the minority side never
+   elect a leader, specifically?
+3. What happens to a stale leader's uncommitted entries when a partition
+   heals?
+4. What does your torture test actually prove that the happy-path tests
+   don't?
+5. What's the difference between what you built and what etcd/Consul give
+   you on top?
 
 ---
 
-## 8. Daily Plan — Week 19: Outbox Pattern, FleetTrack Scaffold
+## 9. Daily Plan — Week 19: Outbox Pattern, FleetTrack Scaffold
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -298,7 +489,7 @@ that ordering mattered); sharding prematurely.
 
 ---
 
-## 9. Daily Plan — Week 20: CQRS Read Model, Saga
+## 10. Daily Plan — Week 20: CQRS Read Model, Saga
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -311,7 +502,7 @@ that ordering mattered); sharding prematurely.
 
 ---
 
-## 10. Daily Plan — Week 21: DocuVault Scaffold, Elasticsearch
+## 11. Daily Plan — Week 21: DocuVault Scaffold, Elasticsearch
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -324,20 +515,53 @@ that ordering mattered); sharding prematurely.
 
 ---
 
-## 11. Daily Plan — Week 22: Kubernetes Fundamentals, Replication, Phase Wrap
+## 12. Daily Plan — Week 22: Kubernetes Fundamentals, Replication, Phase Wrap
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | DSA Problem | SQL Problem | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Mon (D127) | Pods, Deployments, Services | K8s "Learn Kubernetes Basics" pt.1-2 | Mini load balancer (round-robin, 2 processes) | `kind` cluster running locally, write Deployment+Service YAML for one DocuVault service | Verify pod reachable via Service | `feat: k8s deployment for docuvault service` | Q1 | Longest Common Subsequence | DocuVault: documents never tagged | 3.5h |
-| Tue (D128) | ConfigMaps, Secrets | K8s docs pt.3 | — | Externalize config/secrets from that service into ConfigMap/Secret | Verify service picks up config correctly | `feat: k8s configmap + secret` | — | Best Time to Buy and Sell Stock with Cooldown | Primary Department for Each Employee | 3.5h |
+| Tue (D128) | ConfigMaps, Secrets; leader election & consensus — Raft explained (leader election, log replication, majority quorum) | K8s docs pt.3 + etcd docs "Understand failovers" | Stand up a 3-node local etcd cluster, watch leader election happen | Externalize config/secrets from that service into ConfigMap/Secret; `docs/consensus-notes.md` — Raft in your own words, tied to K8s/RabbitMQ/Kafka | Verify service picks up config correctly; verify the etcd cluster elected a leader | `feat: k8s configmap + secret; docs: 3-node etcd cluster stood up` | — | Best Time to Buy and Sell Stock with Cooldown | Primary Department for Each Employee | 3.5h |
 | Wed (D129) | Scaling replicas, rolling updates; GitOps (conceptual) — why `kubectl apply` by hand doesn't scale past one cluster, and how ArgoCD/Flux would reconcile cluster state from this same YAML in git instead | K8s docs pt.4-5 + ArgoCD docs "Core Concepts" (read-only, not installed) | — | Scale to 2 replicas, do a rolling update, observe zero dropped requests; commit the Deployment/Service YAML to a `k8s/` directory as if a GitOps controller were about to watch it | Continuous-request test during rollout | `feat: k8s rolling update verified + k8s manifests as git-tracked source` | Q2 | Coin Change II | DocuVault: tags frequently used together | 3.5h |
 | Thu (D130) | Postgres replication | Postgres replication docs | Local read-replica setup | Route ES-sync consumer's reads to replica | Test replica lag doesn't break sync correctness | `feat: postgres read replica for sync consumer` | — | Target Sum | DocuVault: EXPLAIN ANALYZE a metadata query on replica vs primary | 3.5h |
-| Fri (D131) | Sharding (conceptual) | — | — | `docs/sharding-decision-record.md` — what key, why, when it'd be justified | — | `docs: sharding decision record` | Q3 | Interleaving String | Calculate Special Bonus | 3.5h |
-| Sat (D132) | **Phase 5 wrap review** | — | Explain the outbox → CQRS → saga chain end-to-end, out loud | `docs/postmortem-phase5.md`, tag `v0.5-phase5` | Full suite | `docs: phase 5 postmortem` | Mock-answer all Phase-5 questions timed | Review: redo Thursday's problem from memory — Target Sum | Review: rewrite Tuesday's query from memory, then extend it — Primary Department for Each Employee | 2.5h |
+| Fri (D131) | Sharding (conceptual); consistent hashing — the ring, virtual nodes, redistribution vs naive `hash(key) % N` | *Designing Data-Intensive Applications* (Kleppmann) Ch.6 | Build a consistent-hashing ring from scratch (virtual nodes included) against a synthetic key set; simulate adding/removing a shard and measure redistribution % vs naive modulo hashing | `docs/sharding-decision-record.md` — what key, why, when it'd be justified, backed by the redistribution benchmark | Test redistribution stays near the theoretical `1/N` bound, not near 100% | `feat: consistent-hashing ring + redistribution benchmark; docs: sharding decision record` | Q3 | Interleaving String | Calculate Special Bonus | 4h |
+| Sat (D132) | **Review**; consensus failover drill — kill Tuesday's etcd leader, watch failover | — | Explain the outbox → CQRS → saga chain end-to-end, out loud; kill the etcd leader process, watch failover, record the term/log-index numbers before/after | `docs/postmortem-week22.md` | Full suite; verify the etcd cluster elects a new leader and stays writable after the kill | `docs: week 22 notes + etcd failover observed` | Answer Week-22 Qs unscripted | Review: redo Thursday's problem from memory — Target Sum | Review: rewrite Tuesday's query from memory, then extend it — Primary Department for Each Employee | 3h |
 
 ---
 
-## 12. Deliverables & GitHub Milestones
+## 13. Daily Plan — Week 23: Raft — Leader Election & Log Replication
+
+*No DSA/SQL problem today — the Raft implementation work is itself the
+day's algorithmic depth. Two ordinary weeks' worth of grind is already in
+the bank from Weeks 19-22; see `dsa-problems.md`/`sql-problems.md` for why
+this week and next are the deliberate exception.*
+
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D133) | The Raft paper: replicated state machines, why consensus is hard, the shape of the solution | Ongaro & Ousterhout, "In Search of an Understandable Consensus Algorithm" §1-5 | Trace the paper's Figure 2 (the state summary) by hand, node by node, for a 3-node example | New repo `raft-impl/`, `Node` class with the Follower/Candidate/Leader states and the state transition table | Unit test each legal transition; test an illegal transition (e.g. Follower directly to Leader) is impossible by construction | `feat: raft node scaffold + state machine` | Q1 | 3.5h |
+| Tue (D134) | Leader election: randomized timeouts, `RequestVote`, term comparison | Raft paper §5.1-5.2 | Deliberately use a FIXED (non-random) timeout across all nodes, watch a split-vote loop happen, then randomize and watch it resolve | `RequestVote` RPC handler, randomized election timeout, term increment on election start | Test: fixed timeout reproduces a split vote reliably; randomized timeout resolves an election within N attempts | `feat: leader election with randomized timeouts` | Q2 | 3.5h |
+| Wed (D135) | `AppendEntries` as heartbeat; log replication begins | Raft paper §5.3 | Wire 3 processes over local HTTP, confirm heartbeats keep a leader stable with no elections firing | `AppendEntries` RPC (empty = heartbeat), leader sends periodic heartbeats, followers reset their election timer on receipt | Test: no election occurs for the duration of a stable heartbeat run | `feat: appendentries heartbeat` | — | 3.5h |
+| Thu (D136) | Log replication for real: `nextIndex`/`matchIndex`, commit index advancement | Raft paper §5.3 (cont.) | On paper, trace `nextIndex` converging for a follower whose log is 3 entries behind | Client-submitted command → leader appends locally → replicates via `AppendEntries` → advances `commitIndex` once a majority acks | Integration test: submit a command, assert it's applied on a majority of nodes and `commitIndex` advances correctly | `feat: log replication + commit index advancement` | Q3 | 3.5h |
+| Fri (D137) | Log inconsistency repair | Raft paper §5.3 (log matching property) | Manually construct two divergent follower logs, run the repair loop, confirm convergence | Handle the follower-rejects-AppendEntries case: leader decrements `nextIndex` and retries until logs match | Test: a follower with a conflicting entry gets it overwritten by the leader's version, never the reverse | `feat: log repair on inconsistency` | — | 3.5h |
+| Sat (D138) | **Review** | — | Redo the `nextIndex` convergence trace from memory, explain it out loud | Bring up a real 5-node cluster, submit 10 commands from a client script, confirm all 5 nodes converge to the same log | Full suite; manual 5-node convergence check | `docs: week 23 notes — 5-node cluster convergence verified` | Answer Week-23 Qs unscripted | 2.5h |
+
+---
+
+## 14. Daily Plan — Week 24: Raft — Safety Properties Under Fault
+
+*No DSA/SQL problem this week either — same reasoning as Week 23.*
+
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Mon (D139) | The five safety properties: Election Safety, Leader Append-Only, Log Matching, Leader Completeness, State Machine Safety | Raft paper §5.4-5.5 | For each property, write one concrete scenario where violating it corrupts the system — no abstractions, real node/term/entry numbers | `docs/raft-safety-properties.md` — each property in your own words, tied to a specific line of your own implementation that enforces it | — | `docs: raft safety properties, tied to implementation` | Q1 | 3.5h |
+| Tue (D140) | Network partition simulation | — | Build a message-dropping proxy layer: any node pair can be "partitioned" by dropping messages between them on command | Partition a 5-node cluster into a 3-node majority and a 2-node minority; observe which side (if either) elects a leader | Test: majority side elects a leader and can commit; minority side never elects a leader, no matter how long it waits | `feat: partition simulation harness` | Q2 | 3.5h |
+| Wed (D141) | Partition healing, stale leader step-down | Raft paper §5.1 (term comparison on RPC) | Reconnect a partitioned minority node to the majority, watch it discover the higher term and step down/update | Handle the healed-partition case: a stale leader (or stale follower with uncommitted entries) reconciles its log against the current leader's | Test: after healing, all 5 nodes converge to an identical log, including the minority nodes' now-overwritten uncommitted entries | `feat: partition-heal reconciliation` | — | 3.5h |
+| Thu (D142) | Adversarial testing: kill the leader mid-replication, kill a follower mid-repair | — | — | Build the "torture test": randomly kill/restart nodes and drop messages for an extended run | Torture test asserts log consistency holds at every checkpoint, not just at the end; a deliberate "kill leader after majority ack, before followers confirm" case proves the entry survives | `test: raft torture test + adversarial leader-kill case` | Q3 | 4h |
+| Fri (D143) | Applying Raft to a real use case | Revisit `system-design-problems.md` SD14 | — | Wire the Raft cluster as the coordination layer for a toy distributed job scheduler: only the current leader is allowed to dispatch a scheduled job | Test: kill the leader mid-dispatch-decision, confirm exactly one node (the new leader) takes over dispatching, never zero, never two | `feat: raft-backed leader-only job dispatcher` | — | 4h |
+| Sat (D144) | **Phase 5 wrap review** | — | Explain all five safety properties out loud, unscripted, each with your own concrete violation scenario | `docs/postmortem-phase5.md` (full phase, Weeks 19-24), tag `v0.5-phase5` | Full suite, torture test re-run clean | `docs: phase 5 postmortem (weeks 19-24)` | Mock-answer all Phase-5 questions timed, including Weeks 23-24 | 3h |
+
+---
+
+## 15. Deliverables & GitHub Milestones
 
 **Milestone: `Phase 5 — FleetTrack v0.1 + DocuVault v0.1`**
 - [ ] Outbox pattern implemented and proven under fault injection
@@ -347,10 +571,17 @@ that ordering mattered); sharding prematurely.
 - [ ] DocuVault deployed to a local Kubernetes cluster (`kind`), rolling
       update verified with zero dropped requests
 - [ ] Postgres read replica wired to the sync consumer
-- [ ] `docs/sharding-decision-record.md` written
+- [ ] Consistent-hashing ring built and benchmarked; `docs/sharding-decision-record.md` written with the redistribution numbers behind it
+- [ ] 3-node local etcd cluster stood up, leader election and failover observed and documented in `docs/consensus-notes.md`
+- [ ] WebSocket push stretch version of the FleetTrack dispatcher dashboard, before/after numbers recorded against the polling version
+- [ ] Raft implemented from scratch: leader election, log replication, all
+      five safety properties tested, a partition test proving the minority
+      side can't elect a leader, a torture test proving log consistency
+      under random faults, and a real Raft-backed leader-only job
+      dispatcher built on top
 - [ ] Tag: `v0.5-phase5`
 
-## 13. Skills Acquired Checklist
+## 16. Skills Acquired Checklist
 - [ ] Outbox pattern — implemented and fault-tested, not just described
 - [ ] CQRS — applied where justified, articulable where it's not
 - [ ] Saga (choreographed) — implemented at overview depth, honestly scoped
@@ -360,11 +591,17 @@ that ordering mattered); sharding prematurely.
 - [ ] GitOps (ArgoCD/Flux) — conceptual fluency, correctly scoped as not-yet-needed
 - [ ] Postgres read replicas — hands-on
 - [ ] Sharding — conceptual fluency, correctly scoped as not-yet-needed
-- [ ] Two more React/TS frontends shipped: polling UI (FleetTrack), debounced search UI (DocuVault) — reusing Phase 4's setup
+- [ ] Consistent hashing — implemented, benchmarked, applied to a real decision record
+- [ ] Raft/consensus — conceptual fluency (etcd) AND a from-scratch
+      implementation: leader election, log replication, safety properties,
+      partition testing, a real application on top — not just terminology
+- [ ] Two more React/TS frontends shipped: polling UI (FleetTrack, with a WebSocket-push stretch alternative built and compared), debounced search UI (DocuVault) — reusing Phase 4's setup
 
 ---
 
 **Next:** Phase 6 is the senior-track capstone — idempotency, distributed
-transaction thinking, security hardening, load testing, mock system-design
-interviews, and finally AtlasMarket, the marketplace capstone that
-consciously reuses everything built across the last 22 weeks.
+transaction thinking, security hardening, real cloud deployment, load
+testing, mock system-design interviews, two more system-design problems
+built for real (reusing this phase's Raft implementation), and finally
+AtlasMarket, the marketplace capstone that consciously reuses everything
+built across the last 24 weeks.

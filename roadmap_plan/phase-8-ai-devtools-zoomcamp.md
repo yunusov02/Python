@@ -1,5 +1,5 @@
-# PHASE 10 — AI Dev Tools Zoomcamp
-### Weeks 33–37 (5 weeks) · ~3.5h weekdays, ~2.5h Saturdays · 30 working days
+# PHASE 8 — AI Dev Tools Zoomcamp
+### Weeks 37–41 (5 weeks) · ~3.5h weekdays, ~2.5h Saturdays · 30 working days
 
 ---
 
@@ -63,7 +63,7 @@ top of them, rather than re-teaching them.
 
 ---
 
-## 3. PROJECT — StockPilot Bug-Fix Coding Agent (Week 36)
+## 3. PROJECT — StockPilot Bug-Fix Coding Agent (Week 40)
 
 ### Business Problem
 StockPilot (Phase 1) has, like any live-ish service, accumulated a small
@@ -83,7 +83,7 @@ defined slice of this backlog without becoming the cautionary tale
   fixes, a documented index migration, tightening an existing validator.
   Explicitly **not** in scope: schema redesigns, auth changes, anything
   touching the stock-decrement transaction logic from Phase 1.
-- Uses the StockPilot MCP server (Week 34) as its *only* way to introspect
+- Uses the StockPilot MCP server (Week 38) as its *only* way to introspect
   the live API, plus scoped filesystem tools to read/write repo files.
 - Every run leaves an auditable trail: ticket, plan, diff, test output —
   written to disk before anything is shown to a human.
@@ -170,7 +170,7 @@ during execution.
 
 ---
 
-## 4. PROJECT — Cross-System Automation Pipeline: LedgerBase Weekly Reconciliation (Week 37, Mon–Wed)
+## 4. PROJECT — Cross-System Automation Pipeline: LedgerBase Weekly Reconciliation (Week 41, Mon–Wed)
 
 ### Business Problem
 LedgerBase (Phase 4) can produce a trial-balance report on demand, but
@@ -261,7 +261,7 @@ failure branch until it fires for real for the first time.
 
 ---
 
-## 5. PROJECT — Freeform AI Dev Tool Capstone (Week 37, Thu–Sat)
+## 5. PROJECT — Freeform AI Dev Tool Capstone (Week 41, Thu–Sat)
 
 ### Business Problem
 An open brief: pick one real gap across your own systems (StockPilot,
@@ -279,7 +279,7 @@ fix diff.
 ### Requirements
 Functional scope is your choice, but must include: at least one MCP tool
 exposing a real read from an existing system (not a mock); a bounded tool
-loop or workflow reusing Week 34/36 patterns rather than one hardcoded
+loop or workflow reusing Week 38/36 patterns rather than one hardcoded
 prompt call; an explicitly stated guardrail (what it cannot do
 autonomously); and a written one-page design note — business problem,
 scope, what's deliberately left out — written *before* you start
@@ -300,7 +300,7 @@ not merely discouraged.
 
 ### Guardrails / Safety
 Stated up front, matching the "may/may not act autonomously" framing from
-Week 35. A freeform capstone does not get to skip this section just
+Week 39. A freeform capstone does not get to skip this section just
 because the brief is open — if anything it's the part most worth writing
 down precisely, since nobody else specified the scope for you.
 
@@ -314,7 +314,7 @@ and why it's the right amount of infrastructure for what you built.
    right shape for it versus a regular script or endpoint?
 2. What's the one guardrail you refused to skip, and what breaks if you
    remove it?
-3. Where did you reuse Week 34/36 patterns versus build something new —
+3. Where did you reuse Week 38/36 patterns versus build something new —
    and was reuse actually the right call here?
 4. What would you build next if you had another week?
 5. What did you deliberately scope out, and why?
@@ -326,7 +326,7 @@ telling you what's missing.
 
 ### Common Mistakes
 Skipping the design note and going straight to prompting — "vibe-coding"
-the capstone the exact way Week 33 taught you not to; picking a scope too
+the capstone the exact way Week 37 taught you not to; picking a scope too
 broad to finish in three days; dropping the guardrail because "it's just
 a capstone, nobody's really going to run this in prod."
 
@@ -336,12 +336,12 @@ a capstone, nobody's really going to run this in prod."
 
 | Mini-project | Week | Teaches |
 |---|---|---|
-| AI-assisted AtlasMarket feature (prompts + diffs + review-notes dossier) | 46 | End-to-end AI coding workflow, review discipline |
-| Custom "hello tool" MCP server (single tool, stdio transport) | 47 | MCP fundamentals: server, tool schema, transport |
-| StockPilot MCP server (read-only product/order tools) | 47 | Exposing a real API as MCP resources/tools |
-| Hand-rolled minimal coding agent (no framework) | 47 | Tool-loop architecture: plan → act → observe → decide |
-| AI PR-review bot (GitHub Action + LLM comment, comment-only) | 48 | AI-assisted CI/CD, scoped bot permissions |
-| n8n cross-system notification workflow | 48 | Low-code automation, webhook triggers, branching |
+| AI-assisted AtlasMarket feature (prompts + diffs + review-notes dossier) | 33 | End-to-end AI coding workflow, review discipline |
+| Custom "hello tool" MCP server (single tool, stdio transport) | 34 | MCP fundamentals: server, tool schema, transport |
+| StockPilot MCP server (read-only product/order tools) | 34 | Exposing a real API as MCP resources/tools |
+| Hand-rolled minimal coding agent (no framework) | 34 | Tool-loop architecture: plan → act → observe → decide |
+| AI PR-review bot (GitHub Action + LLM comment, comment-only) | 35 | AI-assisted CI/CD, scoped bot permissions |
+| n8n cross-system notification workflow | 35 | Low-code automation, webhook triggers, branching |
 
 ---
 
@@ -350,29 +350,29 @@ a capstone, nobody's really going to run this in prod."
 - Model Context Protocol documentation (modelcontextprotocol.io) —
   "Introduction," "Core architecture," "Build an MCP Server" (Python SDK
   quickstart), and the "Tools," "Resources," and "Prompts" spec pages.
-  Read the matching section the same week you build against it (Week 34).
+  Read the matching section the same week you build against it (Week 38).
 - Claude Code documentation — Quickstart, "Common workflows," "Manage
   Claude's memory" (`CLAUDE.md`), "Permissions," "Subagents," "Hooks,"
   "GitHub Actions integration," and "Headless mode"/SDK usage for scripted
-  invocations. Spread across Weeks 33–36 as each topic comes up.
+  invocations. Spread across Weeks 37–40 as each topic comes up.
 - Anthropic Engineering blog — "Claude Code: Best Practices for Agentic
-  Coding" (Week 33, for review discipline) and "Building Effective Agents"
-  (Week 34, for tool-loop and planning architecture).
+  Coding" (Week 37, for review discipline) and "Building Effective Agents"
+  (Week 38, for tool-loop and planning architecture).
 - GitHub Copilot documentation — "What is GitHub Copilot" and its
-  IDE/CLI overview pages, read once in Week 33 for landscape comparison
+  IDE/CLI overview pages, read once in Week 37 for landscape comparison
   only; not built on hands-on this phase.
 - GitHub Actions documentation (reused from Phase 4) — "Security
   hardening for GitHub Actions" and "Events that trigger workflows:
-  schedule," read in Weeks 35 and 50.
+  schedule," read in Weeks 39 and 41.
 - n8n documentation (docs.n8n.io) — "Workflow basics," "Nodes," "Webhook
-  trigger," "HTTP Request node," and "Credentials," read across Weeks 35
-  and 50.
+  trigger," "HTTP Request node," and "Credentials," read across Weeks 39
+  and 41.
 
 ---
 
 ## 8. Weekly Interview Question Sets
 
-**Week 33 — Landscape, end-to-end AI-assisted workflow**
+**Week 37 — Landscape, end-to-end AI-assisted workflow**
 1. What's the actual architectural difference between an agentic CLI tool
    (Claude Code), an IDE-integrated autocomplete (Copilot), and an IDE
    fork (Cursor)?
@@ -384,7 +384,7 @@ a capstone, nobody's really going to run this in prod."
    checking in a human's?
 5. Why document prompts and review notes, not just the final diff?
 
-**Week 34 — MCP, coding-agent architectures**
+**Week 38 — MCP, coding-agent architectures**
 1. What are the three MCP primitives, and what's each one actually for
    (resources vs. tools vs. prompts)?
 2. What transport did your MCP server use, and why that one?
@@ -395,7 +395,7 @@ a capstone, nobody's really going to run this in prod."
 5. What's the blast radius if your MCP server exposed a write endpoint by
    mistake?
 
-**Week 35 — AI-assisted CI/CD, low-code automation, guardrails**
+**Week 39 — AI-assisted CI/CD, low-code automation, guardrails**
 1. What can your PR-review bot comment on versus what it's not allowed to
    do (approve/merge)?
 2. How would an LLM-based log-triage tool fail silently, and how would
@@ -406,7 +406,7 @@ a capstone, nobody's really going to run this in prod."
 5. Name one guardrail you'd insist on before ever letting a CI bot
    auto-merge anything.
 
-**Week 36 — StockPilot Bug-Fix Agent**
+**Week 40 — StockPilot Bug-Fix Agent**
 1. Where's the human-approval gate in your agent, exactly?
 2. How does your ticket classifier decide in-scope versus out-of-scope,
    and what does it do with an ambiguous ticket?
@@ -416,7 +416,7 @@ a capstone, nobody's really going to run this in prod."
    trusting its own summary?
 5. What's your adversarial test case, and what does it prove?
 
-**Week 37 — Automation pipeline, freeform capstone, phase retrospective**
+**Week 41 — Automation pipeline, freeform capstone, phase retrospective**
 1. Why split the reconciliation pipeline between GitHub Actions and n8n
    instead of one script?
 2. How do you test a failure-notification path before it happens for
@@ -430,68 +430,68 @@ a capstone, nobody's really going to run this in prod."
 
 ---
 
-## 9. Daily Plan — Week 33: AI Dev Tools Overview, End-to-End Workflow, AtlasMarket Feature
+## 9. Daily Plan — Week 37: AI Dev Tools Overview, End-to-End Workflow, AtlasMarket Feature
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D193)** | Landscape of AI dev tools: Claude Code vs. GitHub Copilot vs. Cursor, how they differ architecturally | Claude Code docs Quickstart/Overview; GitHub Copilot docs "What is Copilot" | Install/configure Claude Code CLI on the AtlasMarket repo, run one trivial prompt end to end | Write `docs/ai-tools-landscape.md` comparison notes; pick the AtlasMarket feature to build this week | Smoke test: confirm the CLI runs and can read the repo | `docs: ai dev tools landscape notes + week46 feature pick` | Q1 from Week46 set — write answer | 3.5h |
-| **Tue (D194)** | End-to-end AI-assisted workflow: spec → code → test → PR | Claude Code docs "Common workflows" | Write a one-page feature spec (business problem, requirements, acceptance criteria) | Commit the spec to AtlasMarket: `docs/features/<feature>.md` | Peer-review your own spec against a phase-1-style spec checklist | `docs: spec for <feature>` | Q2 | 3.5h |
-| **Wed (D195)** | Prompt/context engineering for coding tasks: `CLAUDE.md`, repo context, scoping the ask | Claude Code docs "Manage Claude's memory" (`CLAUDE.md`); Anthropic prompt engineering guide | Write a `CLAUDE.md` for AtlasMarket capturing architecture + conventions | Prompt the agent with spec + `CLAUDE.md` context to implement the feature; capture the first diff (do not merge) | Run AtlasMarket's existing test suite against the draft diff, note every failure | `wip: first ai-generated draft of <feature> (not reviewed)` | Q3 | 3.5h |
-| **Thu (D196)** | Evaluating AI-generated code: review checklist, common failure modes (over-broad diffs, silently wrong edge cases, missing tests) | Anthropic Engineering blog "Claude Code: Best Practices for Agentic Coding" | Build your own AI-diff review checklist (5-8 items) | Apply the checklist to yesterday's diff, write review notes, request specific revisions from the agent | Run full suite + lint/type-check against the revised diff | `review: apply ai-diff checklist, request revisions on <feature>` | Q4 | 3.5h |
-| **Fri (D197)** | Shipping the workflow: reviewed diff → merged PR; retro on the process itself | Claude Code docs on PR/GitHub Actions workflow | — | Merge the revised diff, open/land the PR on AtlasMarket; write `docs/features/<feature>-retro.md` documenting prompts + diffs + review notes end to end | Full CI green on the PR | `feat: <feature> — ai-assisted, reviewed, merged` | Q5 | 3.5h |
-| **Sat (D198)** | **Review** | — | Redo Wednesday's `CLAUDE.md` from memory, compare against the real one | Re-read your own retro doc, note one thing you'd do differently next time | Full suite re-run | — | Answer all Week-46 questions out loud, unscripted | 2.5h |
+| **Mon (D217)** | Landscape of AI dev tools: Claude Code vs. GitHub Copilot vs. Cursor, how they differ architecturally | Claude Code docs Quickstart/Overview; GitHub Copilot docs "What is Copilot" | Install/configure Claude Code CLI on the AtlasMarket repo, run one trivial prompt end to end | Write `docs/ai-tools-landscape.md` comparison notes; pick the AtlasMarket feature to build this week | Smoke test: confirm the CLI runs and can read the repo | `docs: ai dev tools landscape notes + week37 feature pick` | Q1 from Week37 set — write answer | 3.5h |
+| **Tue (D218)** | End-to-end AI-assisted workflow: spec → code → test → PR | Claude Code docs "Common workflows" | Write a one-page feature spec (business problem, requirements, acceptance criteria) | Commit the spec to AtlasMarket: `docs/features/<feature>.md` | Peer-review your own spec against a phase-1-style spec checklist | `docs: spec for <feature>` | Q2 | 3.5h |
+| **Wed (D219)** | Prompt/context engineering for coding tasks: `CLAUDE.md`, repo context, scoping the ask | Claude Code docs "Manage Claude's memory" (`CLAUDE.md`); Anthropic prompt engineering guide | Write a `CLAUDE.md` for AtlasMarket capturing architecture + conventions | Prompt the agent with spec + `CLAUDE.md` context to implement the feature; capture the first diff (do not merge) | Run AtlasMarket's existing test suite against the draft diff, note every failure | `wip: first ai-generated draft of <feature> (not reviewed)` | Q3 | 3.5h |
+| **Thu (D220)** | Evaluating AI-generated code: review checklist, common failure modes (over-broad diffs, silently wrong edge cases, missing tests) | Anthropic Engineering blog "Claude Code: Best Practices for Agentic Coding" | Build your own AI-diff review checklist (5-8 items) | Apply the checklist to yesterday's diff, write review notes, request specific revisions from the agent | Run full suite + lint/type-check against the revised diff | `review: apply ai-diff checklist, request revisions on <feature>` | Q4 | 3.5h |
+| **Fri (D221)** | Shipping the workflow: reviewed diff → merged PR; retro on the process itself | Claude Code docs on PR/GitHub Actions workflow | — | Merge the revised diff, open/land the PR on AtlasMarket; write `docs/features/<feature>-retro.md` documenting prompts + diffs + review notes end to end | Full CI green on the PR | `feat: <feature> — ai-assisted, reviewed, merged` | Q5 | 3.5h |
+| **Sat (D222)** | **Review** | — | Redo Wednesday's `CLAUDE.md` from memory, compare against the real one | Re-read your own retro doc, note one thing you'd do differently next time | Full suite re-run | — | Answer all Week-37 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 10. Daily Plan — Week 34: MCP Fundamentals, Custom MCP Server, Minimal Coding Agent
+## 10. Daily Plan — Week 38: MCP Fundamentals, Custom MCP Server, Minimal Coding Agent
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D199)** | MCP protocol fundamentals: resources, tools, prompts, transports (stdio/SSE) | MCP docs "Introduction" + "Core architecture" | Run the MCP Python SDK "hello tool" quickstart server locally, connect a client to it | Scaffold `stockpilot-mcp/` with the MCP SDK installed | Verify the hello-tool server responds via the SDK's test client | `chore: mcp sdk scaffold` | Q1 | 3.5h |
-| **Tue (D200)** | Writing a custom MCP server: tool schema design, input validation, error handling | MCP docs "Build an MCP Server" (Python SDK); "Tools" spec | Extend the hello-tool server with a second tool taking structured args | Design tool schemas for StockPilot: `get_low_stock`, `get_product`, `list_orders` (read-only) | Unit test each tool's input validation | `feat: stockpilot mcp tool schemas (read-only)` | Q2 | 3.5h |
-| **Wed (D201)** | Wiring an MCP server to a real API: auth, scoped read-only tokens | MCP docs "Resources" | — | Implement the 3 tools against the real StockPilot API with a read-only service token, expose as an MCP server | Integration test: connect an MCP client, call each tool, assert correct data against a seeded StockPilot test DB | `feat: stockpilot mcp server — live read-only tools` | Q3 | 3.5h |
-| **Thu (D202)** | Coding-agent architectures: tool loops, planning, ReAct-style reasoning, stop conditions | Anthropic Engineering blog "Building Effective Agents" | On paper, design your own agent's loop (plan → act → observe → decide) before writing any code | Scaffold `mini-agent/`: LLM client + hand-rolled tool-loop skeleton, no framework | Unit test the loop's stop-condition logic against a fake tool | `feat: minimal agent tool-loop skeleton` | Q4 | 3.5h |
-| **Fri (D203)** | Connecting the agent to the MCP server end-to-end; logging every tool call for observability | MCP docs "Prompts" spec | — | Wire `mini-agent` to call the StockPilot MCP server's tools; ask it "what products are low on stock right now?" end-to-end | Integration test: agent answers correctly against seeded data; every tool call + args + result logged to disk | `feat: mini-agent + stockpilot mcp — end-to-end query` | Q5 | 3.5h |
-| **Sat (D204)** | **Review** | — | Redo the tool-loop stop-condition logic from memory, explain it out loud | Re-read the run log from Friday's session, note anything surprising | Full suite re-run | — | Answer all Week-47 questions unscripted | 2.5h |
+| **Mon (D223)** | MCP protocol fundamentals: resources, tools, prompts, transports (stdio/SSE) | MCP docs "Introduction" + "Core architecture" | Run the MCP Python SDK "hello tool" quickstart server locally, connect a client to it | Scaffold `stockpilot-mcp/` with the MCP SDK installed | Verify the hello-tool server responds via the SDK's test client | `chore: mcp sdk scaffold` | Q1 | 3.5h |
+| **Tue (D224)** | Writing a custom MCP server: tool schema design, input validation, error handling | MCP docs "Build an MCP Server" (Python SDK); "Tools" spec | Extend the hello-tool server with a second tool taking structured args | Design tool schemas for StockPilot: `get_low_stock`, `get_product`, `list_orders` (read-only) | Unit test each tool's input validation | `feat: stockpilot mcp tool schemas (read-only)` | Q2 | 3.5h |
+| **Wed (D225)** | Wiring an MCP server to a real API: auth, scoped read-only tokens | MCP docs "Resources" | — | Implement the 3 tools against the real StockPilot API with a read-only service token, expose as an MCP server | Integration test: connect an MCP client, call each tool, assert correct data against a seeded StockPilot test DB | `feat: stockpilot mcp server — live read-only tools` | Q3 | 3.5h |
+| **Thu (D226)** | Coding-agent architectures: tool loops, planning, ReAct-style reasoning, stop conditions | Anthropic Engineering blog "Building Effective Agents" | On paper, design your own agent's loop (plan → act → observe → decide) before writing any code | Scaffold `mini-agent/`: LLM client + hand-rolled tool-loop skeleton, no framework | Unit test the loop's stop-condition logic against a fake tool | `feat: minimal agent tool-loop skeleton` | Q4 | 3.5h |
+| **Fri (D227)** | Connecting the agent to the MCP server end-to-end; logging every tool call for observability | MCP docs "Prompts" spec | — | Wire `mini-agent` to call the StockPilot MCP server's tools; ask it "what products are low on stock right now?" end-to-end | Integration test: agent answers correctly against seeded data; every tool call + args + result logged to disk | `feat: mini-agent + stockpilot mcp — end-to-end query` | Q5 | 3.5h |
+| **Sat (D228)** | **Review** | — | Redo the tool-loop stop-condition logic from memory, explain it out loud | Re-read the run log from Friday's session, note anything surprising | Full suite re-run | — | Answer all Week-38 questions unscripted | 2.5h |
 
 ---
 
-## 11. Daily Plan — Week 35: AI-Assisted CI/CD, Low-Code Automation, Guardrails
+## 11. Daily Plan — Week 39: AI-Assisted CI/CD, Low-Code Automation, Guardrails
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D205)** | AI-assisted CI/CD: automated PR-review bots | GitHub Actions docs "Building and testing" (reused from Phase 4); Claude Code docs "GitHub Actions integration" | Run a Claude-Code-based GitHub Action on a scratch PR in a test repo, read its comment | Add a PR-review-bot workflow to one real repo (comment-only, no approve/merge permission) | Open a deliberately flawed PR, verify the bot flags it | `ci: add ai pr-review bot (comment-only)` | Q1 | 3.5h |
-| **Tue (D206)** | AI in incident response / log triage | Claude Code docs "Headless mode"/SDK for scripted use | Feed a sample log dump to a headless Claude Code invocation, ask for a triage summary | Script `triage_logs.py`: summarize a repo's latest CI failure logs via the LLM API, post a summary comment | Unit test log parsing/formatting; manual test against a real failing run | `feat: ai log-triage summary script` | Q2 | 3.5h |
-| **Wed (D207)** | Low-code automation platforms: n8n fundamentals — triggers, nodes, workflow model | n8n docs "Workflow basics," "Nodes" | Stand up n8n locally (Docker), build a trivial workflow (webhook → log) | Environment setup only — no project code this day | Verify the webhook trigger fires and the workflow completes | `chore: local n8n setup` | Q3 | 3.5h |
-| **Thu (D208)** | Building a cross-system automation workflow | n8n docs "HTTP Request node," "Webhooks" | — | Build an n8n workflow connecting two systems: StockPilot low-stock data → Slack/email notification | Trigger manually, verify the notification is delivered with correct data | `feat: n8n cross-system low-stock notification workflow` | Q4 | 3.5h |
-| **Fri (D209)** | Guardrails for autonomous CI actions: what may/may not auto-merge, scoped permissions, branch protection | GitHub Actions docs "Security hardening for GitHub Actions" | Write a guardrails policy doc: bot may comment, may not approve, may not merge, may not push to `main`, tokens are read-only/scoped | Lock down the PR-review bot's GitHub token permissions explicitly; configure branch protection requiring human review regardless of bot output | Attempt (in a scratch repo) to have the bot approve/merge, confirm it's rejected by permissions | `security: scope pr-review bot permissions + branch protection` | Q5 | 3.5h |
-| **Sat (D210)** | **Review** | — | Redo the guardrails policy doc from memory | Re-read both automations (PR bot + n8n workflow) for any scope creep | Full suite + workflow re-run | — | Answer all Week-48 questions unscripted | 2.5h |
+| **Mon (D229)** | AI-assisted CI/CD: automated PR-review bots | GitHub Actions docs "Building and testing" (reused from Phase 4); Claude Code docs "GitHub Actions integration" | Run a Claude-Code-based GitHub Action on a scratch PR in a test repo, read its comment | Add a PR-review-bot workflow to one real repo (comment-only, no approve/merge permission) | Open a deliberately flawed PR, verify the bot flags it | `ci: add ai pr-review bot (comment-only)` | Q1 | 3.5h |
+| **Tue (D230)** | AI in incident response / log triage | Claude Code docs "Headless mode"/SDK for scripted use | Feed a sample log dump to a headless Claude Code invocation, ask for a triage summary | Script `triage_logs.py`: summarize a repo's latest CI failure logs via the LLM API, post a summary comment | Unit test log parsing/formatting; manual test against a real failing run | `feat: ai log-triage summary script` | Q2 | 3.5h |
+| **Wed (D231)** | Low-code automation platforms: n8n fundamentals — triggers, nodes, workflow model | n8n docs "Workflow basics," "Nodes" | Stand up n8n locally (Docker), build a trivial workflow (webhook → log) | Environment setup only — no project code this day | Verify the webhook trigger fires and the workflow completes | `chore: local n8n setup` | Q3 | 3.5h |
+| **Thu (D232)** | Building a cross-system automation workflow | n8n docs "HTTP Request node," "Webhooks" | — | Build an n8n workflow connecting two systems: StockPilot low-stock data → Slack/email notification | Trigger manually, verify the notification is delivered with correct data | `feat: n8n cross-system low-stock notification workflow` | Q4 | 3.5h |
+| **Fri (D233)** | Guardrails for autonomous CI actions: what may/may not auto-merge, scoped permissions, branch protection | GitHub Actions docs "Security hardening for GitHub Actions" | Write a guardrails policy doc: bot may comment, may not approve, may not merge, may not push to `main`, tokens are read-only/scoped | Lock down the PR-review bot's GitHub token permissions explicitly; configure branch protection requiring human review regardless of bot output | Attempt (in a scratch repo) to have the bot approve/merge, confirm it's rejected by permissions | `security: scope pr-review bot permissions + branch protection` | Q5 | 3.5h |
+| **Sat (D234)** | **Review** | — | Redo the guardrails policy doc from memory | Re-read both automations (PR bot + n8n workflow) for any scope creep | Full suite + workflow re-run | — | Answer all Week-39 questions unscripted | 2.5h |
 
 ---
 
-## 12. Daily Plan — Week 36: Project 1 — StockPilot Bug-Fix Coding Agent
+## 12. Daily Plan — Week 40: Project 1 — StockPilot Bug-Fix Coding Agent
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D211)** | Designing the agent: ticket scope, classifier rules, guardrails plan | Claude Code docs "Subagents"/"Hooks" | Draft the ticket classifier's decision rules on paper (in-scope vs. out-of-scope examples) | Write `docs/bugfix-agent-design.md` (business problem, scope, guardrails); scaffold `bugfix-agent/` | — | `docs: bugfix agent design + scaffold` | Q1 | 3.5h |
-| **Tue (D212)** | Building the planner + tool loop wired to StockPilot MCP + repo file tools | MCP Python SDK docs (tool implementation, recap) | — | Implement the planner (ticket + repo context → bounded plan); wire `read_file`/`list_dir`/`write_file` scoped to a path allow-list | Unit test that the path allow-list rejects out-of-scope paths | `feat: bugfix agent planner + scoped file tools` | Q2 | 3.5h |
-| **Wed (D213)** | Implementing the human-approval gate | Claude Code docs "Permissions" | — | Add the approval gate (agent stops after diff+test output, requires explicit "approve"); add an "open PR" tool only — no merge/push-to-main tool exists | Test that no PR is created without explicit approval; test the tool registry has no merge/push-to-main tool at all | `feat: human-approval gate + pr-only git tool` | Q3 | 3.5h |
-| **Thu (D214)** | Guardrails: reject-by-default classifier, scoped permission enforcement, adversarial testing | GitHub Actions docs "Security hardening" (recap) | — | Make the classifier a mandatory first step (reject-by-default); run full test/lint/type-check gate before showing the diff to a human, verbatim | Adversarial ticket ("also drop the orders table") — assert refusal; test the per-run log-to-disk trace | `feat: ticket classifier reject-by-default + run logging` | Q4 | 3.5h |
-| **Fri (D215)** | End-to-end real run | — (application day) | — | Feed the agent one real, defined StockPilot ticket end-to-end: ticket → plan → diff → tests → human approval → PR opened; verify it declines a second, out-of-scope ticket | Full pipeline integration test, recorded as the run-log artifact | `feat: bugfix agent — first real ticket closed end-to-end` | Q5 | 3.5h |
-| **Sat (D216)** | **Review / retrospective** | — | Redo the classifier's decision rules from memory | Write `docs/bugfix-agent-retro.md` — what worked, what you'd tighten | Full suite + adversarial-ticket re-run | `docs: bugfix agent retrospective` | Answer all Week-49 questions unscripted | 2.5h |
+| **Mon (D235)** | Designing the agent: ticket scope, classifier rules, guardrails plan | Claude Code docs "Subagents"/"Hooks" | Draft the ticket classifier's decision rules on paper (in-scope vs. out-of-scope examples) | Write `docs/bugfix-agent-design.md` (business problem, scope, guardrails); scaffold `bugfix-agent/` | — | `docs: bugfix agent design + scaffold` | Q1 | 3.5h |
+| **Tue (D236)** | Building the planner + tool loop wired to StockPilot MCP + repo file tools | MCP Python SDK docs (tool implementation, recap) | — | Implement the planner (ticket + repo context → bounded plan); wire `read_file`/`list_dir`/`write_file` scoped to a path allow-list | Unit test that the path allow-list rejects out-of-scope paths | `feat: bugfix agent planner + scoped file tools` | Q2 | 3.5h |
+| **Wed (D237)** | Implementing the human-approval gate | Claude Code docs "Permissions" | — | Add the approval gate (agent stops after diff+test output, requires explicit "approve"); add an "open PR" tool only — no merge/push-to-main tool exists | Test that no PR is created without explicit approval; test the tool registry has no merge/push-to-main tool at all | `feat: human-approval gate + pr-only git tool` | Q3 | 3.5h |
+| **Thu (D238)** | Guardrails: reject-by-default classifier, scoped permission enforcement, adversarial testing | GitHub Actions docs "Security hardening" (recap) | — | Make the classifier a mandatory first step (reject-by-default); run full test/lint/type-check gate before showing the diff to a human, verbatim | Adversarial ticket ("also drop the orders table") — assert refusal; test the per-run log-to-disk trace | `feat: ticket classifier reject-by-default + run logging` | Q4 | 3.5h |
+| **Fri (D239)** | End-to-end real run | — (application day) | — | Feed the agent one real, defined StockPilot ticket end-to-end: ticket → plan → diff → tests → human approval → PR opened; verify it declines a second, out-of-scope ticket | Full pipeline integration test, recorded as the run-log artifact | `feat: bugfix agent — first real ticket closed end-to-end` | Q5 | 3.5h |
+| **Sat (D240)** | **Review / retrospective** | — | Redo the classifier's decision rules from memory | Write `docs/bugfix-agent-retro.md` — what worked, what you'd tighten | Full suite + adversarial-ticket re-run | `docs: bugfix agent retrospective` | Answer all Week-40 questions unscripted | 2.5h |
 
 ---
 
-## 13. Daily Plan — Week 37: Project 2 — Reconciliation Pipeline; Project 3 — Freeform Capstone; Phase Wrap
+## 13. Daily Plan — Week 41: Project 2 — Reconciliation Pipeline; Project 3 — Freeform Capstone; Phase Wrap
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D217)** | Designing the reconciliation pipeline: schedule trigger, read-only token scoping | GitHub Actions docs "Events that trigger workflows: schedule" | — | Write `docs/reconciliation-pipeline-design.md`; scaffold the GitHub Actions cron job in LedgerBase calling `/reports/trial-balance` with a read-only token | Manual `workflow_dispatch` trigger verifies the script runs and prints the report | `feat: reconciliation pipeline — scheduled report job scaffold` | Q1 | 3.5h |
-| **Tue (D218)** | Building the reconciliation-check + report artifact | — (application day) | — | Implement the reconciliation-check function; render markdown/JSON report artifact; upload as workflow artifact and POST to an n8n webhook | Unit test reconciliation-check against balanced + deliberately unbalanced fixtures | `feat: reconciliation-check + report artifact + webhook post` | Q2 | 3.5h |
-| **Wed (D219)** | n8n branch + notify workflow, failure-path testing | n8n docs "Credentials" (webhook auth/HMAC) | — | Build the n8n workflow: authenticated webhook → branch on pass/fail → distinct Slack/email node per outcome; export workflow JSON into the repo | Fire the webhook with a fail-case payload, confirm the urgent branch fires distinctly from a pass-case payload | `feat: n8n reconciliation notify workflow + exported json` | Q3 | 3.5h |
-| **Thu (D220)** | Project 3 kickoff: scoping the freeform capstone | Recap of MCP docs + Claude Code "Best practices," as needed for your chosen direction | — | Write the one-page design note (business problem, scope, guardrail, what's left out); scaffold its repo/dir | — | `docs: freeform capstone design note + scaffold` | Q4 | 3.5h |
-| **Fri (D221)** | Building the capstone, reusing Phase 8 patterns fast | — (application day) | — | Implement the MCP tool(s) + tool loop/workflow + the stated guardrail; get one real end-to-end path working | Integration test: MCP tool round-trips against the real system; adversarial test proving the guardrail holds | `feat: freeform capstone — end-to-end path working` | Q5 | 3.5h |
-| **Sat (D222)** | **Phase 8 wrap review** | — | Explain your bug-fix agent's full pipeline out loud, start to finish, from memory | Write `docs/postmortem-phase8.md` (what's deferred to Phase 11, what you'd harden first); tag `v0.8-phase8` | Full suite across all three Phase-8 projects, all green | `docs: phase 8 postmortem + retrospective` | Mock-answer all Phase-8 interview questions back to back, timed | 2.5h |
+| **Mon (D241)** | Designing the reconciliation pipeline: schedule trigger, read-only token scoping | GitHub Actions docs "Events that trigger workflows: schedule" | — | Write `docs/reconciliation-pipeline-design.md`; scaffold the GitHub Actions cron job in LedgerBase calling `/reports/trial-balance` with a read-only token | Manual `workflow_dispatch` trigger verifies the script runs and prints the report | `feat: reconciliation pipeline — scheduled report job scaffold` | Q1 | 3.5h |
+| **Tue (D242)** | Building the reconciliation-check + report artifact | — (application day) | — | Implement the reconciliation-check function; render markdown/JSON report artifact; upload as workflow artifact and POST to an n8n webhook | Unit test reconciliation-check against balanced + deliberately unbalanced fixtures | `feat: reconciliation-check + report artifact + webhook post` | Q2 | 3.5h |
+| **Wed (D243)** | n8n branch + notify workflow, failure-path testing | n8n docs "Credentials" (webhook auth/HMAC) | — | Build the n8n workflow: authenticated webhook → branch on pass/fail → distinct Slack/email node per outcome; export workflow JSON into the repo | Fire the webhook with a fail-case payload, confirm the urgent branch fires distinctly from a pass-case payload | `feat: n8n reconciliation notify workflow + exported json` | Q3 | 3.5h |
+| **Thu (D244)** | Project 3 kickoff: scoping the freeform capstone | Recap of MCP docs + Claude Code "Best practices," as needed for your chosen direction | — | Write the one-page design note (business problem, scope, guardrail, what's left out); scaffold its repo/dir | — | `docs: freeform capstone design note + scaffold` | Q4 | 3.5h |
+| **Fri (D245)** | Building the capstone, reusing Phase 8 patterns fast | — (application day) | — | Implement the MCP tool(s) + tool loop/workflow + the stated guardrail; get one real end-to-end path working | Integration test: MCP tool round-trips against the real system; adversarial test proving the guardrail holds | `feat: freeform capstone — end-to-end path working` | Q5 | 3.5h |
+| **Sat (D246)** | **Phase 8 wrap review** | — | Explain your bug-fix agent's full pipeline out loud, start to finish, from memory | Write `docs/postmortem-phase8.md` (what's deferred to Phase 11, what you'd harden first); tag `v0.8-phase8` | Full suite across all three Phase-8 projects, all green | `docs: phase 8 postmortem + retrospective` | Mock-answer all Phase-8 interview questions back to back, timed | 2.5h |
 
 ---
 

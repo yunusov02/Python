@@ -38,7 +38,7 @@ Docker + Docker Compose · structlog · GitHub Actions (lint + test only,
 deploy comes in Phase 4).
 
 Deliberately **not yet introduced**: Redis, Celery, Django, threading/
-multiprocessing in depth, Kubernetes, Kafka/RabbitMQ, CQRS, Kubernetes,
+multiprocessing in depth, Kubernetes, Kafka/RabbitMQ, CQRS,
 monitoring stack. They show up later, at the moment they solve a felt problem.
 
 ---
@@ -185,7 +185,10 @@ status, latency, user_id). No metrics/tracing stack yet — that's Phase 4.
 
 ### Deployment
 Single VPS or Render/Railway, `docker compose up -d`. Manual for now;
-zero-downtime deploy technique is a Phase 4 topic.
+zero-downtime deploy technique is a Phase 4 topic. Real cloud
+infrastructure (IAM, VPC, a managed database) is a deliberately later
+topic too — named here as a gap, closed for real in Phase 6 once
+AtlasMarket is a system worth deploying properly.
 
 ### Scaling Strategy (discussion, not implementation)
 Written notes on: what breaks first under load (single Postgres instance,

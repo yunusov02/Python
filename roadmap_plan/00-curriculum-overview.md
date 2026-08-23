@@ -1,4 +1,4 @@
-# Middle+ Python → AI/ML/Data Engineer — 12-Month Curriculum Overview
+# Middle+ Python → AI/ML/Data Engineer — Curriculum Overview
 
 **This document replaces the previous 150-task AtlasCommerce roadmap.**
 It is delivered phase by phase. This file is the map; each phase gets its own
@@ -6,21 +6,38 @@ detailed file with a full daily plan (`phase-1-foundations.md`, `phase-2-...md`,
 
 The program has two tracks, back to back:
 
-- **Track A — Python Backend Bootcamp (Phases 1-6, Weeks 1-26, ~6 months).**
-  6 phases × 4 weeks ≈ 24 weeks. Each week runs Mon–Fri as core
-  learning/project days (3–4h) + Saturday as a consolidated Review &
-  Interview-Prep day (2–3h), covering DSA + SQL daily alongside the project work.
-- **Track B — AI/ML/Data Zoomcamp Track (Phases 7-11, Weeks 27-56, ~6-7 months).**
+- **Track A — Python Backend Bootcamp (Phases 1-6, Weeks 1-30, ~7 months).**
+  6 phases ≈ 30 weeks (Phases 1-4 run 4-5 weeks each; Phase 5 and Phase 6
+  each run 6 weeks, two of them a deliberate depth extension — see below).
+  Each week runs Mon–Fri as core learning/project days (3–4h) + Saturday as
+  a consolidated Review & Interview-Prep day (2–3h), covering DSA + SQL
+  daily alongside the project work — except Weeks 23-24 (Phase 5, a
+  from-scratch Raft implementation) and Weeks 29-30 (Phase 6, three
+  system-design problems built as real services), which deliberately drop
+  the DSA/SQL grind since the day's own algorithmic/systems work already
+  carries that load. Systems-mastery and interview-readiness depth —
+  resilience patterns, consistent hashing, consensus (both conceptual via
+  etcd AND a full from-scratch Raft build), gRPC, real cloud deployment,
+  SLOs/on-call/incident drills, backup/DR, compliance scoping, a
+  19-problem system-design bank (three of them shipped as real services),
+  and a 27-question behavioral bank — is woven directly into Phases 4, 5,
+  and 6 at the exact points each topic is actually felt, rather than
+  bolted on as a separate phase afterward (see "How technologies get
+  introduced" below for where each one lands).
+- **Track B — AI/ML/Data Zoomcamp Track (Phases 7-11, Weeks 31-61, ~7 months).**
   5 phases covering DataTalksClub's LLM, AI Dev Tools, Machine Learning,
   MLOps Engineering, and Data Engineering Zoomcamps — in that order (see
   "Zoomcamp Track Ordering Rationale" below). DSA/SQL grind is dropped here
   (already covered in Track A); each weekday still runs Theory + Mini
-  Exercise + Project, Saturday is still a review day.
+  Exercise + Project, Saturday is still a review day. Phase 9 opens with a
+  dedicated Week 42 deriving the linear algebra/calculus/statistics
+  underneath every `.fit()` call by hand, before the applied ML work begins.
 
 Sundays are intentionally left as rest/buffer throughout — not itemized, but
-assumed for catch-up if a weekday slips. Total: **336 days, 56 weeks, 11
-phases, ~12-13 months** (slightly over 12 months by design, since the
-Zoomcamp track wasn't compressed to force an exact fit).
+assumed for catch-up if a weekday slips. Total: **366 days, 61 weeks, 11
+phases, ~13-14 months** (over 12 months by design — depth was prioritized
+over a fixed calendar length, both in the Zoomcamp track's own pace and in
+the two deliberate depth extensions to Phases 5, 6, and 9).
 
 ---
 
@@ -45,13 +62,25 @@ fully deployable. Project 10 is deliberately the spiritual successor to
 AtlasCommerce — same ambition, built on 6 months of accumulated skill instead
 of upfront over-scoping.
 
+Three more Track A projects ship in Phase 6, Weeks 29-30 — numbered 26-28
+(after the Zoomcamp track's 15, so the whole 25-project list above and the
+Zoomcamp list below stay unrenumbered) since they belong to Track A but are
+built once AtlasMarket's infrastructure and Phase 5's Raft implementation
+already exist to reuse:
+
+| # | Project | Domain | Level | Phase |
+|---|---------|--------|-------|-------|
+| 26 | **URL Shortener** — SD1 built for real: base62 codes, Redis cache-aside | Infra primitive | Middle | 6 |
+| 27 | **Rate Limiter Service** — SD2 built for real: token bucket + sliding-window, proven correct across 3 instances | Infra primitive | Middle | 6 |
+| 28 | **Distributed Job Scheduler** — SD14 built for real, on top of Phase 5's from-scratch Raft cluster | Infra primitive | Middle+/Senior | 6 |
+
 ---
 
 ## The 15 Zoomcamp Track Projects (Phases 7-11)
 
 Track B doesn't start new domains from scratch — it applies each Zoomcamp's
 skills directly onto the 10 systems Track A already built, plus a handful of
-fresh AI-native builds. This keeps the whole 12 months feeling like one
+fresh AI-native builds. This keeps the whole program feeling like one
 continuous system rather than 15 bolted-on course assignments.
 
 | # | Project | Applies | Phase |
@@ -79,7 +108,7 @@ Tools → Data Engineering, and ML → MLOps → LLM → AI Dev Tools → Data
 Engineering. The order actually used is **LLM → AI Dev Tools → ML → MLOps →
 Data Engineering**, because:
 
-- Coming straight off 6 months of backend work, **LLM Zoomcamp is the
+- Coming straight off 7 months of backend work, **LLM Zoomcamp is the
   lowest-friction on-ramp**: you're wrapping API calls into services and
   building RAG pipelines — a small delta from what you already do, not a
   pivot into new math/stats. Starting here keeps momentum instead of
@@ -130,31 +159,49 @@ partitioning), database migrations at scale.
 
 ### Phase 4 — Microservices & Infrastructure (Weeks 14–18)
 Docker Compose multi-service systems, Nginx reverse proxy, API Gateway
-patterns, CI/CD (GitHub Actions) with dependency/secret/container security
-gates, Prometheus/Grafana, Sentry, health checks, zero-downtime deploys,
-S3/MinIO object storage, and the first of four React/TS/TanStack Query
-frontends built across the rest of the program (CarePoint's schedule view).
+patterns, networking fundamentals (TCP/UDP, HTTP/1.1 vs 2, TLS handshake,
+DNS), resilience patterns (retry+backoff, a hand-rolled circuit breaker
+on the system's first real service-to-service call), gRPC + Protobuf
+(one internal call rebuilt and benchmarked against REST), CI/CD (GitHub
+Actions) with dependency/secret/container security gates, Prometheus/
+Grafana, Sentry, health checks, zero-downtime deploys, S3/MinIO object
+storage, and the first of four React/TS/TanStack Query frontends built
+across the rest of the program (CarePoint's schedule view).
 **Project 5: CarePoint. Project 6: LedgerBase.**
 
-### Phase 5 — Scaling & Advanced Architecture (Weeks 19–22)
+### Phase 5 — Scaling & Advanced Architecture (Weeks 19–24)
 CQRS, Outbox pattern, Saga (overview), Elasticsearch/OpenSearch, sharding,
-replication, Kubernetes fundamentals, GitOps (conceptual), system design
-deep-dives (load balancers, CDN, CAP theorem in practice), plus two more
-React/TS frontends (FleetTrack's polling dispatcher dashboard, DocuVault's
-debounced search page) reusing Phase 4's setup.
+replication, consistent hashing (hand-built ring, benchmarked), Kubernetes
+fundamentals, GitOps (conceptual), system design deep-dives (load
+balancers, CDN, CAP theorem in practice), plus two more React/TS frontends
+(FleetTrack's polling dispatcher dashboard — with a WebSocket-push stretch
+alternative built and compared — and DocuVault's debounced search page)
+reusing Phase 4's setup. Weeks 19-22 build conceptual Raft/consensus
+fluency via a real local etcd cluster; **Weeks 23-24 go further and
+implement Raft from scratch** — leader election, log replication, all
+five safety properties, tested under a real simulated network partition.
 **Project 7: FleetTrack. Project 8: DocuVault.**
 
-### Phase 6 — Senior-Track Capstone (Weeks 23–26)
+### Phase 6 — Senior-Track Capstone (Weeks 25–30)
 Idempotency, distributed transactions, a real secrets manager (HashiCorp
-Vault), security hardening, performance profiling under load, mock
-system-design interviews, and AtlasMarket's storefront — a fourth React/TS
-app with routing and a first component test, built on three prior
-frontends' habits instead of literacy learned from zero.
-**Project 9: PayFlow. Project 10: AtlasMarket (capstone).**
+Vault), security hardening, a real cloud deployment (AWS/GCP IAM, VPC,
+managed Postgres), the bulkhead pattern, feature flags + canary release,
+SLOs/on-call runbooks/a live incident drill, a backup/DR drill for
+LedgerBase, PCI-DSS/HIPAA-adjacent compliance scoping notes, performance
+profiling under load, a 19-problem system-design bank plus a 27-question
+behavioral bank (worked across Weeks 19–28), and AtlasMarket's storefront
+— a fourth React/TS app with routing, a Playwright end-to-end test on top
+of a first component test, built on three prior frontends' habits instead
+of literacy learned from zero. **Weeks 29-30 take three of those
+system-design problems all the way to real, tested services** — a URL
+Shortener, a Rate Limiter, and a Distributed Job Scheduler built on
+Phase 5's Raft implementation.
+**Project 9: PayFlow. Project 10: AtlasMarket (capstone). Projects 26-28:
+URL Shortener, Rate Limiter, Distributed Job Scheduler.**
 
-*— End of Track A (6-month Python Backend Bootcamp) —*
+*— End of Track A (7-month Python Backend Bootcamp) —*
 
-### Phase 7 — LLM Zoomcamp (Weeks 27–32)
+### Phase 7 — LLM Zoomcamp (Weeks 31–36)
 RAG architecture, embeddings & vector search (Qdrant + Elasticsearch),
 tool-calling agents, RAG evaluation (hit rate/MRR, LLM-as-judge), monitoring,
 hybrid search/re-ranking, prompt-injection guardrails, and the hypothesis-
@@ -163,7 +210,7 @@ underneath A/B-testing prompts and models.
 **Project 11: CarePoint Patient-FAQ Assistant. Project 12: DocuVault "Ask
 Your Documents" Chatbot. Project 13: AtlasMarket Support Assistant.**
 
-### Phase 8 — AI Dev Tools Zoomcamp (Weeks 33–37)
+### Phase 8 — AI Dev Tools Zoomcamp (Weeks 37–41)
 AI-assisted coding workflows, the Model Context Protocol (custom MCP
 servers), building a coding agent's tool loop from scratch, AI-assisted
 CI/CD (PR-review bots), and low-code automation (n8n) — with an explicit
@@ -171,22 +218,26 @@ human-approval-gate/guardrails discipline for anything code-changing.
 **Project 14: StockPilot Bug-Fix Coding Agent. Project 15: Cross-System
 Automation Pipeline. Project 16: Freeform AI Dev Tool Capstone.**
 
-### Phase 9 — Machine Learning Zoomcamp (Weeks 38–44)
-Regression, classification, evaluation metrics, decision trees/ensembles
-(random forest, XGBoost), deep learning (CNNs, transfer learning), and three
-deployment styles (serverless/Lambda, Kubernetes, KServe) — applied to
-StockPilot, QuickServe, and CarePoint's own data.
+### Phase 9 — Machine Learning Zoomcamp (Weeks 42–49)
+Opens with **Week 42, a dedicated ML math foundations week**: linear
+algebra, gradient descent derived and implemented by hand, and MLE/
+Bayesian statistics deep enough to show L2 regularization is a Gaussian
+prior — verified against `sklearn` each time, not left as a black box.
+Then regression, classification, evaluation metrics, decision trees/
+ensembles (random forest, XGBoost), deep learning (CNNs, transfer
+learning), and three deployment styles (serverless/Lambda, Kubernetes,
+KServe) — applied to StockPilot, QuickServe, and CarePoint's own data.
 **Project 17: StockPilot Demand Forecaster. Project 18: QuickServe Churn
 Predictor. Project 19: CarePoint No-Show Predictor.**
 
-### Phase 10 — MLOps Engineering Zoomcamp (Weeks 45–50)
+### Phase 10 — MLOps Engineering Zoomcamp (Weeks 50–55)
 Productionizing Phase 9's three models: MLflow experiment tracking &
 registry, Prefect orchestration, batch/web/streaming deployment patterns,
 Evidently drift monitoring, and CI quality gates that fail a retrain on
 metric regression.
 **Project 20–22: all three Phase 9 models, fully productionized.**
 
-### Phase 11 — Data Engineering Zoomcamp (Weeks 51–56)
+### Phase 11 — Data Engineering Zoomcamp (Weeks 56–61)
 Terraform IaC, Airflow orchestration, warehouse fundamentals + dbt analytics
 engineering, Spark batch processing, and Kafka/ksqlDB streaming — unifying
 data from every system built across the year into one analytics platform.
@@ -205,6 +256,17 @@ gets slow under load. Kafka shows up in Phase 3 when WareFlow needs to react
 to stock-level events across services. This ordering is fixed for Track A
 (Phases 1-6) and won't be reshuffled between phases.
 
+The same rule governs where the systems-mastery/interview-readiness depth
+lands, from Phase 4 on: retry/circuit-breaker resilience and gRPC arrive
+in Phase 4 the moment `invoicing-service` first calls `ledger-service` for
+real; consistent hashing and Raft/consensus arrive in Phase 5 the moment
+DocuVault's sharding decision and Kubernetes's own etcd-backed control
+plane make them concrete; real cloud deployment, SLOs, backup/DR, and
+compliance scoping arrive in Phase 6 once AtlasMarket and LedgerBase are
+systems actually worth that investment. None of it is bolted on
+afterward — each piece lands exactly where the existing system already
+creates the felt problem it solves.
+
 Track B (Phases 7-11) applies the same discipline, but reuses Track A's
 infrastructure instead of introducing it twice: Phase 7's vector search sits
 alongside Phase 5's Elasticsearch; Phase 9's model-serving Kubernetes work
@@ -219,7 +281,10 @@ of the Postgres databases every earlier phase built.
 - **Mon–Fri:** 3–4h/day — theory reading, 1 mini-exercise, project build task,
   a testing task, a git commit with a real message, 1–2 interview questions
   to answer in writing. **Track A only (Phases 1-6):** also 1 DSA problem +
-  1 SQL problem per day.
+  1 SQL problem per day. **Weeks 19-28 additionally** point to 1-2 entries
+  from `system-design-problems.md` and `behavioral-interview-questions.md`
+  per week (see each week's Interview Question Set) — worked alongside the
+  daily DSA/SQL grind, not instead of it.
 - **Saturday:** 2–3h — review the week, redo the hardest mini-exercise from
   memory, mock-answer 5 interview questions out loud, write a short "what I
   now understand that I didn't Monday" note.
@@ -239,5 +304,7 @@ Track B, once Track A is complete: `phase-7-llm-zoomcamp.md` →
 each structured the same way (Learning Goals, Technologies Introduced, full
 project specs, Books & Documentation, Weekly Interview Question Sets, Daily
 Plan tables, Deliverables & Milestones, Skills Checklist) — minus the
-DSA/SQL columns, which Track A already covers. `progress.md` tracks every
-day across both tracks in one file.
+DSA/SQL columns, which Track A already covers. `system-design-problems.md`
+and `behavioral-interview-questions.md` are reference banks used throughout
+Phases 5-6 (Weeks 19-28) rather than phase files of their own.
+`progress.md` tracks every day across both tracks in one file.

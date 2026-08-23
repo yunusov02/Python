@@ -1,5 +1,5 @@
-# PHASE 7 — Machine Learning Zoomcamp
-### Weeks 38–44 · ~3.5h weekdays, ~2.5h Saturdays · 42 working days
+# PHASE 9 — Machine Learning Zoomcamp
+### Weeks 42–49 · ~3.5h weekdays, ~2.5h Saturdays · 48 working days
 
 ---
 
@@ -33,19 +33,29 @@ By the end of Phase 9 you can:
 - Write a model card and a short retrospective that honestly states a
   model's limitations — the same postmortem discipline from Phase 1,
   applied to ML artifacts instead of services.
+- Derive gradient descent from the loss function by hand, on paper, before
+  ever calling `.fit()` — so "the library minimizes the loss" stops being
+  a black box and starts being a specific, checkable claim about a
+  specific, checkable formula.
 
 ---
 
 ## 2. Technologies Introduced This Phase
 
-scikit-learn (`Pipeline`, preprocessing, linear models, `model_selection`,
-metrics) · XGBoost · TensorFlow/Keras (Sequential/functional API,
-`keras.applications` transfer learning, callbacks) · Flask/FastAPI as a
-model-*scoring* layer (reusing Phase 1/4 API skills, now serving a model
-artifact instead of business CRUD) · Docker (reused, now packaging model
-artifacts + inference code) · AWS Lambda (serverless inference) ·
-Kubernetes (reused from Phase 5's `kind` cluster, extended with HPA and
-probes tuned for ML workloads) · KServe.
+NumPy-based linear algebra (vectors, matrices, dot products — the
+operations every model underneath scikit-learn/Keras is actually doing) ·
+calculus for ML (partial derivatives, the chain rule, gradient descent
+derived and implemented by hand before ever using a library's `.fit()`) ·
+probability & statistics deepened beyond Phase 7's confidence-interval
+work (distributions, maximum likelihood estimation, the Bayesian
+interpretation of a prior) · scikit-learn (`Pipeline`, preprocessing,
+linear models, `model_selection`, metrics) · XGBoost · TensorFlow/Keras
+(Sequential/functional API, `keras.applications` transfer learning,
+callbacks) · Flask/FastAPI as a model-*scoring* layer (reusing Phase 1/4
+API skills, now serving a model artifact instead of business CRUD) ·
+Docker (reused, now packaging model artifacts + inference code) · AWS
+Lambda (serverless inference) · Kubernetes (reused from Phase 5's `kind`
+cluster, extended with HPA and probes tuned for ML workloads) · KServe.
 
 Deliberately **not yet introduced**: MLflow / experiment tracking, feature
 stores, data/prediction drift monitoring in production, distributed
@@ -162,8 +172,8 @@ marketing can realistically act on — chosen over plain accuracy because
 churn is imbalanced in any given window.
 
 ### Deployment Approach
-Dockerized FastAPI scoring service (built Week 40), later the subject of
-the phase's three-way serving comparison in Week 42 (Lambda / raw K8s
+Dockerized FastAPI scoring service (built Week 45), later the subject of
+the phase's three-way serving comparison in Week 47 (Lambda / raw K8s
 Deployment / KServe).
 
 ### Common Interview Questions
@@ -230,7 +240,7 @@ cost structure.
 ### Deployment Approach
 Reuses the exact FastAPI + Docker scoring-service pattern built twice
 already this phase — the point of Project 3 is proving you can move fast
-by reusing a pattern, shipped in three days (Week 44, Thu–Sat).
+by reusing a pattern, shipped in three days (Week 49, Thu–Sat).
 
 ### Common Interview Questions
 1. Why recall-oriented here versus precision-oriented for the churn
@@ -257,6 +267,12 @@ front-desk staff what an "actionable" list should look like.
 
 ## 6. Books & Documentation for This Phase
 
+- 3Blue1Brown "Essence of Linear Algebra" (free video series) — Week 42.
+- Khan Academy "Multivariable calculus," partial derivatives + gradient
+  sections (free) — Week 42.
+- Christopher Bishop, *Pattern Recognition and Machine Learning* §1.2
+  (Probability Theory / MLE) — or any free equivalent MLE treatment —
+  Week 42.
 - DataTalksClub *Machine Learning Zoomcamp*
   (github.com/DataTalksClub/machine-learning-zoomcamp) — modules: Intro to
   ML, Regression, Classification, Evaluation Metrics, Deployment, Trees
@@ -286,7 +302,19 @@ front-desk staff what an "actionable" list should look like.
 
 ## 7. Weekly Interview Question Sets
 
-**Week 38 — Intro to ML, Regression**
+**Week 42 — ML math foundations**
+1. Derive the gradient of MSE with respect to the weight vector, from
+   memory, on a whiteboard.
+2. Why does gradient descent move in the direction of the *negative*
+   gradient?
+3. What does it mean, precisely, for logistic regression's loss to be the
+   maximum-likelihood estimate under a Bernoulli model?
+4. What is L2 regularization, in Bayesian terms — what prior does it
+   correspond to, and why does a smaller `alpha` mean a wider prior?
+5. Why derive gradient descent by hand once, when `sklearn`/`Keras` will
+   always do it for you in practice?
+
+**Week 43 — Intro to ML, Regression**
 1. Explain the bias-variance tradeoff and how regularization addresses it.
 2. Why split into train/validation/test instead of just train/test, and
    what leaks if you tune hyperparameters using the test set?
@@ -297,7 +325,7 @@ front-desk staff what an "actionable" list should look like.
 5. What's the difference between L1 and L2 regularization in terms of the
    resulting coefficients?
 
-**Week 39 — Classification, Evaluation**
+**Week 44 — Classification, Evaluation**
 1. Why is accuracy a bad metric for churn prediction, and what would you
    use instead?
 2. Precision vs recall — for churn, which do you optimize for and why?
@@ -307,7 +335,7 @@ front-desk staff what an "actionable" list should look like.
    folds if you're not careful.
 5. Name two ways to handle class imbalance and their tradeoffs.
 
-**Week 40 — Deployment, Trees**
+**Week 45 — Deployment, Trees**
 1. Compare a single decision tree, a random forest, and gradient boosting
    — what does each add over the last?
 2. Why does a random forest reduce variance compared to one tree?
@@ -318,7 +346,7 @@ front-desk staff what an "actionable" list should look like.
 5. Your Dockerized model service is fast in dev but slow in production —
    what do you check first?
 
-**Week 41 — Deep Learning**
+**Week 46 — Deep Learning**
 1. Why does transfer learning work — what is the pretrained network
    actually reusing?
 2. What problem does dropout solve, and why does it apply only during
@@ -330,7 +358,7 @@ front-desk staff what an "actionable" list should look like.
 5. When would a small CNN trained from scratch beat a fine-tuned
    pretrained model, and when would it lose?
 
-**Week 42 — Serverless, Kubernetes, KServe**
+**Week 47 — Serverless, Kubernetes, KServe**
 1. What causes a Lambda cold start for an ML model, and how do you
    mitigate it?
 2. Compare a raw Kubernetes Deployment vs. KServe for model serving — what
@@ -342,7 +370,7 @@ front-desk staff what an "actionable" list should look like.
 5. How would you roll out a new model version with zero downtime and an
    easy rollback?
 
-**Week 43 — Finalizing a Regression Project**
+**Week 48 — Finalizing a Regression Project**
 1. How do you decide a model is "good enough to ship" for a small-business
    forecasting use case?
 2. What belongs in a model card, and why does "intended use / limitations"
@@ -354,7 +382,7 @@ front-desk staff what an "actionable" list should look like.
 5. What triggers an out-of-cycle retrain, versus your normal retrain
    cadence?
 
-**Week 44 — Shipping Two Projects Fast**
+**Week 49 — Shipping Two Projects Fast**
 1. What's the minimum viable CI check for a model repo beyond lint/test —
    what does a "model regression test" actually verify?
 2. For an imbalanced no-show problem, how do you pick a decision threshold
@@ -368,100 +396,125 @@ front-desk staff what an "actionable" list should look like.
 
 ---
 
-## 8. Daily Plan — Week 38: Intro to ML, Linear Regression, StockPilot Demand Forecaster
+## 8. Daily Plan — Week 42: ML Math Foundations
+
+*Why this week exists: Phase 9 as originally scoped is deliberately
+applied — `.fit()`, evaluate, deploy — which is the right pace for a
+first pass, but it leaves "the library minimizes the loss" as a black
+box. This week derives the machinery by hand, once, so every `.fit()`
+call for the rest of the phase is a specific claim about a specific
+formula you could reproduce, not incantation.*
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D223)** | Supervised learning framing, CRISP-DM, train/val/test split | ML Zoomcamp Module 1 — Intro to ML; Géron Ch.2 "Look at the Big Picture" | Implement a train/val/test split function from scratch on a toy dataset | EDA on StockPilot's historical order data; aggregate weekly per-product demand | Test the split preserves proportions and leaks no rows across sets | `feat: demand forecaster - eda + train/val/test split` | Q1 | 3.5h |
-| **Tue (D224)** | NumPy/Pandas refresher, missing data, groupby aggregation | Pandas docs "Working with missing data"; Géron Ch.2 data-cleaning section | Pandas groupby/aggregation drill on toy sales data | Build the weekly per-product feature table joining products + order_items + stock_movements | Unit test feature-table shape and confirm no NaNs leak through | `feat: feature table construction for demand forecaster` | Q2 | 3.5h |
-| **Wed (D225)** | Linear regression from scratch (normal equation) | ML Zoomcamp Module 2 — Regression; Géron Ch.4 "The Normal Equation" | Implement normal-equation regression with NumPy on toy data, compare to `sklearn.LinearRegression` | Baseline linear regression predicting next-week demand from lag features | Unit test RMSE computed correctly; model reproducible with a fixed seed | `feat: baseline linear regression demand model` | Q3 | 3.5h |
-| **Thu (D226)** | Feature engineering, one-hot encoding | scikit-learn docs "Preprocessing data" (OneHotEncoder); Géron Ch.2 categorical encoding | Encode a categorical column with `OneHotEncoder` vs `pd.get_dummies`, compare output | Add category/supplier one-hot features and a week-of-year seasonality feature | Test the feature pipeline is identical between train and inference (no train/test skew) | `feat: one-hot + seasonal features for demand model` | Q4 | 3.5h |
-| **Fri (D227)** | Regularization (Ridge), RMSE evaluation, bias-variance in practice | ML Zoomcamp Module 2 — Regularized Linear Models; Géron Ch.4 "Ridge Regression" | Plot train vs. validation RMSE across Ridge `alpha` values (a learning curve) | Add Ridge regularization, tune `alpha` on the validation set, record final Week-27 RMSE vs. naive baseline | Test the regularized model beats the naive baseline by a defined margin | `feat: ridge-regularized demand model + evaluation` | Q5 | 3.5h |
-| **Sat (D228)** | **Review** | — | Redo the normal-equation regression from memory, no notes | Re-read the feature table for anything that smells like leaked future information | Full suite re-run | — | Answer all 5 Week-27 questions out loud, unscripted | 2.5h |
+| Mon (D247) | Linear algebra for ML: vectors, matrices, dot products, the geometric intuition behind "a model is a function of a weight vector" | 3Blue1Brown "Essence of Linear Algebra" (free video series) Ch.1-4, or Ch.1-2 of any standard linear algebra text | Implement matrix multiplication from scratch in pure Python (no NumPy), then again with NumPy, compare correctness and timing | `docs/ml-math-notes.md` — vectors/matrices section, in your own words, with the StockPilot feature vector as a concrete running example | Test your from-scratch matmul against `numpy.matmul` on random matrices for equality | `docs: linear algebra foundations + matmul from scratch` | Q1 | 3.5h |
+| Tue (D248) | Calculus for ML: partial derivatives, the chain rule, why gradients point in the direction of steepest ascent | Khan Academy "Multivariable calculus" (free) — partial derivatives + gradient sections | Derive, on paper, the gradient of Mean Squared Error with respect to the weight vector for linear regression — no code yet, just the math | Add the derivation to `docs/ml-math-notes.md`, typed out step by step | — | `docs: mse gradient derived by hand` | Q2 | 3.5h |
+| Wed (D249) | Gradient descent, implemented from scratch | — | Implement batch gradient descent for linear regression using only NumPy (no scikit-learn), converge on a toy dataset, plot the loss curve | Reproduce Phase 9 Week 43's upcoming baseline linear regression using your own from-scratch gradient descent instead of the normal equation, verify the learned weights match closely | Test: your from-scratch gradient descent converges to weights within a small tolerance of `sklearn.LinearRegression`'s closed-form solution on the same toy data | `feat: linear regression via from-scratch gradient descent` | Q3 | 4h |
+| Thu (D250) | Probability & statistics deepened: distributions, maximum likelihood estimation | Any intro-statistics MLE chapter (e.g. Bishop's *Pattern Recognition and Machine Learning* §1.2, or a free equivalent) | Derive logistic regression's cross-entropy loss as the maximum-likelihood estimate under a Bernoulli model — on paper, then confirm numerically that maximizing likelihood equals minimizing the cross-entropy you already know from Phase 7/9 | Add the MLE derivation to `docs/ml-math-notes.md`, tied explicitly to the logistic regression you'll build in Week 44 | — | `docs: mle derivation for logistic regression loss` | Q4 | 3.5h |
+| Fri (D251) | The Bayesian view: priors, posteriors, and what L2 regularization actually is | — | Show, numerically, that Ridge regression's solution is the MAP (maximum a posteriori) estimate under a Gaussian prior on the weights — vary the prior's variance and watch it match `alpha` | Implement Ridge regression from scratch via gradient descent (extending Wednesday's code with the L2 penalty term), compare coefficients against `sklearn.Ridge` on the same data | Test: your from-scratch Ridge coefficients match `sklearn.Ridge`'s within a small tolerance across 3 different `alpha` values | `feat: ridge regression from scratch, matches sklearn` | Q5 | 4h |
+| Sat (D252) | **Review** | — | Redo Tuesday's MSE gradient derivation from memory, on paper, no notes | Re-read `docs/ml-math-notes.md` end to end, confirm every claim in it is something you could reproduce on a whiteboard | Full suite re-run (all from-scratch implementations) | — | Answer Week-42 Qs unscripted | 2.5h |
 
 ---
 
-## 9. Daily Plan — Week 39: Classification, Evaluation, QuickServe Churn Predictor
+## 9. Daily Plan — Week 43: Intro to ML, Linear Regression, StockPilot Demand Forecaster
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D229)** | Logistic regression, sigmoid, log-loss | ML Zoomcamp Module 3 — Classification; Géron Ch.4 "Logistic Regression" | Implement sigmoid + log-loss manually, verify against `sklearn` | EDA on QuickServe customer order history; define the churn label (no repeat order within a cadence window) | Test the churn label computes correctly on a synthetic customer timeline | `feat: churn predictor - eda + churn label definition` | Q1 | 3.5h |
-| **Tue (D230)** | Feature importance via coefficients | scikit-learn docs LogisticRegression; Géron Ch.4 coefficient interpretation | Fit logistic regression on toy data, inspect and plot coefficients | Build the RFM feature table (recency, frequency, monetary, tenure) + baseline logistic regression churn model | Unit test the feature table and confirm model output is a valid probability in [0,1] | `feat: baseline logistic regression churn model` | Q2 | 3.5h |
-| **Wed (D231)** | Evaluation pitfalls — the accuracy trap, confusion matrix, precision/recall | ML Zoomcamp Module 4 — Evaluation Metrics; scikit-learn docs "Model evaluation" | Compute a confusion matrix and precision/recall by hand on a small prediction set, verify against `sklearn` | Evaluate the churn model with confusion matrix + precision/recall; document why accuracy is misleading here | Test precision/recall helper functions against known cases | `feat: precision/recall evaluation for churn model` | Q3 | 3.5h |
-| **Thu (D232)** | ROC/AUC, k-fold cross-validation | ML Zoomcamp Module 4 — ROC/AUC; scikit-learn docs "Cross-validation" | Plot an ROC curve for a toy classifier, compute AUC manually vs. `sklearn` | Add k-fold CV to churn-model training, report mean/std AUC across folds | Test the CV split is customer-aware and doesn't leak a customer across folds | `feat: k-fold cv + roc/auc evaluation for churn model` | Q4 | 3.5h |
-| **Fri (D233)** | Class imbalance handling | ML Zoomcamp Module 4 imbalance notes; scikit-learn docs `class_weight` parameter | Compare `class_weight='balanced'` vs. undersampling on a toy imbalanced dataset | Apply class-weight balancing to the churn model, re-evaluate precision/recall/AUC, pick the Week-28 final model | Test the class-weighted model improves recall on the minority (churn) class vs. baseline | `feat: class-imbalance-aware churn model, week 28 final` | Q5 | 3.5h |
-| **Sat (D234)** | **Review** | — | Redo the manual confusion-matrix calculation from memory | Re-read the Week-28 model comparison notes for anything you'd argue differently now | Full suite re-run | — | Answer all 5 Week-28 questions out loud, unscripted | 2.5h |
+| **Mon (D253)** | Supervised learning framing, CRISP-DM, train/val/test split | ML Zoomcamp Module 1 — Intro to ML; Géron Ch.2 "Look at the Big Picture" | Implement a train/val/test split function from scratch on a toy dataset | EDA on StockPilot's historical order data; aggregate weekly per-product demand | Test the split preserves proportions and leaks no rows across sets | `feat: demand forecaster - eda + train/val/test split` | Q1 | 3.5h |
+| **Tue (D254)** | NumPy/Pandas refresher, missing data, groupby aggregation | Pandas docs "Working with missing data"; Géron Ch.2 data-cleaning section | Pandas groupby/aggregation drill on toy sales data | Build the weekly per-product feature table joining products + order_items + stock_movements | Unit test feature-table shape and confirm no NaNs leak through | `feat: feature table construction for demand forecaster` | Q2 | 3.5h |
+| **Wed (D255)** | Linear regression from scratch (normal equation) | ML Zoomcamp Module 2 — Regression; Géron Ch.4 "The Normal Equation" | Implement normal-equation regression with NumPy on toy data, compare to `sklearn.LinearRegression` | Baseline linear regression predicting next-week demand from lag features | Unit test RMSE computed correctly; model reproducible with a fixed seed | `feat: baseline linear regression demand model` | Q3 | 3.5h |
+| **Thu (D256)** | Feature engineering, one-hot encoding | scikit-learn docs "Preprocessing data" (OneHotEncoder); Géron Ch.2 categorical encoding | Encode a categorical column with `OneHotEncoder` vs `pd.get_dummies`, compare output | Add category/supplier one-hot features and a week-of-year seasonality feature | Test the feature pipeline is identical between train and inference (no train/test skew) | `feat: one-hot + seasonal features for demand model` | Q4 | 3.5h |
+| **Fri (D257)** | Regularization (Ridge), RMSE evaluation, bias-variance in practice | ML Zoomcamp Module 2 — Regularized Linear Models; Géron Ch.4 "Ridge Regression" | Plot train vs. validation RMSE across Ridge `alpha` values (a learning curve) | Add Ridge regularization, tune `alpha` on the validation set, record final Week-43 RMSE vs. naive baseline | Test the regularized model beats the naive baseline by a defined margin | `feat: ridge-regularized demand model + evaluation` | Q5 | 3.5h |
+| **Sat (D258)** | **Review** | — | Redo the normal-equation regression from memory, no notes | Re-read the feature table for anything that smells like leaked future information | Full suite re-run | — | Answer all 5 Week-43 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 10. Daily Plan — Week 40: Deployment, Trees, Churn Predictor Dockerized + Ensembles
+## 10. Daily Plan — Week 44: Classification, Evaluation, QuickServe Churn Predictor
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D235)** | Deployment patterns recap — Flask/FastAPI + Docker for model serving | Flask docs "Quickstart"; FastAPI docs (recap) | Minimal FastAPI `/predict` endpoint serving a pickled sklearn model, hit it with curl | Wrap the Week-28 churn model in a FastAPI scoring service (`/predict` with a Pydantic request/response schema) | Integration test hitting `/predict` with a sample payload, assert response shape and probability range | `feat: churn model fastapi scoring service` | Q1 | 3.5h |
-| **Tue (D236)** | Containerizing the model service | Docker docs "Best practices for writing Dockerfiles" (model-artifact angle) | Write a multi-stage Dockerfile for the scoring service, check the resulting image size | docker-compose for the churn scoring service, with a `/health` endpoint | Test the container starts and `/health` returns 200 | `chore: dockerize churn scoring service` | Q2 | 3.5h |
-| **Wed (D237)** | Decision trees | ML Zoomcamp Module 6 — Decision Trees; Géron Ch.6 | Fit a `DecisionTreeClassifier` on toy data, visualize it, discuss overfitting via `max_depth` | Rebuild the churn model as a decision tree; compare AUC/precision-recall against Week 39's logistic regression on the same held-out fold | Test the tree respects the `max_depth` constraint | `feat: decision-tree churn model + comparison` | Q3 | 3.5h |
-| **Thu (D238)** | Random forests / ensembling (bagging) | ML Zoomcamp Module 6 — Random Forest; Géron Ch.7 | Bagging demo: train 10 trees on bootstrap samples, average predictions, compare variance to a single tree | Build a `RandomForestClassifier` churn model, tune `n_estimators`/`max_depth` via CV | Test the forest model beats the single tree on validation AUC | `feat: random forest churn model` | Q4 | 3.5h |
-| **Fri (D239)** | Gradient boosting (XGBoost) | XGBoost docs "Introduction to Boosted Trees"; ML Zoomcamp Module 6 — XGBoost | Fit an `XGBClassifier` on toy data, plot feature importances | Build an XGBoost churn model; final comparison table (logreg vs. tree vs. forest vs. XGBoost); wire the winner into the scoring service | Test the scoring service now loads the XGBoost artifact and matches an offline batch score | `feat: xgboost churn model + finalize scoring service model choice` | Q5 | 3.5h |
-| **Sat (D240)** | **Review** | — | Redo the bagging demo from memory, explain variance reduction out loud | Re-read the model comparison table and confirm the winner is justified, not just the last one tried | Full suite re-run | — | Answer all 5 Week-29 questions out loud, unscripted | 2.5h |
+| **Mon (D259)** | Logistic regression, sigmoid, log-loss | ML Zoomcamp Module 3 — Classification; Géron Ch.4 "Logistic Regression" | Implement sigmoid + log-loss manually, verify against `sklearn` | EDA on QuickServe customer order history; define the churn label (no repeat order within a cadence window) | Test the churn label computes correctly on a synthetic customer timeline | `feat: churn predictor - eda + churn label definition` | Q1 | 3.5h |
+| **Tue (D260)** | Feature importance via coefficients | scikit-learn docs LogisticRegression; Géron Ch.4 coefficient interpretation | Fit logistic regression on toy data, inspect and plot coefficients | Build the RFM feature table (recency, frequency, monetary, tenure) + baseline logistic regression churn model | Unit test the feature table and confirm model output is a valid probability in [0,1] | `feat: baseline logistic regression churn model` | Q2 | 3.5h |
+| **Wed (D261)** | Evaluation pitfalls — the accuracy trap, confusion matrix, precision/recall | ML Zoomcamp Module 4 — Evaluation Metrics; scikit-learn docs "Model evaluation" | Compute a confusion matrix and precision/recall by hand on a small prediction set, verify against `sklearn` | Evaluate the churn model with confusion matrix + precision/recall; document why accuracy is misleading here | Test precision/recall helper functions against known cases | `feat: precision/recall evaluation for churn model` | Q3 | 3.5h |
+| **Thu (D262)** | ROC/AUC, k-fold cross-validation | ML Zoomcamp Module 4 — ROC/AUC; scikit-learn docs "Cross-validation" | Plot an ROC curve for a toy classifier, compute AUC manually vs. `sklearn` | Add k-fold CV to churn-model training, report mean/std AUC across folds | Test the CV split is customer-aware and doesn't leak a customer across folds | `feat: k-fold cv + roc/auc evaluation for churn model` | Q4 | 3.5h |
+| **Fri (D263)** | Class imbalance handling | ML Zoomcamp Module 4 imbalance notes; scikit-learn docs `class_weight` parameter | Compare `class_weight='balanced'` vs. undersampling on a toy imbalanced dataset | Apply class-weight balancing to the churn model, re-evaluate precision/recall/AUC, pick the Week-44 final model | Test the class-weighted model improves recall on the minority (churn) class vs. baseline | `feat: class-imbalance-aware churn model, week 44 final` | Q5 | 3.5h |
+| **Sat (D264)** | **Review** | — | Redo the manual confusion-matrix calculation from memory | Re-read the Week-44 model comparison notes for anything you'd argue differently now | Full suite re-run | — | Answer all 5 Week-44 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 11. Daily Plan — Week 41: Deep Learning, CarePoint Document-Image Classifier
+## 11. Daily Plan — Week 45: Deployment, Trees, Churn Predictor Dockerized + Ensembles
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D241)** | Neural network basics — layers, activations, backprop intuition | ML Zoomcamp "Neural Networks & Deep Learning" module; Géron Ch.10 | Forward-pass-only tiny dense net in NumPy on toy data | Assemble a labeled CarePoint scanned-document dataset (referral letter, insurance card, lab result, prescription) + data-loading pipeline | Test the loader produces correctly shaped and labeled batches | `feat: carepoint doc-image classifier - dataset + loader` | Q1 | 3.5h |
-| **Tue (D242)** | CNNs — convolution, pooling | ML Zoomcamp CNN section; Géron Ch.14 | Build a tiny CNN in Keras on a toy image dataset, train a few epochs | Define and train a baseline CNN for CarePoint document-type classification, log accuracy | Test model output shape equals the number of classes and training loss decreases over the first epochs | `feat: baseline cnn for document classification` | Q2 | 3.5h |
-| **Wed (D243)** | Transfer learning | Keras docs "Transfer learning & fine-tuning"; ML Zoomcamp transfer-learning section | Load a pretrained model via `keras.applications`, freeze the base, fine-tune the head on toy data | Replace the baseline CNN with a pretrained-base + custom-head model for the document classifier, compare accuracy to Tuesday's baseline | Test that base layers are frozen (`trainable=False`) and only the head trains | `feat: transfer-learning document classifier` | Q3 | 3.5h |
-| **Thu (D244)** | Keras training-loop internals — callbacks, checkpoints | Keras docs "Training & evaluation with the built-in methods"; "Writing your own callbacks" | Add `EarlyStopping` + `ModelCheckpoint` to a toy training loop | Add early stopping and best-model checkpointing to the document classifier's training run, retrain | Test the checkpoint file is written and reloadable, and the reloaded model matches the saved validation accuracy | `feat: training callbacks + checkpointing for document classifier` | Q4 | 3.5h |
-| **Fri (D245)** | Regularization/dropout for deep nets | Géron Ch.11 regularization section; Keras docs on image augmentation | Add `Dropout` layers to the toy CNN, compare the train/val gap with vs. without | Add dropout + data augmentation to the document classifier, final model selection, evaluate on a held-out test set, write a short model card | Test the augmentation pipeline varies images per epoch and final test accuracy clears a defined threshold | `feat: dropout + augmentation, finalize document classifier` | Q5 | 3.5h |
-| **Sat (D246)** | **Review** | — | Redo the transfer-learning freeze/fine-tune setup from memory | Re-read the model card and confirm the stated limitations are actually true | Full suite re-run | — | Answer all 5 Week-30 questions out loud, unscripted | 2.5h |
+| **Mon (D265)** | Deployment patterns recap — Flask/FastAPI + Docker for model serving | Flask docs "Quickstart"; FastAPI docs (recap) | Minimal FastAPI `/predict` endpoint serving a pickled sklearn model, hit it with curl | Wrap the Week-44 churn model in a FastAPI scoring service (`/predict` with a Pydantic request/response schema) | Integration test hitting `/predict` with a sample payload, assert response shape and probability range | `feat: churn model fastapi scoring service` | Q1 | 3.5h |
+| **Tue (D266)** | Containerizing the model service | Docker docs "Best practices for writing Dockerfiles" (model-artifact angle) | Write a multi-stage Dockerfile for the scoring service, check the resulting image size | docker-compose for the churn scoring service, with a `/health` endpoint | Test the container starts and `/health` returns 200 | `chore: dockerize churn scoring service` | Q2 | 3.5h |
+| **Wed (D267)** | Decision trees | ML Zoomcamp Module 6 — Decision Trees; Géron Ch.6 | Fit a `DecisionTreeClassifier` on toy data, visualize it, discuss overfitting via `max_depth` | Rebuild the churn model as a decision tree; compare AUC/precision-recall against Week 44's logistic regression on the same held-out fold | Test the tree respects the `max_depth` constraint | `feat: decision-tree churn model + comparison` | Q3 | 3.5h |
+| **Thu (D268)** | Random forests / ensembling (bagging) | ML Zoomcamp Module 6 — Random Forest; Géron Ch.7 | Bagging demo: train 10 trees on bootstrap samples, average predictions, compare variance to a single tree | Build a `RandomForestClassifier` churn model, tune `n_estimators`/`max_depth` via CV | Test the forest model beats the single tree on validation AUC | `feat: random forest churn model` | Q4 | 3.5h |
+| **Fri (D269)** | Gradient boosting (XGBoost) | XGBoost docs "Introduction to Boosted Trees"; ML Zoomcamp Module 6 — XGBoost | Fit an `XGBClassifier` on toy data, plot feature importances | Build an XGBoost churn model; final comparison table (logreg vs. tree vs. forest vs. XGBoost); wire the winner into the scoring service | Test the scoring service now loads the XGBoost artifact and matches an offline batch score | `feat: xgboost churn model + finalize scoring service model choice` | Q5 | 3.5h |
+| **Sat (D270)** | **Review** | — | Redo the bagging demo from memory, explain variance reduction out loud | Re-read the model comparison table and confirm the winner is justified, not just the last one tried | Full suite re-run | — | Answer all 5 Week-45 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 12. Daily Plan — Week 42: Serverless, Kubernetes, KServe — Three-Way Deployment
+## 12. Daily Plan — Week 46: Deep Learning, CarePoint Document-Image Classifier
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D247)** | AWS Lambda / serverless model serving concepts | AWS Lambda docs "Building Lambda functions with Python"; ML Zoomcamp Module 8 — Serverless | Package a tiny sklearn model + Lambda handler locally, invoke it | Convert the churn model to a Lambda-compatible handler (model loaded once outside the handler, cold-start aware) | Test the handler returns the correct prediction shape for a sample event payload | `feat: serverless lambda handler for model serving` | Q1 | 3.5h |
-| **Tue (D248)** | Lightweight-inference packaging, cold-start tradeoffs | AWS Lambda docs "Container images"; ML Zoomcamp Module 8 | Measure cold-start latency of the local handler across a few repeated invokes | Package the model as a Lambda container image, deploy locally (SAM/LocalStack), measure invoke latency | Test warm-start invocation latency stays under a defined budget | `chore: package model as lambda container image` | Q2 | 3.5h |
-| **Wed (D249)** | Kubernetes deployment of a model service (reusing Phase 5's `kind` cluster) | Kubernetes docs "Deployments" + "Services" (recap) | — | Write Deployment + Service YAML for the FastAPI scoring service (Week 40's image), deploy to the local `kind` cluster | Test `kubectl get pods` shows Running and curling through the Service returns a prediction | `feat: k8s deployment+service for model scoring api` | Q3 | 3.5h |
-| **Thu (D250)** | Scaling the K8s model service — HPA, readiness/liveness probes for ML pods | Kubernetes docs "HorizontalPodAutoscaler Walkthrough"; "Configure Liveness, Readiness and Startup Probes" | — | Add readiness/liveness probes tuned to model load time, add an HPA based on CPU, lightly load-test to confirm scale-out | Test the readiness probe fails until the model is loaded and passes once it is | `feat: readiness/liveness probes + hpa for model service` | Q4 | 3.5h |
-| **Fri (D251)** | KServe model serving on Kubernetes | KServe docs "Getting Started" / `InferenceService` concept guide | — | Install KServe on the `kind` cluster, deploy the model as an `InferenceService`, hit its predict endpoint; write `docs/serving-comparison.md` (Lambda vs. raw K8s Deployment vs. KServe: cold start, ops overhead, autoscaling, cost story) | Test the `InferenceService` reports Ready and the predict endpoint returns the expected schema | `feat: kserve inferenceservice + serving comparison writeup` | Q5 | 3.5h |
-| **Sat (D252)** | **Review** | — | Explain the Lambda-vs-K8s-vs-KServe tradeoffs out loud, unscripted | Re-read `docs/serving-comparison.md` for anything you'd argue differently now | Full suite re-run across all three deployments | — | Answer all 5 Week-31 questions out loud, unscripted | 2.5h |
+| **Mon (D271)** | Neural network basics — layers, activations, backprop intuition | ML Zoomcamp "Neural Networks & Deep Learning" module; Géron Ch.10 | Forward-pass-only tiny dense net in NumPy on toy data | Assemble a labeled CarePoint scanned-document dataset (referral letter, insurance card, lab result, prescription) + data-loading pipeline | Test the loader produces correctly shaped and labeled batches | `feat: carepoint doc-image classifier - dataset + loader` | Q1 | 3.5h |
+| **Tue (D272)** | CNNs — convolution, pooling | ML Zoomcamp CNN section; Géron Ch.14 | Build a tiny CNN in Keras on a toy image dataset, train a few epochs | Define and train a baseline CNN for CarePoint document-type classification, log accuracy | Test model output shape equals the number of classes and training loss decreases over the first epochs | `feat: baseline cnn for document classification` | Q2 | 3.5h |
+| **Wed (D273)** | Transfer learning | Keras docs "Transfer learning & fine-tuning"; ML Zoomcamp transfer-learning section | Load a pretrained model via `keras.applications`, freeze the base, fine-tune the head on toy data | Replace the baseline CNN with a pretrained-base + custom-head model for the document classifier, compare accuracy to Tuesday's baseline | Test that base layers are frozen (`trainable=False`) and only the head trains | `feat: transfer-learning document classifier` | Q3 | 3.5h |
+| **Thu (D274)** | Keras training-loop internals — callbacks, checkpoints | Keras docs "Training & evaluation with the built-in methods"; "Writing your own callbacks" | Add `EarlyStopping` + `ModelCheckpoint` to a toy training loop | Add early stopping and best-model checkpointing to the document classifier's training run, retrain | Test the checkpoint file is written and reloadable, and the reloaded model matches the saved validation accuracy | `feat: training callbacks + checkpointing for document classifier` | Q4 | 3.5h |
+| **Fri (D275)** | Regularization/dropout for deep nets | Géron Ch.11 regularization section; Keras docs on image augmentation | Add `Dropout` layers to the toy CNN, compare the train/val gap with vs. without | Add dropout + data augmentation to the document classifier, final model selection, evaluate on a held-out test set, write a short model card | Test the augmentation pipeline varies images per epoch and final test accuracy clears a defined threshold | `feat: dropout + augmentation, finalize document classifier` | Q5 | 3.5h |
+| **Sat (D276)** | **Review** | — | Redo the transfer-learning freeze/fine-tune setup from memory | Re-read the model card and confirm the stated limitations are actually true | Full suite re-run | — | Answer all 5 Week-46 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 13. Daily Plan — Week 43: Project 1 Finalize — StockPilot Demand Forecaster
+## 13. Daily Plan — Week 47: Serverless, Kubernetes, KServe — Three-Way Deployment
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D253)** | Revisit and polish EDA + feature set | Géron Ch.2 "Fine-Tune Your Model" (recap); ML Zoomcamp Regression module (recap) | — | Re-run EDA with fresh eyes; prune/expand features (rolling averages, promotions flag); document data assumptions in the README | Re-run the full Week-27 test suite, confirm still green after feature changes | `refactor: polish demand forecaster eda + feature set` | Q1 | 3.5h |
-| **Tue (D254)** | Final model selection (linear/Ridge vs. tree-based regressor) | scikit-learn docs "Choosing the right estimator"; XGBoost docs regression-objective section | — | Train/compare 3-4 candidate regressors with consistent CV; pick the winner by RMSE plus a stated business rationale (interpretability vs. accuracy for a small shop owner) | Test the model-selection script is deterministic and reproducible with a fixed seed | `feat: final model selection for demand forecaster` | Q2 | 3.5h |
-| **Wed (D255)** | Deployment | FastAPI docs (recap); Docker docs (recap) | — | Wrap the final demand model in the same FastAPI-scoring-service pattern from Week 40, dockerize, wire an integration point into StockPilot's `/products/{id}/forecast` | Integration test the forecast endpoint returns a plausible non-negative number for a known product | `feat: dockerized demand forecaster scoring service` | Q3 | 3.5h |
-| **Thu (D256)** | README + model card | Model-card guidance (Google Model Cards overview); scikit-learn docs "Model persistence" | — | Write `README.md` (setup/run) and `docs/model-card.md` (training data, features, metric, known limitations, intended use) | Verify the README's instructions actually work on a clean checkout | `docs: readme + model card for demand forecaster` | Q4 | 3.5h |
-| **Fri (D257)** | Retrospective + improvements write-up | — | — | Write `docs/postmortem-demand-forecaster.md` (more history, holiday effects, hierarchical forecasting, MLflow foreshadowing Phase 10); tag `v0.1-demand-forecaster` | Full suite + CI green | `docs: demand forecaster retrospective, tag v0.1-demand-forecaster` | Q5 | 3.5h |
-| **Sat (D258)** | **Review** | — | Explain the full demand-forecaster pipeline end to end, out loud, unscripted | Re-read the postmortem and confirm every "deferred" item is genuinely deferred, not silently done | Full suite + CI re-run | — | Answer all 5 Week-32 questions out loud, unscripted | 2.5h |
+| **Mon (D277)** | AWS Lambda / serverless model serving concepts | AWS Lambda docs "Building Lambda functions with Python"; ML Zoomcamp Module 8 — Serverless | Package a tiny sklearn model + Lambda handler locally, invoke it | Convert the churn model to a Lambda-compatible handler (model loaded once outside the handler, cold-start aware) | Test the handler returns the correct prediction shape for a sample event payload | `feat: serverless lambda handler for model serving` | Q1 | 3.5h |
+| **Tue (D278)** | Lightweight-inference packaging, cold-start tradeoffs | AWS Lambda docs "Container images"; ML Zoomcamp Module 8 | Measure cold-start latency of the local handler across a few repeated invokes | Package the model as a Lambda container image, deploy locally (SAM/LocalStack), measure invoke latency | Test warm-start invocation latency stays under a defined budget | `chore: package model as lambda container image` | Q2 | 3.5h |
+| **Wed (D279)** | Kubernetes deployment of a model service (reusing Phase 5's `kind` cluster) | Kubernetes docs "Deployments" + "Services" (recap) | — | Write Deployment + Service YAML for the FastAPI scoring service (Week 45's image), deploy to the local `kind` cluster | Test `kubectl get pods` shows Running and curling through the Service returns a prediction | `feat: k8s deployment+service for model scoring api` | Q3 | 3.5h |
+| **Thu (D280)** | Scaling the K8s model service — HPA, readiness/liveness probes for ML pods | Kubernetes docs "HorizontalPodAutoscaler Walkthrough"; "Configure Liveness, Readiness and Startup Probes" | — | Add readiness/liveness probes tuned to model load time, add an HPA based on CPU, lightly load-test to confirm scale-out | Test the readiness probe fails until the model is loaded and passes once it is | `feat: readiness/liveness probes + hpa for model service` | Q4 | 3.5h |
+| **Fri (D281)** | KServe model serving on Kubernetes | KServe docs "Getting Started" / `InferenceService` concept guide | — | Install KServe on the `kind` cluster, deploy the model as an `InferenceService`, hit its predict endpoint; write `docs/serving-comparison.md` (Lambda vs. raw K8s Deployment vs. KServe: cold start, ops overhead, autoscaling, cost story) | Test the `InferenceService` reports Ready and the predict endpoint returns the expected schema | `feat: kserve inferenceservice + serving comparison writeup` | Q5 | 3.5h |
+| **Sat (D282)** | **Review** | — | Explain the Lambda-vs-K8s-vs-KServe tradeoffs out loud, unscripted | Re-read `docs/serving-comparison.md` for anything you'd argue differently now | Full suite re-run across all three deployments | — | Answer all 5 Week-47 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 14. Daily Plan — Week 44: Project 2 Finalize + Project 3 — Churn Predictor & CarePoint No-Show Predictor
+## 14. Daily Plan — Week 48: Project 1 Finalize — StockPilot Demand Forecaster
 
 | Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Mon (D259)** | Formalize the churn predictor's training pipeline | scikit-learn docs "Pipeline and FeatureUnion" (recap); XGBoost docs "Python Package Introduction" | — | Refactor Weeks 39-40's churn work into a clean `training.py` (sklearn `Pipeline`: preprocessing + model) + a `predict_service` package; re-save the winning XGBoost model | Regression test that the training pipeline reproduces the same metrics as Week 40 | `refactor: formalize churn predictor training pipeline` | Q1 | 3.5h |
-| **Tue (D260)** | Testing + CI for the churn predictor | pytest docs (recap); GitHub Actions docs (recap, ML-artifact caching angle) | — | Add unit tests (feature engineering, evaluation metrics) + a CI workflow that retrains on a sample and asserts AUC clears a threshold ("model regression test") | CI green on a clean clone | `test: ci pipeline + model regression test for churn predictor` | Q2 | 3.5h |
-| **Wed (D261)** | Documentation + ship | — | — | README + model card for the churn predictor; finalize the Week-29 Dockerized scoring service; tag `v0.1-churn-predictor` | Full suite + container smoke test | `docs: churn predictor readme + model card, tag v0.1-churn-predictor` | Q3 | 3.5h |
-| **Thu (D262)** | CarePoint No-Show Predictor — EDA + baseline | ML Zoomcamp Classification + Trees modules (recap); Géron Ch.6/7 (recap) | — | EDA on CarePoint appointment data; define the no-show label; engineer features (lead time, prior no-show rate, day-of-week, reminder-sent flag); baseline logistic regression + decision tree comparison | Unit test the label and feature-engineering functions | `feat: no-show predictor - eda + baseline models` | Q4 | 3.5h |
-| **Fri (D263)** | No-Show Predictor — final model + deployment | XGBoost docs (recap) | — | Train an XGBoost no-show model (class-weight balanced); evaluate with a recall-weighted metric; wrap in a FastAPI scoring service, dockerize, README + model card; tag `v0.1-noshow-predictor` | Integration test the `/predict` endpoint; CI green | `feat: xgboost no-show model + dockerized scoring service, tag v0.1-noshow-predictor` | Q5 | 3.5h |
-| **Sat (D264)** | **Phase-wide review** | — | Explain, unscripted, why each of the three projects picked the metric it picked | `docs/postmortem-phase9.md` — full phase retrospective across all 3 projects and all 3 serving methods; tag `v0.9-phase9` | Full suite across all three services | `docs: phase 9 retrospective, tag v0.9-phase9` | Full mock: answer all 35 Phase-9 interview questions back to back, timed | 2.5h |
+| **Mon (D283)** | Revisit and polish EDA + feature set | Géron Ch.2 "Fine-Tune Your Model" (recap); ML Zoomcamp Regression module (recap) | — | Re-run EDA with fresh eyes; prune/expand features (rolling averages, promotions flag); document data assumptions in the README | Re-run the full Week-43 test suite, confirm still green after feature changes | `refactor: polish demand forecaster eda + feature set` | Q1 | 3.5h |
+| **Tue (D284)** | Final model selection (linear/Ridge vs. tree-based regressor) | scikit-learn docs "Choosing the right estimator"; XGBoost docs regression-objective section | — | Train/compare 3-4 candidate regressors with consistent CV; pick the winner by RMSE plus a stated business rationale (interpretability vs. accuracy for a small shop owner) | Test the model-selection script is deterministic and reproducible with a fixed seed | `feat: final model selection for demand forecaster` | Q2 | 3.5h |
+| **Wed (D285)** | Deployment | FastAPI docs (recap); Docker docs (recap) | — | Wrap the final demand model in the same FastAPI-scoring-service pattern from Week 45, dockerize, wire an integration point into StockPilot's `/products/{id}/forecast` | Integration test the forecast endpoint returns a plausible non-negative number for a known product | `feat: dockerized demand forecaster scoring service` | Q3 | 3.5h |
+| **Thu (D286)** | README + model card | Model-card guidance (Google Model Cards overview); scikit-learn docs "Model persistence" | — | Write `README.md` (setup/run) and `docs/model-card.md` (training data, features, metric, known limitations, intended use) | Verify the README's instructions actually work on a clean checkout | `docs: readme + model card for demand forecaster` | Q4 | 3.5h |
+| **Fri (D287)** | Retrospective + improvements write-up | — | — | Write `docs/postmortem-demand-forecaster.md` (more history, holiday effects, hierarchical forecasting, MLflow foreshadowing Phase 10); tag `v0.1-demand-forecaster` | Full suite + CI green | `docs: demand forecaster retrospective, tag v0.1-demand-forecaster` | Q5 | 3.5h |
+| **Sat (D288)** | **Review** | — | Explain the full demand-forecaster pipeline end to end, out loud, unscripted | Re-read the postmortem and confirm every "deferred" item is genuinely deferred, not silently done | Full suite + CI re-run | — | Answer all 5 Week-48 questions out loud, unscripted | 2.5h |
 
 ---
 
-## 15. Deliverables & GitHub Milestones
+## 15. Daily Plan — Week 49: Project 2 Finalize + Project 3 — Churn Predictor & CarePoint No-Show Predictor
+
+| Day | Topics | Reading | Mini Exercise | Project Task | Testing | Git Commit | Interview Prep | Time |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **Mon (D289)** | Formalize the churn predictor's training pipeline | scikit-learn docs "Pipeline and FeatureUnion" (recap); XGBoost docs "Python Package Introduction" | — | Refactor Weeks 44-45's churn work into a clean `training.py` (sklearn `Pipeline`: preprocessing + model) + a `predict_service` package; re-save the winning XGBoost model | Regression test that the training pipeline reproduces the same metrics as Week 45 | `refactor: formalize churn predictor training pipeline` | Q1 | 3.5h |
+| **Tue (D290)** | Testing + CI for the churn predictor | pytest docs (recap); GitHub Actions docs (recap, ML-artifact caching angle) | — | Add unit tests (feature engineering, evaluation metrics) + a CI workflow that retrains on a sample and asserts AUC clears a threshold ("model regression test") | CI green on a clean clone | `test: ci pipeline + model regression test for churn predictor` | Q2 | 3.5h |
+| **Wed (D291)** | Documentation + ship | — | — | README + model card for the churn predictor; finalize the Week-45 Dockerized scoring service; tag `v0.1-churn-predictor` | Full suite + container smoke test | `docs: churn predictor readme + model card, tag v0.1-churn-predictor` | Q3 | 3.5h |
+| **Thu (D292)** | CarePoint No-Show Predictor — EDA + baseline | ML Zoomcamp Classification + Trees modules (recap); Géron Ch.6/7 (recap) | — | EDA on CarePoint appointment data; define the no-show label; engineer features (lead time, prior no-show rate, day-of-week, reminder-sent flag); baseline logistic regression + decision tree comparison | Unit test the label and feature-engineering functions | `feat: no-show predictor - eda + baseline models` | Q4 | 3.5h |
+| **Fri (D293)** | No-Show Predictor — final model + deployment | XGBoost docs (recap) | — | Train an XGBoost no-show model (class-weight balanced); evaluate with a recall-weighted metric; wrap in a FastAPI scoring service, dockerize, README + model card; tag `v0.1-noshow-predictor` | Integration test the `/predict` endpoint; CI green | `feat: xgboost no-show model + dockerized scoring service, tag v0.1-noshow-predictor` | Q5 | 3.5h |
+| **Sat (D294)** | **Phase-wide review** | — | Explain, unscripted, why each of the three projects picked the metric it picked | `docs/postmortem-phase9.md` — full phase retrospective across all 3 projects and all 3 serving methods; tag `v0.9-phase9` | Full suite across all three services | `docs: phase 9 retrospective, tag v0.9-phase9` | Full mock: answer all 35 Phase-9 interview questions back to back, timed | 2.5h |
+
+---
+
+## 16. Deliverables & GitHub Milestones
 
 **Milestone: `Phase 9 — ML Zoomcamp v0.1`**
+- [ ] `docs/ml-math-notes.md`: linear algebra, the MSE gradient derived by
+      hand, gradient descent implemented from scratch and verified against
+      `sklearn.LinearRegression`, MLE derivation for logistic regression's
+      loss, and Ridge regression from scratch matching `sklearn.Ridge`
+      within tolerance across 3 `alpha` values
 - [ ] StockPilot Demand Forecaster: EDA, feature-engineered regression
       pipeline (Ridge + tree-based comparison), beats the naive baseline on
       RMSE, Dockerized scoring service, README + model card, tag
@@ -484,8 +537,11 @@ front-desk staff what an "actionable" list should look like.
 
 ---
 
-## 16. Skills Acquired Checklist
+## 17. Skills Acquired Checklist
 
+- [ ] Linear algebra, calculus, and probability/statistics foundations for
+      ML — gradient descent, MLE, and the Bayesian view of L2
+      regularization, each derived by hand and verified against a library
 - [ ] Train/validation/test split discipline, incl. time-series-aware
       splitting
 - [ ] Linear regression from first principles (normal equation) through

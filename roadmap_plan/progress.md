@@ -1,9 +1,9 @@
 # Roadmap Progress Tracker
 
-Check off each item as you finish it. **336 days total across 56 weeks / 11 phases** (~12-13 months), split into two tracks:
+Check off each item as you finish it. **366 days total across 61 weeks / 11 phases** (~14-15 months), split into two tracks:
 
-- **Phases 1-6 (Weeks 1-26, D1-D156) — Python Backend Bootcamp.** Every day has 5 independent checkboxes — Theory, Mini Exercise, Project, DSA, SQL.
-- **Phases 7-11 (Weeks 27-56, D157-D336) — AI/ML/Data Zoomcamp Track** (LLM Zoomcamp → AI Dev Tools Zoomcamp → ML Zoomcamp → MLOps Zoomcamp → Data Engineering Zoomcamp). DSA/SQL grind is deliberately dropped here (already covered in Phases 1-6) — every day has 3 independent checkboxes: Theory, Mini Exercise, Project.
+- **Phases 1-6 (Weeks 1-30, D1-D180) — Python Backend Bootcamp.** Every day has 5 independent checkboxes — Theory, Mini Exercise, Project, DSA, SQL — except Weeks 23-24 (Phase 5, Raft implementation) and Weeks 29-30 (Phase 6, system-design real builds), which deliberately drop the DSA/SQL grind since the day's own algorithmic/systems work already carries that load. Systems-mastery/interview-readiness depth (resilience patterns, consistent hashing, consensus, gRPC, real cloud deployment, SLOs/on-call/DR, compliance scoping, a system-design bank, a behavioral bank) is woven into Phases 4-6 rather than a separate phase — see each phase file's Learning Goals.
+- **Phases 7-11 (Weeks 31-61, D181-D366) — AI/ML/Data Zoomcamp Track** (LLM Zoomcamp → AI Dev Tools Zoomcamp → ML Zoomcamp → MLOps Zoomcamp → Data Engineering Zoomcamp). DSA/SQL grind is deliberately dropped here (already covered in Phases 1-6) — every day has 3 independent checkboxes: Theory, Mini Exercise, Project. Phase 9 opens with a dedicated Week 42 on ML math foundations.
 
 Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's the most directly transferable skill for a backend engineer (you're wrapping API calls into services, not training models) — a low-friction on-ramp right after 6 months of backend work. AI Dev Tools follows immediately since it builds on LLM's agent/tool-calling fundamentals. Then ML Zoomcamp shifts into more theory/math-heavy classical ML, with MLOps following directly since it's literally productionizing the models just built. Data Engineering closes the program as a capstone unifying data from every system built across the year.
 
@@ -639,8 +639,8 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: The Most Recent Orders for Each Product
 
 **D84 (Sat)**
-- [ ] Theory: **Review**
-- [ ] Mini Exercise: Redo nginx.conf from memory
+- [ ] Theory: **Review**; networking primer — TCP vs UDP, HTTP/1.1 vs HTTP/2, the TLS handshake, DNS resolution (what Nginx is actually terminating/proxying) — **High Performance Browser Networking* (free online) Ch.2 + TLS chapter*
+- [ ] Mini Exercise: Redo nginx.conf from memory; capture a real TLS handshake with `openssl s_client` against a local HTTPS endpoint
 - [ ] Project: —
 - [ ] DSA: Review: redo Thursday's problem from memory — Islands and Treasure (Walls and Gates)
 - [ ] SQL: Review: rewrite Tuesday's query from memory, then extend it — Patients With a Condition
@@ -713,9 +713,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: Rising Temperature — window function version
 
 **D94 (Thu)**
-- [ ] Theory: Invoicing domain
-- [ ] Mini Exercise: —
-- [ ] Project: `Invoice`, `Payment` models, `invoicing-service` calling `ledger-service` internally
+- [ ] Theory: Invoicing domain; resilient service-to-service calls — retry with exponential backoff+jitter, a hand-rolled circuit breaker (closed/open/half-open) — **Release It!* (Nygard) stability patterns chapter*
+- [ ] Mini Exercise: Toy flaky endpoint (fails 50% of the time), wrap it in retry+circuit-breaker, force it to trip and recover
+- [ ] Project: `Invoice`, `Payment` models, `invoicing-service` calling `ledger-service` internally, wrapped in retry-with-backoff + a circuit breaker (this is the system's first real synchronous cross-service call, so it's also the first to get resilience)
 - [ ] DSA: Reconstruct Itinerary
 - [ ] SQL: LedgerBase: unbalanced entries that slipped through
 
@@ -727,9 +727,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: Movie Rating
 
 **D96 (Sat)**
-- [ ] Theory: **Review**
+- [ ] Theory: **Review**; fault injection on the resilient invoicing→ledger call
 - [ ] Mini Exercise: Redo the float-bug repro from memory, explain the fix
-- [ ] Project: Add `ledgerbase` to Nginx routing
+- [ ] Project: Add `ledgerbase` to Nginx routing; kill `ledger-service` mid-call, confirm the circuit trips and `invoicing-service` fails clean (409/503) instead of hanging
 - [ ] DSA: Review: redo Thursday's problem from memory — Reconstruct Itinerary
 - [ ] SQL: Review: rewrite Tuesday's query from memory, then extend it — LedgerBase: account balance = debits minus credits
 
@@ -823,7 +823,7 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 
 ---
 
-## Phase 5 — Scaling & Advanced Architecture (Weeks 19-22)
+## Phase 5 — Scaling & Advanced Architecture (Weeks 19-24)
 
 ### Week 19 — Outbox Pattern, FleetTrack Scaffold
 
@@ -967,9 +967,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: DocuVault: documents never tagged
 
 **D128 (Tue)**
-- [ ] Theory: ConfigMaps, Secrets — *K8s docs pt.3*
-- [ ] Mini Exercise: —
-- [ ] Project: Externalize config/secrets from that service into ConfigMap/Secret
+- [ ] Theory: ConfigMaps, Secrets; leader election & consensus — Raft explained (leader election, log replication, majority quorum) — *K8s docs pt.3 + etcd docs "Understand failovers"*
+- [ ] Mini Exercise: Stand up a 3-node local etcd cluster, watch leader election happen
+- [ ] Project: Externalize config/secrets from that service into ConfigMap/Secret; `docs/consensus-notes.md` — Raft in your own words, tied to K8s/RabbitMQ/Kafka
 - [ ] DSA: Best Time to Buy and Sell Stock with Cooldown
 - [ ] SQL: Primary Department for Each Employee
 
@@ -988,1179 +988,1339 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [ ] SQL: DocuVault: EXPLAIN ANALYZE a metadata query on replica vs primary
 
 **D131 (Fri)**
-- [ ] Theory: Sharding (conceptual)
-- [ ] Mini Exercise: —
-- [ ] Project: `docs/sharding-decision-record.md` — what key, why, when it'd be justified
+- [ ] Theory: Sharding (conceptual); consistent hashing — the ring, virtual nodes, redistribution vs naive `hash(key) % N` — **Designing Data-Intensive Applications* (Kleppmann) Ch.6*
+- [ ] Mini Exercise: Build a consistent-hashing ring from scratch (virtual nodes included) against a synthetic key set; simulate adding/removing a shard and measure redistribution % vs naive modulo hashing
+- [ ] Project: `docs/sharding-decision-record.md` — what key, why, when it'd be justified, backed by the redistribution benchmark
 - [ ] DSA: Interleaving String
 - [ ] SQL: Calculate Special Bonus
 
 **D132 (Sat)**
-- [ ] Theory: **Phase 5 wrap review**
-- [ ] Mini Exercise: Explain the outbox → CQRS → saga chain end-to-end, out loud
-- [ ] Project: `docs/postmortem-phase5.md`, tag `v0.5-phase5`
+- [ ] Theory: **Review**; consensus failover drill — kill Tuesday's etcd leader, watch failover
+- [ ] Mini Exercise: Explain the outbox → CQRS → saga chain end-to-end, out loud; kill the etcd leader process, watch failover, record the term/log-index numbers before/after
+- [ ] Project: `docs/postmortem-week22.md`
 - [ ] DSA: Review: redo Thursday's problem from memory — Target Sum
 - [ ] SQL: Review: rewrite Tuesday's query from memory, then extend it — Primary Department for Each Employee
 
----
-
-## Phase 6 — Senior-Track Capstone (Weeks 23-26)
-
-### Week 23 — PayFlow — Idempotency, Webhooks
+### Week 23 — Raft — Leader Election & Log Replication
 
 **D133 (Mon)**
+- [ ] Theory: The Raft paper: replicated state machines, why consensus is hard, the shape of the solution — *Ongaro & Ousterhout, "In Search of an Understandable Consensus Algorithm" §1-5*
+- [ ] Mini Exercise: Trace the paper's Figure 2 (the state summary) by hand, node by node, for a 3-node example
+- [ ] Project: New repo `raft-impl/`, `Node` class with the Follower/Candidate/Leader states and the state transition table
+
+**D134 (Tue)**
+- [ ] Theory: Leader election: randomized timeouts, `RequestVote`, term comparison — *Raft paper §5.1-5.2*
+- [ ] Mini Exercise: Deliberately use a FIXED (non-random) timeout across all nodes, watch a split-vote loop happen, then randomize and watch it resolve
+- [ ] Project: `RequestVote` RPC handler, randomized election timeout, term increment on election start
+
+**D135 (Wed)**
+- [ ] Theory: `AppendEntries` as heartbeat; log replication begins — *Raft paper §5.3*
+- [ ] Mini Exercise: Wire 3 processes over local HTTP, confirm heartbeats keep a leader stable with no elections firing
+- [ ] Project: `AppendEntries` RPC (empty = heartbeat), leader sends periodic heartbeats, followers reset their election timer on receipt
+
+**D136 (Thu)**
+- [ ] Theory: Log replication for real: `nextIndex`/`matchIndex`, commit index advancement — *Raft paper §5.3 (cont.)*
+- [ ] Mini Exercise: On paper, trace `nextIndex` converging for a follower whose log is 3 entries behind
+- [ ] Project: Client-submitted command → leader appends locally → replicates via `AppendEntries` → advances `commitIndex` once a majority acks
+
+**D137 (Fri)**
+- [ ] Theory: Log inconsistency repair — *Raft paper §5.3 (log matching property)*
+- [ ] Mini Exercise: Manually construct two divergent follower logs, run the repair loop, confirm convergence
+- [ ] Project: Handle the follower-rejects-AppendEntries case: leader decrements `nextIndex` and retries until logs match
+
+**D138 (Sat)**
+- [ ] Theory: **Review**
+- [ ] Mini Exercise: Redo the `nextIndex` convergence trace from memory, explain it out loud
+- [ ] Project: Bring up a real 5-node cluster, submit 10 commands from a client script, confirm all 5 nodes converge to the same log
+
+### Week 24 — Raft — Safety Properties Under Fault
+
+**D139 (Mon)**
+- [ ] Theory: The five safety properties: Election Safety, Leader Append-Only, Log Matching, Leader Completeness, State Machine Safety — *Raft paper §5.4-5.5*
+- [ ] Mini Exercise: For each property, write one concrete scenario where violating it corrupts the system — no abstractions, real node/term/entry numbers
+- [ ] Project: `docs/raft-safety-properties.md` — each property in your own words, tied to a specific line of your own implementation that enforces it
+
+**D140 (Tue)**
+- [ ] Theory: Network partition simulation
+- [ ] Mini Exercise: Build a message-dropping proxy layer: any node pair can be "partitioned" by dropping messages between them on command
+- [ ] Project: Partition a 5-node cluster into a 3-node majority and a 2-node minority; observe which side (if either) elects a leader
+
+**D141 (Wed)**
+- [ ] Theory: Partition healing, stale leader step-down — *Raft paper §5.1 (term comparison on RPC)*
+- [ ] Mini Exercise: Reconnect a partitioned minority node to the majority, watch it discover the higher term and step down/update
+- [ ] Project: Handle the healed-partition case: a stale leader (or stale follower with uncommitted entries) reconciles its log against the current leader's
+
+**D142 (Thu)**
+- [ ] Theory: Adversarial testing: kill the leader mid-replication, kill a follower mid-repair
+- [ ] Mini Exercise: —
+- [ ] Project: Build the "torture test": randomly kill/restart nodes and drop messages for an extended run
+
+**D143 (Fri)**
+- [ ] Theory: Applying Raft to a real use case — *Revisit `system-design-problems.md` SD14*
+- [ ] Mini Exercise: —
+- [ ] Project: Wire the Raft cluster as the coordination layer for a toy distributed job scheduler: only the current leader is allowed to dispatch a scheduled job
+
+**D144 (Sat)**
+- [ ] Theory: **Phase 5 wrap review**
+- [ ] Mini Exercise: Explain all five safety properties out loud, unscripted, each with your own concrete violation scenario
+- [ ] Project: `docs/postmortem-phase5.md` (full phase, Weeks 19-24), tag `v0.5-phase5`
+
+---
+
+## Phase 6 — Senior-Track Capstone (Weeks 25-30)
+
+### Week 25 — PayFlow — Idempotency, Webhooks
+
+**D145 (Mon)**
 - [ ] Theory: Idempotency key mechanics — *Stripe idempotency docs*
 - [ ] Mini Exercise: Standalone idempotency-key demo
 - [ ] Project: New repo `payflow/`, `PaymentIntent` model + idempotency table
 - [ ] DSA: Longest Increasing Path in a Matrix
 - [ ] SQL: PayFlow: duplicate idempotency keys with different request hashes
 
-**D134 (Tue)**
+**D146 (Tue)**
 - [ ] Theory: Request hashing alongside the key
 - [ ] Mini Exercise: —
 - [ ] Project: `POST /payments` idempotency middleware/service
 - [ ] DSA: Distinct Subsequences
 - [ ] SQL: Duplicate Emails revisited
 
-**D135 (Wed)**
+**D147 (Wed)**
 - [ ] Theory: Race-testing idempotency
 - [ ] Mini Exercise: —
 - [ ] Project: Fire the same request twice concurrently, assert single charge
 - [ ] DSA: Edit Distance
 - [ ] SQL: PayFlow: webhook_events received more than once per provider_event_id
 
-**D136 (Thu)**
+**D148 (Thu)**
 - [ ] Theory: HMAC webhook signature verification
 - [ ] Mini Exercise: Standalone HMAC verify demo
 - [ ] Project: Mock provider webhook endpoint + signature verification
 - [ ] DSA: Single Number
 - [ ] SQL: PayFlow: payment_intents stuck 'pending' longer than 10 minutes
 
-**D137 (Fri)**
+**D149 (Fri)**
 - [ ] Theory: Webhook idempotency (provider event ID)
 - [ ] Mini Exercise: —
 - [ ] Project: Webhook processing idempotent on `provider_event_id`, reconciles ledger via `ledger-service`
 - [ ] DSA: Number of 1 Bits
 - [ ] SQL: Employees Whose Manager Left the Company
 
-**D138 (Sat)**
+**D150 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo idempotency demo from memory
 - [ ] Project: —
 - [ ] DSA: Review: redo Thursday's problem from memory — Single Number
 - [ ] SQL: Review: rewrite Tuesday's query from memory, then extend it — Duplicate Emails revisited
 
-### Week 24 — Security Hardening, Load Testing
+### Week 26 — Security Hardening, Load Testing
 
-**D139 (Mon)**
-- [ ] Theory: OWASP Top 10 relevant to your stack — *OWASP Top 10*
-- [ ] Mini Exercise: —
-- [ ] Project: Refunds endpoint + API-key auth for server-to-server callers
+**D151 (Mon)**
+- [ ] Theory: OWASP Top 10 relevant to your stack; backup & disaster recovery — LedgerBase has held financial data since Week 16 with no stated backup story — *OWASP Top 10 + Postgres docs "Backup and Restore"*
+- [ ] Mini Exercise: `pg_dump`/`pg_restore` round-trip on a throwaway DB
+- [ ] Project: Refunds endpoint + API-key auth for server-to-server callers; real `pg_dump` backup of LedgerBase, RPO/RTO written down with reasoning, deliberate corruption in a scratch copy, restore, verify the trial-balance report reconciles identically; `docs/backup-dr-plan.md`
 - [ ] DSA: Counting Bits
 - [ ] SQL: PayFlow: refunds exceeding their original payment amount
 
-**D140 (Tue)**
+**D152 (Tue)**
 - [ ] Theory: Secrets management with a real secrets manager (HashiCorp Vault) — dynamic secrets, leasing/rotation vs a static `.env` file — *Vault docs "Getting Started" + "Secrets Engines"*
 - [ ] Mini Exercise: Run Vault in dev mode, write/read one secret via the CLI, then via its HTTP API
 - [ ] Project: Add `vault` to Docker Compose; move webhook secret + API keys out of `.env` into Vault's KV engine, app reads them via the API at startup
 - [ ] DSA: Reverse Bits
 - [ ] SQL: PayFlow: same-day vs delayed refunds
 
-**D141 (Wed)**
-- [ ] Theory: Audit logging
-- [ ] Mini Exercise: —
-- [ ] Project: Append-only audit log for payment/refund state changes
+**D153 (Wed)**
+- [ ] Theory: Audit logging; cloud IAM & VPC design — least-privilege roles, public/private subnets — *AWS "IAM best practices" + "VPC and subnets" (or GCP equivalents)*
+- [ ] Mini Exercise: Sketch the IAM role's exact permission set and the VPC's subnet layout on paper before creating anything
+- [ ] Project: Append-only audit log for payment/refund state changes; create the cloud account, the least-privilege IAM role, and a VPC with public/private subnets for AtlasMarket's future deploy
 - [ ] DSA: Missing Number
 - [ ] SQL: PayFlow: EXPLAIN ANALYZE the idempotency-key lookup under load
 
-**D142 (Thu)**
-- [ ] Theory: Threat modeling
+**D154 (Thu)**
+- [ ] Theory: Threat modeling; compliance scoping — PCI-DSS, HIPAA-adjacent considerations — *PCI DSS Quick Reference Guide + HHS.gov HIPAA Security Rule summary*
 - [ ] Mini Exercise: —
-- [ ] Project: Write `docs/threat-model.md` (secret leak, key guessing, replay-after-expiry)
+- [ ] Project: Write `docs/threat-model.md` (secret leak, key guessing, replay-after-expiry); `docs/pci-scope-note.md` (PayFlow) and `docs/hipaa-considerations-note.md` (CarePoint)
 - [ ] DSA: Rotate Image
 - [ ] SQL: PayFlow: audit log for one payment_intent, ordered chronologically
 
-**D143 (Fri)**
-- [ ] Theory: `locust` load testing — *locust docs*
+**D155 (Fri)**
+- [ ] Theory: `locust` load testing; SLOs/SLIs/error budgets, writing an on-call runbook — *locust docs + Google SRE Book Ch.4 (SLOs)*
 - [ ] Mini Exercise: Toy-endpoint locust scenario
-- [ ] Project: Realistic-concurrency PayFlow load test, find + fix the bottleneck
+- [ ] Project: Realistic-concurrency PayFlow load test, find + fix the bottleneck; write the payment-path SLO + error budget derived from the load-test numbers, and the "payment success rate dropped" on-call runbook
 - [ ] DSA: Spiral Matrix
 - [ ] SQL: Find Followers Count
 
-**D144 (Sat)**
-- [ ] Theory: **Review**
+**D156 (Sat)**
+- [ ] Theory: **Review + live incident drill** — *Google SRE Book On-Call/Postmortem chapters*
 - [ ] Mini Exercise: Redo HMAC verify demo from memory
-- [ ] Project: Tag `v0.1-payflow`
+- [ ] Project: Run the incident drill: kill `ledger-service`, follow Friday's runbook blind, resolve it, write a blameless postmortem; tag `v0.1-payflow`
 - [ ] DSA: Review: redo Thursday's problem from memory — Rotate Image
 - [ ] SQL: Review: rewrite Tuesday's query from memory, then extend it — PayFlow: same-day vs delayed refunds
 
-### Week 25 — AtlasMarket Architecture + Integration Sprint (part 1), Storefront
+### Week 27 — AtlasMarket Architecture + Integration Sprint (part 1), Storefront
 
-**D145 (Mon)**
+**D157 (Mon)**
 - [ ] Theory: Integration planning — what to reuse vs rebuild
 - [ ] Mini Exercise: —
 - [ ] Project: New repo `atlasmarket/`, `docs/architecture.md` mapping each service to its origin project
 - [ ] DSA: Set Matrix Zeroes
 - [ ] SQL: AtlasMarket: revenue per vendor this month
 
-**D146 (Tue)**
+**D158 (Tue)**
 - [ ] Theory: Vendor-scoping the catalog
 - [ ] Mini Exercise: —
 - [ ] Project: Adapt StockPilot's product model: add `vendor_id`, vendor onboarding endpoint
 - [ ] DSA: Happy Number
 - [ ] SQL: Product Sales Analysis III
 
-**D147 (Wed)**
+**D159 (Wed)**
 - [ ] Theory: Vendor-scoped search
 - [ ] Mini Exercise: —
 - [ ] Project: Adapt DocuVault's ES sync pattern to index vendor-scoped products
 - [ ] DSA: Plus One
 - [ ] SQL: AtlasMarket: vendors with no products listed
 
-**D148 (Thu)**
+**D160 (Thu)**
 - [ ] Theory: Multi-page navigation with React Router — the one piece your 3 prior single-view frontends didn't need — *React Router docs "Tutorial"*
 - [ ] Mini Exercise: Extract a shared `Button`/`Card` component from copy-pasted markup across `carepoint-web`, `fleettrack-web`, `docuvault-web` into a tiny local component set `storefront/` can start from
 - [ ] Project: `storefront/` scaffold (Vite + React + TS), React Router routes for product list / cart / checkout, product list page with TanStack Query
 - [ ] DSA: Pow(x, n)
 - [ ] SQL: AtlasMarket: top 5 vendors by order count
 
-**D149 (Fri)**
+**D161 (Fri)**
 - [ ] Theory: TanStack Query caching, cart state design — *TanStack Query "Quick Start"*
 - [ ] Mini Exercise: Write one React Testing Library test for the cart's add/remove logic
 - [ ] Project: Cart state (local component state) + cart UI, wired to the router's cart route
 - [ ] DSA: Merge Sorted Array
 - [ ] SQL: The Most Recent Three Orders
 
-**D150 (Sat)**
+**D162 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Explain TanStack Query cache vs your Redis cache-aside pattern, out loud
 - [ ] Project: —
 - [ ] DSA: Review: redo Thursday's problem from memory — Pow(x, n)
 - [ ] SQL: Review: rewrite Tuesday's query from memory, then extend it — Product Sales Analysis III
 
-### Week 26 — AtlasMarket Integration Sprint (part 2), Mock Interviews, Program Wrap
+### Week 28 — AtlasMarket Integration Sprint (part 2), Mock Interviews
 
-**D151 (Mon)**
-- [ ] Theory: Multi-vendor checkout design
-- [ ] Mini Exercise: —
-- [ ] Project: Checkout: cart → split into `order_vendor_groups` → PayFlow idempotent payment → per-vendor ledger entries
+**D163 (Mon)**
+- [ ] Theory: Multi-vendor checkout design; the bulkhead pattern — bounded per-downstream connection pools on the gateway — **Release It!* (Nygard) bulkhead section*
+- [ ] Mini Exercise: Bounded semaphore demo: one slow "dependency" starves a shared pool, then a bulkhead fixes it
+- [ ] Project: Checkout: cart → split into `order_vendor_groups` → PayFlow idempotent payment → per-vendor ledger entries; bulkhead pools added to the gateway's calls to each of the 5 downstream services
 - [ ] DSA: Design Twitter
 - [ ] SQL: AtlasMarket: orders split across 2+ vendors
 
-**D152 (Tue)**
-- [ ] Theory: Per-vendor fulfillment status
+**D164 (Tue)**
+- [ ] Theory: Per-vendor fulfillment status; deploying to real cloud infrastructure — *AWS/GCP managed-Postgres docs*
 - [ ] Mini Exercise: —
-- [ ] Project: Adapt WareFlow's status concepts to `order_vendor_groups`
+- [ ] Project: Adapt WareFlow's status concepts to `order_vendor_groups`; deploy the gateway + `catalog-service` to real cloud compute, DB on managed Postgres in the private subnet from Wednesday; `docs/cloud-deployment-notes.md`
 - [ ] DSA: LFU Cache
 - [ ] SQL: AtlasMarket: per-vendor payout reconciliation
 
-**D153 (Wed)**
-- [ ] Theory: Checkout UI, end-to-end wiring
-- [ ] Mini Exercise: —
-- [ ] Project: Storefront checkout form wired to the real API
+**D165 (Wed)**
+- [ ] Theory: Checkout UI, end-to-end wiring; feature flags + canary release
+- [ ] Mini Exercise: Hand-rolled feature-flag service (config table + `is_enabled(flag, user_id)`, percentage rollout)
+- [ ] Project: Storefront checkout form wired to the real API, shipped dark behind the feature flag then ramped 10% → 100% while watching Grafana
 - [ ] DSA: Word Search II
 - [ ] SQL: Capstone review: rewrite Week 12's partition-aware query from memory
 
-**D154 (Thu)**
-- [ ] Theory: Mock system design interview #1 — *System Design Interview (Xu), relevant chapter*
+**D166 (Thu)**
+- [ ] Theory: Mock system design interview #1; SD10 (Video Streaming Platform) — *System Design Interview (Xu), relevant chapter*
 - [ ] Mini Exercise: —
-- [ ] Project: Design multi-vendor checkout from scratch on a whiteboard (no code), then compare to what you built
+- [ ] Project: Design multi-vendor checkout from scratch on a whiteboard (no code), then compare to what you built; work SD10 from `system-design-problems.md`
 - [ ] DSA: Merge k Sorted Lists
 - [ ] SQL: Capstone review: rewrite Week 6's window-function ranking query from memory
 
-**D155 (Fri)**
-- [ ] Theory: Mock system design interview #2 + #3
+**D167 (Fri)**
+- [ ] Theory: Mock system design interview #2 + #3; SD16 (Proximity/Nearby-Search Service); end-to-end browser testing with Playwright — *Playwright docs "Getting started" + "Writing tests"*
 - [ ] Mini Exercise: —
-- [ ] Project: Design payment idempotency + product search from scratch, unprompted
+- [ ] Project: Design payment idempotency + product search from scratch, unprompted; work SD16; Playwright test driving a real browser through browse → cart → checkout
 - [ ] DSA: Alien Dictionary
 - [ ] SQL: Capstone: the one query you'd hand an interviewer
 
-**D156 (Sat)**
-- [ ] Theory: **Program wrap**
-- [ ] Mini Exercise: —
-- [ ] Project: `docs/atlasmarket-roadmap-post-bootcamp.md` (deferred features), `docs/postmortem-phase6.md`, full 6-month retrospective across all 10 projects, tag `v1.0-bootcamp-complete`
+**D168 (Sat)**
+- [ ] Theory: **Review**; SD20 — design AtlasMarket from scratch; full behavioral pass
+- [ ] Mini Exercise: Design AtlasMarket itself, 45 min, blank page, no notes, then compare against `docs/architecture.md` — the closing synthesis of the whole 19-problem bank
+- [ ] Project: `docs/atlasmarket-roadmap-post-bootcamp.md` (deferred features)
 - [ ] DSA: Review: redo Thursday's problem from memory — Merge k Sorted Lists
 - [ ] SQL: Review: rewrite Tuesday's query from memory, then extend it — AtlasMarket: per-vendor payout reconciliation
 
+### Week 29 — URL Shortener + Rate Limiter, Built For Real
+
+**D169 (Mon)**
+- [ ] Theory: URL Shortener: base62 code generation, redirect semantics — *Revisit `system-design-problems.md` SD1*
+- [ ] Mini Exercise: —
+- [ ] Project: New repo `url-shortener/`, `POST /shorten` (counter-based base62 code) + `GET /{code}` (301 redirect); deleted codes return 404
+
+**D170 (Tue)**
+- [ ] Theory: Cache-aside for hot redirects — *Redis docs caching (Phase 2 refresher)*
+- [ ] Mini Exercise: —
+- [ ] Project: Redis cache-aside in front of the redirect path, TTL + immediate invalidation on delete; load test cache-cold vs cache-warm
+
+**D171 (Wed)**
+- [ ] Theory: Rate Limiter Service: token bucket vs sliding-window-counter — *Revisit SD2*
+- [ ] Mini Exercise: —
+- [ ] Project: New repo `rate-limiter/`, `POST /check {key, limit, window}` implementing both algorithms behind one interface
+
+**D172 (Thu)**
+- [ ] Theory: Proving it's actually distributed
+- [ ] Mini Exercise: —
+- [ ] Project: Run 3 rate-limiter instances behind Nginx, one shared Redis; benchmark memory footprint of both algorithms at 100k tracked keys
+
+**D173 (Fri)**
+- [ ] Theory: Retrofitting: URL Shortener calls the real Rate Limiter
+- [ ] Mini Exercise: —
+- [ ] Project: `POST /shorten` calls the Rate Limiter service instead of an ad hoc check; READMEs + model cards for both services; tag `v0.1-sd-builds-1`
+
+**D174 (Sat)**
+- [ ] Theory: **Review**
+- [ ] Mini Exercise: Redo the token-bucket implementation from memory, explain the accuracy/memory trade-off out loud
+- [ ] Project: —
+
+### Week 30 — Distributed Job Scheduler, Built For Real; Full Program Wrap
+
+**D175 (Mon)**
+- [ ] Theory: Distributed Job Scheduler: wiring Phase 5's Raft cluster as real infrastructure — *Revisit SD14 + Phase 5 Week 24 Friday's toy dispatcher*
+- [ ] Mini Exercise: —
+- [ ] Project: New repo `job-scheduler/`, `Job` model + persistence, `POST /jobs {cron_expr, payload}`; the scheduler's processes form a real Raft cluster (reusing Phase 5's implementation, not rebuilding it)
+
+**D176 (Tue)**
+- [ ] Theory: Leader-only dispatch, idempotent job handlers
+- [ ] Mini Exercise: —
+- [ ] Project: Only the current Raft leader dispatches due jobs; job handlers are idempotent (same discipline as every queue consumer since Phase 3)
+
+**D177 (Wed)**
+- [ ] Theory: Fault testing: kill the leader mid-dispatch-decision
+- [ ] Mini Exercise: `freezegun`-compressed 24-hour simulated run (the same technique from every Celery Beat test since Phase 2)
+- [ ] Project: Kill-leader-mid-dispatch test; 24h-simulated run asserting every scheduled tick fired exactly once
+
+**D178 (Thu)**
+- [ ] Theory: Polish, comparison writeup
+- [ ] Mini Exercise: —
+- [ ] Project: README + model card for the scheduler; `docs/sd-builds-vs-paper-designs.md` comparing all three real builds (Projects 26-28) against their original SD1/SD2/SD14 paper designs — what the real build forced you to handle that the paper design didn't; tag `v0.1-sd-builds-2`
+
+**D179 (Fri)**
+- [ ] Theory: Buffer / catch-up; final capstone integration check
+- [ ] Mini Exercise: —
+- [ ] Project: Confirm all of Phase 6 (PayFlow, AtlasMarket, and Projects 26-28) still runs green together — this is the first day all of it has been exercised as one whole
+
+**D180 (Sat)**
+- [ ] Theory: **FULL 6-MONTH PROGRAM WRAP**
+- [ ] Mini Exercise: —
+- [ ] Project: `docs/postmortem-phase6.md`, full 6-month retrospective across all 13 Track A projects (the original 10 plus Projects 26-28), tag `v1.0-bootcamp-complete`
+
 ---
 
-## Phase 7 — LLM Zoomcamp (Weeks 27-32)
+## Phase 7 — LLM Zoomcamp (Weeks 31-36)
 
-### Week 27 — Intro, Vector Search, DocuVault Semantic Search
+### Week 31 — Intro, Vector Search, DocuVault Semantic Search
 
-**D157 (Mon)**
+**D181 (Mon)**
 - [ ] Theory: LLM basics & prompting fundamentals — tokens, context window, temperature, zero/few-shot; open vs closed models — *OpenAI "Prompt engineering" guide + Ollama docs intro*
 - [ ] Mini Exercise: Run the same question through a closed API model and a local Ollama model, compare answer/latency/cost
 - [ ] Project: New `docuvault/rag/` module scaffold; `docs/llm-provider-decision.md` picking a primary API provider + Ollama as free dev fallback
 
-**D158 (Tue)**
+**D182 (Tue)**
 - [ ] Theory: RAG architecture overview — why RAG over fine-tuning/bigger context; retrieval+generation pipeline shape — *DataTalksClub llm-zoomcamp Module 1 README*
 - [ ] Mini Exercise: Sketch the full pipeline diagram in `docs/rag-architecture.md` before writing any code
 - [ ] Project: `docs/rag-architecture.md` for DocuVault: ingestion pipeline + query pipeline diagram
 
-**D159 (Wed)**
+**D183 (Wed)**
 - [ ] Theory: Embeddings & vector representations — how text becomes a vector, cosine similarity, embedding model choice — *OpenAI "Embeddings" guide*
 - [ ] Mini Exercise: Embed 10 sample sentences, compute pairwise cosine similarity by hand with numpy, sanity-check similar pairs score higher
 - [ ] Project: `rag/embeddings.py` wraps the chosen embedding model, batches DocuVault chunk text
 
-**D160 (Thu)**
+**D184 (Thu)**
 - [ ] Theory: Vector databases — Qdrant collections/points/payload, distance metrics, HNSW; brief comparison to Elasticsearch dense_vector — *Qdrant docs "Collections" + "Points"; Elastic docs "Dense vector field type" (Phase 5 refresher)*
 - [ ] Mini Exercise: Spin up local Qdrant via Docker, create a collection, upsert 20 fake vectors, run a `search` query
 - [ ] Project: Add `qdrant` service to DocuVault's compose; create `documents_chunks` collection sized to the embedding model's dimension
 
-**D161 (Fri)**
+**D185 (Fri)**
 - [ ] Theory: Building a basic semantic search endpoint — chunking strategy, indexing pipeline, query-time retrieval — *Qdrant docs "Search"; vector-DB vendor chunking-strategies guide*
 - [ ] Mini Exercise: Chunk one long document 3 ways (fixed-size, fixed-size+overlap, paragraph-based), compare chunk counts/quality
 - [ ] Project: `rag/ingest.py` (chunk existing documents → embed → upsert to Qdrant) + `GET /documents/semantic-search?q=` endpoint
 
-**D162 (Sat)**
+**D186 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo Wednesday's cosine-similarity-by-hand exercise from memory
 - [ ] Project: Re-read `rag/ingest.py` for anything hard-coded that shouldn't be
 
-### Week 28 — Agents, PeopleOps HR-Policy Agent
+### Week 32 — Agents, PeopleOps HR-Policy Agent
 
-**D163 (Mon)**
+**D187 (Mon)**
 - [ ] Theory: Agentic patterns — tool use / function calling, how a model decides to call a tool — *OpenAI "Function calling" guide / Anthropic "Tool use" docs*
 - [ ] Mini Exercise: Give a model one fake tool (`get_weather(city)`), confirm it emits a correctly structured tool call for an ambiguous prompt
 - [ ] Project: New `peopleops/agent/` scaffold; tool schema for `get_leave_balance(employee_id)` wrapping PeopleOps' existing leave-balance API
 
-**D164 (Tue)**
+**D188 (Tue)**
 - [ ] Theory: ReAct-style reasoning loops — Reason → Act → Observe, why this beats a single forced tool call — *ReAct paper (Yao et al., arXiv:2210.03629), abstract + §3*
 - [ ] Mini Exercise: Trace one ReAct loop by hand on paper for a 2-step question before writing code
 - [ ] Project: `agent/loop.py` — basic ReAct loop: model reasons, optionally calls `get_leave_balance`, observes result, responds
 
-**D165 (Wed)**
+**D189 (Wed)**
 - [ ] Theory: Multi-step agents with memory — carrying conversation + tool-result history without blowing the context window — *OpenAI/Anthropic docs on context management*
 - [ ] Mini Exercise: Simulate a 10-turn conversation, measure token growth, implement a sliding-window/summary trim
 - [ ] Project: Add session memory (last N turns + running summary) to the HR agent
 
-**D166 (Thu)**
+**D190 (Thu)**
 - [ ] Theory: Agent guardrails & failure modes — looping, hallucinated tool args, calling tools it shouldn't — *OWASP Top 10 for LLM Applications — excessive-agency section*
 - [ ] Mini Exercise: Provoke the unguarded agent into calling `get_leave_balance` with a malformed/unauthorized `employee_id`, observe the failure
 - [ ] Project: Add tool-arg validation + max-step limit + a scope check ("agent may only look up the requesting employee's own balance")
 
-**D167 (Fri)**
+**D191 (Fri)**
 - [ ] Theory: Orchestrating an agent that calls an external API as a tool — end-to-end wiring, error handling on tool failure — *PeopleOps' own API docs + provider tool-use error-handling docs*
 - [ ] Mini Exercise: Simulate the leave-balance API returning a 500/timeout, confirm the agent surfaces a clean fallback instead of crashing
 - [ ] Project: `POST /hr-assistant/ask` endpoint wiring the full agent (HR-policy Q&A + leave-balance tool) into PeopleOps
 
-**D168 (Sat)**
+**D192 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the ReAct loop trace from memory
 - [ ] Project: Re-read `agent/loop.py` for the exact failure modes discussed this week
 
-### Week 29 — Evaluation + Monitoring on DocuVault Semantic Search
+### Week 33 — Evaluation + Monitoring on DocuVault Semantic Search
 
-**D169 (Mon)**
+**D193 (Mon)**
 - [ ] Theory: RAG evaluation — offline metrics: hit rate, MRR — *RAGAS docs "Metrics"*
 - [ ] Mini Exercise: Compute hit rate and MRR by hand on a 5-query toy retrieval result set
 - [ ] Project: Golden eval set for DocuVault semantic search (20–30 query→expected-doc pairs) in `eval/golden_set.json`
 
-**D170 (Tue)**
+**D194 (Tue)**
 - [ ] Theory: Implementing an offline eval harness — hit rate/MRR computed automatically against the golden set
 - [ ] Mini Exercise: —
 - [ ] Project: `eval/retrieval_eval.py` runs the golden set through the semantic-search endpoint, reports hit rate@k and MRR
 
-**D171 (Wed)**
+**D195 (Wed)**
 - [ ] Theory: LLM-as-judge evaluation — using a model to grade answer quality/faithfulness — *RAGAS docs "faithfulness"/"answer relevancy"*
 - [ ] Mini Exercise: Hand-grade 5 answers yourself, then have an LLM judge grade the same 5, compare agreement
 - [ ] Project: `eval/llm_judge.py` scores a generated answer's faithfulness-to-context on a 1–5 scale, wired into the harness
 
-**D172 (Thu)**
+**D196 (Thu)**
 - [ ] Theory: Cost & latency tracking for LLM calls; logging chat sessions & feedback loops — *OpenAI/Anthropic API docs — usage/token accounting*
 - [ ] Mini Exercise: Log token counts + wall-clock latency for 10 sample calls, compute $ cost from published pricing
 - [ ] Project: `rag/telemetry.py` wraps LLM + embedding calls, logs tokens/cost/latency (reusing Phase 1's structlog); `POST /documents/semantic-search/feedback` (thumbs up/down)
 
-**D173 (Fri)**
+**D197 (Fri)**
 - [ ] Theory: A/B testing prompts/models — the statistics underneath: null hypothesis, p-values, confidence intervals, and why a hit-rate delta on 30 golden-set queries usually isn't statistically significant — *OpenAI "Best practices for prompt engineering" + Practical Statistics for Data Scientists Ch.3 (or Khan Academy "Significance tests" as a free alternative)*
 - [ ] Mini Exercise: Compute a 95% confidence interval by hand on the two prompt variants' hit rates from Thu's golden set; decide honestly whether the delta is real or noise
 - [ ] Project: Prompt-variant flag on the search endpoint; log which variant served each request, feeding the eval harness; `docs/ab-test-readout.md` reporting the confidence interval, not just "variant B looked better"
 
-**D174 (Sat)**
+**D198 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the hit-rate/MRR by-hand calculation from memory
 - [ ] Project: Re-run the full eval harness + judge suite; review cost/latency numbers
 
-### Week 30 — Best Practices, Project Example — CarePoint Prototype
+### Week 34 — Best Practices, Project Example — CarePoint Prototype
 
-**D175 (Mon)**
+**D199 (Mon)**
 - [ ] Theory: Query rewriting — reformulating a user's raw question for better retrieval (resolving pronouns, expanding acronyms) — *Qdrant docs: Q&A/RAG tutorial*
 - [ ] Mini Exercise: Take 5 real conversational follow-ups ("what about the second one?") and hand-write the rewritten standalone version
 - [ ] Project: New `carepoint/rag/` scaffold; query-rewrite step using conversation history before embedding
 
-**D176 (Tue)**
+**D200 (Tue)**
 - [ ] Theory: Hybrid search — combining sparse keyword (Elasticsearch) + dense vector (Qdrant) results — *Elastic docs "Hybrid search"; Qdrant docs on combining with keyword search*
 - [ ] Mini Exercise: Run the same query keyword-only, vector-only, and naively combined; compare top-5 results
 - [ ] Project: Ingest CarePoint's FAQ/policy docs into both ES and Qdrant; implement hybrid retrieval (weighted score fusion / RRF)
 
-**D177 (Wed)**
+**D201 (Wed)**
 - [ ] Theory: Re-ranking retrieved chunks before generation — *Cross-encoder re-ranking overview*
 - [ ] Mini Exercise: Re-rank Tuesday's hybrid top-20 down to top-5 using a simple cross-encoder or LLM-scored rerank, compare ordering
 - [ ] Project: Add a re-ranking step to CarePoint's retrieval pipeline before prompt assembly
 
-**D178 (Thu)**
+**D202 (Thu)**
 - [ ] Theory: Caching LLM responses to cut cost; guardrails — prompt injection basics & output validation — *OWASP Top 10 for LLM Applications — prompt injection section*
 - [ ] Mini Exercise: Try 3 basic prompt-injection strings ("ignore previous instructions and...") against the unguarded pipeline, observe what breaks
 - [ ] Project: Semantic response cache (normalized-query+context hash) + output validator rejecting injected instructions/unsupported claims
 
-**D179 (Fri)**
+**D203 (Fri)**
 - [ ] Theory: Reference end-to-end RAG project walkthrough mapped onto CarePoint; writing a short decision record for the chosen stack — *DataTalksClub llm-zoomcamp "Project examples" module*
 - [ ] Mini Exercise: —
 - [ ] Project: Prototype the full CarePoint patient-FAQ assistant end-to-end (hybrid retrieval + rerank + generation + injection guardrail) behind `POST /patient-faq/ask`; `docs/carepoint-rag-decision-record.md`
 
-**D180 (Sat)**
+**D204 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the RRF/hybrid fusion math from memory
 - [ ] Project: Re-run all injection tests; re-read the decision record for gaps before next week's build
 
-### Week 31 — Project 1 — CarePoint Patient-FAQ Assistant (Full Build)
+### Week 35 — Project 1 — CarePoint Patient-FAQ Assistant (Full Build)
 
-**D181 (Mon)**
+**D205 (Mon)**
 - [ ] Theory: Formalizing the ingestion pipeline for production — versioned re-index, source-doc tracking — *Revisit Phase 5 DocuVault reindex notes*
 - [ ] Mini Exercise: —
 - [ ] Project: Production-grade ingestion: `POST /patient-faq/reindex` (rebuild ES + Qdrant from source docs, DocuVault-style recovery), chunk versioning metadata
 
-**D182 (Tue)**
+**D206 (Tue)**
 - [ ] Theory: Hardening the retrieval+generation API — auth, rate limiting, per-session conversation state — *Revisit Phase 1/4 auth & rate-limiting notes*
 - [ ] Mini Exercise: —
 - [ ] Project: Add auth to `/patient-faq/ask`, per-session short conversation memory, rate limiting per patient account
 
-**D183 (Wed)**
+**D207 (Wed)**
 - [ ] Theory: Full evaluation suite wired to CI — hit rate, MRR, LLM-judge faithfulness, injection-guardrail regression
 - [ ] Mini Exercise: —
-- [ ] Project: Wire Week 29's eval harness + Week 30's injection tests into CI as a required check on every PR
+- [ ] Project: Wire Week 33's eval harness + Week 34's injection tests into CI as a required check on every PR
 
-**D184 (Thu)**
+**D208 (Thu)**
 - [ ] Theory: Monitoring — cost/latency dashboards, escalation logging (when the assistant hands off to a human) — *Revisit Phase 4 Grafana/Prometheus stack docs*
 - [ ] Mini Exercise: —
 - [ ] Project: Grafana panel for cost/latency/hit-rate over time; explicit "escalate to staff" path logged separately on low confidence
 
-**D185 (Fri)**
+**D209 (Fri)**
 - [ ] Theory: Deployment — containerize and ship the assistant inside CarePoint's existing service mesh — *Revisit Phase 4/5 deployment notes (Compose/K8s)*
 - [ ] Mini Exercise: —
 - [ ] Project: Add `patient-faq` service to CarePoint's compose/K8s manifests; deploy and smoke-test in the local cluster
 
-**D186 (Sat)**
+**D210 (Sat)**
 - [ ] Theory: **Review/retrospective**
-- [ ] Mini Exercise: Mock-answer all Week-44 questions timed
+- [ ] Mini Exercise: Mock-answer all Week-35 questions timed
 - [ ] Project: `docs/postmortem-carepoint-faq.md`, tag `v0.1-carepoint-faq`
 
-### Week 32 — Project 2 (DocuVault Chat) + Project 3 (AtlasMarket Assistant), Phase Wrap
+### Week 36 — Project 2 (DocuVault Chat) + Project 3 (AtlasMarket Assistant), Phase Wrap
 
-**D187 (Mon)**
-- [ ] Theory: Formalizing Weeks 27/29's DocuVault prototype into a conversational "ask your documents" chatbot (multi-turn, citations) — *Revisit own Week 27/29 notes + provider multi-turn chat docs*
+**D211 (Mon)**
+- [ ] Theory: Formalizing Weeks 31/29's DocuVault prototype into a conversational "ask your documents" chatbot (multi-turn, citations) — *Revisit own Week 31/29 notes + provider multi-turn chat docs*
 - [ ] Mini Exercise: —
-- [ ] Project: `POST /documents/chat` — multi-turn RAG chat over the DocuVault corpus, reusing Week 30's hybrid+rerank pipeline, with per-document citation
+- [ ] Project: `POST /documents/chat` — multi-turn RAG chat over the DocuVault corpus, reusing Week 34's hybrid+rerank pipeline, with per-document citation
 
-**D188 (Tue)**
+**D212 (Tue)**
 - [ ] Theory: Access-control-aware retrieval — never answer from a document the requester can't read (the Phase 5 deferred concern, solved now) — *Revisit Phase 5 DocuVault "Possible Improvements" note*
 - [ ] Mini Exercise: —
 - [ ] Project: Filter Qdrant/ES retrieval results by the requesting user's document permissions before they ever reach the prompt
 
-**D189 (Wed)**
+**D213 (Wed)**
 - [ ] Theory: Evaluation + deployment for the DocuVault chatbot
 - [ ] Mini Exercise: —
-- [ ] Project: Wire DocuVault chat into Week 29's eval harness (new golden set for conversational queries); deploy alongside existing DocuVault services
+- [ ] Project: Wire DocuVault chat into Week 33's eval harness (new golden set for conversational queries); deploy alongside existing DocuVault services
 
-**D190 (Thu)**
+**D214 (Thu)**
 - [ ] Theory: AtlasMarket product Q&A — scoping retrieval per-vendor, ingesting product catalog + reviews as the knowledge base — *Revisit Phase 6 AtlasMarket vendor-scoping notes + Qdrant/ES metadata-filtering docs*
 - [ ] Mini Exercise: —
 - [ ] Project: Ingest AtlasMarket product descriptions/specs/reviews with `vendor_id`/`product_id` payload; vendor/product-scoped retrieval
 
-**D191 (Fri)**
+**D215 (Fri)**
 - [ ] Theory: Generation + guardrails + API for the buyer-facing support assistant — no invented specs/prices, escalate to vendor when unsure
 - [ ] Mini Exercise: —
 - [ ] Project: `POST /support/ask` — generation with a strict "answer only from retrieved product data" system prompt + output guardrail rejecting invented prices/specs; escalation path to vendor support
 
-**D192 (Sat)**
+**D216 (Sat)**
 - [ ] Theory: **Phase 7 wrap review**
 - [ ] Mini Exercise: Mock-answer all Phase-7 questions timed, no notes
 - [ ] Project: `docs/postmortem-phase7.md` comparing all three assistants; tag `v0.7-phase7`
 
 ---
 
-## Phase 8 — AI Dev Tools Zoomcamp (Weeks 33-37)
+## Phase 8 — AI Dev Tools Zoomcamp (Weeks 37-41)
 
-### Week 33 — AI Dev Tools Overview, End-to-End Workflow, AtlasMarket Feature
+### Week 37 — AI Dev Tools Overview, End-to-End Workflow, AtlasMarket Feature
 
-**D193 (Mon)**
+**D217 (Mon)**
 - [ ] Theory: Landscape of AI dev tools: Claude Code vs. GitHub Copilot vs. Cursor, how they differ architecturally — *Claude Code docs Quickstart/Overview; GitHub Copilot docs "What is Copilot"*
 - [ ] Mini Exercise: Install/configure Claude Code CLI on the AtlasMarket repo, run one trivial prompt end to end
 - [ ] Project: Write `docs/ai-tools-landscape.md` comparison notes; pick the AtlasMarket feature to build this week
 
-**D194 (Tue)**
+**D218 (Tue)**
 - [ ] Theory: End-to-end AI-assisted workflow: spec → code → test → PR — *Claude Code docs "Common workflows"*
 - [ ] Mini Exercise: Write a one-page feature spec (business problem, requirements, acceptance criteria)
 - [ ] Project: Commit the spec to AtlasMarket: `docs/features/<feature>.md`
 
-**D195 (Wed)**
+**D219 (Wed)**
 - [ ] Theory: Prompt/context engineering for coding tasks: `CLAUDE.md`, repo context, scoping the ask — *Claude Code docs "Manage Claude's memory" (`CLAUDE.md`); Anthropic prompt engineering guide*
 - [ ] Mini Exercise: Write a `CLAUDE.md` for AtlasMarket capturing architecture + conventions
 - [ ] Project: Prompt the agent with spec + `CLAUDE.md` context to implement the feature; capture the first diff (do not merge)
 
-**D196 (Thu)**
+**D220 (Thu)**
 - [ ] Theory: Evaluating AI-generated code: review checklist, common failure modes (over-broad diffs, silently wrong edge cases, missing tests) — *Anthropic Engineering blog "Claude Code: Best Practices for Agentic Coding"*
 - [ ] Mini Exercise: Build your own AI-diff review checklist (5-8 items)
 - [ ] Project: Apply the checklist to yesterday's diff, write review notes, request specific revisions from the agent
 
-**D197 (Fri)**
+**D221 (Fri)**
 - [ ] Theory: Shipping the workflow: reviewed diff → merged PR; retro on the process itself — *Claude Code docs on PR/GitHub Actions workflow*
 - [ ] Mini Exercise: —
 - [ ] Project: Merge the revised diff, open/land the PR on AtlasMarket; write `docs/features/<feature>-retro.md` documenting prompts + diffs + review notes end to end
 
-**D198 (Sat)**
+**D222 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo Wednesday's `CLAUDE.md` from memory, compare against the real one
 - [ ] Project: Re-read your own retro doc, note one thing you'd do differently next time
 
-### Week 34 — MCP Fundamentals, Custom MCP Server, Minimal Coding Agent
+### Week 38 — MCP Fundamentals, Custom MCP Server, Minimal Coding Agent
 
-**D199 (Mon)**
+**D223 (Mon)**
 - [ ] Theory: MCP protocol fundamentals: resources, tools, prompts, transports (stdio/SSE) — *MCP docs "Introduction" + "Core architecture"*
 - [ ] Mini Exercise: Run the MCP Python SDK "hello tool" quickstart server locally, connect a client to it
 - [ ] Project: Scaffold `stockpilot-mcp/` with the MCP SDK installed
 
-**D200 (Tue)**
+**D224 (Tue)**
 - [ ] Theory: Writing a custom MCP server: tool schema design, input validation, error handling — *MCP docs "Build an MCP Server" (Python SDK); "Tools" spec*
 - [ ] Mini Exercise: Extend the hello-tool server with a second tool taking structured args
 - [ ] Project: Design tool schemas for StockPilot: `get_low_stock`, `get_product`, `list_orders` (read-only)
 
-**D201 (Wed)**
+**D225 (Wed)**
 - [ ] Theory: Wiring an MCP server to a real API: auth, scoped read-only tokens — *MCP docs "Resources"*
 - [ ] Mini Exercise: —
 - [ ] Project: Implement the 3 tools against the real StockPilot API with a read-only service token, expose as an MCP server
 
-**D202 (Thu)**
+**D226 (Thu)**
 - [ ] Theory: Coding-agent architectures: tool loops, planning, ReAct-style reasoning, stop conditions — *Anthropic Engineering blog "Building Effective Agents"*
 - [ ] Mini Exercise: On paper, design your own agent's loop (plan → act → observe → decide) before writing any code
 - [ ] Project: Scaffold `mini-agent/`: LLM client + hand-rolled tool-loop skeleton, no framework
 
-**D203 (Fri)**
+**D227 (Fri)**
 - [ ] Theory: Connecting the agent to the MCP server end-to-end; logging every tool call for observability — *MCP docs "Prompts" spec*
 - [ ] Mini Exercise: —
 - [ ] Project: Wire `mini-agent` to call the StockPilot MCP server's tools; ask it "what products are low on stock right now?" end-to-end
 
-**D204 (Sat)**
+**D228 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the tool-loop stop-condition logic from memory, explain it out loud
 - [ ] Project: Re-read the run log from Friday's session, note anything surprising
 
-### Week 35 — AI-Assisted CI/CD, Low-Code Automation, Guardrails
+### Week 39 — AI-Assisted CI/CD, Low-Code Automation, Guardrails
 
-**D205 (Mon)**
+**D229 (Mon)**
 - [ ] Theory: AI-assisted CI/CD: automated PR-review bots — *GitHub Actions docs "Building and testing" (reused from Phase 4); Claude Code docs "GitHub Actions integration"*
 - [ ] Mini Exercise: Run a Claude-Code-based GitHub Action on a scratch PR in a test repo, read its comment
 - [ ] Project: Add a PR-review-bot workflow to one real repo (comment-only, no approve/merge permission)
 
-**D206 (Tue)**
+**D230 (Tue)**
 - [ ] Theory: AI in incident response / log triage — *Claude Code docs "Headless mode"/SDK for scripted use*
 - [ ] Mini Exercise: Feed a sample log dump to a headless Claude Code invocation, ask for a triage summary
 - [ ] Project: Script `triage_logs.py`: summarize a repo's latest CI failure logs via the LLM API, post a summary comment
 
-**D207 (Wed)**
+**D231 (Wed)**
 - [ ] Theory: Low-code automation platforms: n8n fundamentals — triggers, nodes, workflow model — *n8n docs "Workflow basics," "Nodes"*
 - [ ] Mini Exercise: Stand up n8n locally (Docker), build a trivial workflow (webhook → log)
 - [ ] Project: Environment setup only — no project code this day
 
-**D208 (Thu)**
+**D232 (Thu)**
 - [ ] Theory: Building a cross-system automation workflow — *n8n docs "HTTP Request node," "Webhooks"*
 - [ ] Mini Exercise: —
 - [ ] Project: Build an n8n workflow connecting two systems: StockPilot low-stock data → Slack/email notification
 
-**D209 (Fri)**
+**D233 (Fri)**
 - [ ] Theory: Guardrails for autonomous CI actions: what may/may not auto-merge, scoped permissions, branch protection — *GitHub Actions docs "Security hardening for GitHub Actions"*
 - [ ] Mini Exercise: Write a guardrails policy doc: bot may comment, may not approve, may not merge, may not push to `main`, tokens are read-only/scoped
 - [ ] Project: Lock down the PR-review bot's GitHub token permissions explicitly; configure branch protection requiring human review regardless of bot output
 
-**D210 (Sat)**
+**D234 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the guardrails policy doc from memory
 - [ ] Project: Re-read both automations (PR bot + n8n workflow) for any scope creep
 
-### Week 36 — Project 1 — StockPilot Bug-Fix Coding Agent
+### Week 40 — Project 1 — StockPilot Bug-Fix Coding Agent
 
-**D211 (Mon)**
+**D235 (Mon)**
 - [ ] Theory: Designing the agent: ticket scope, classifier rules, guardrails plan — *Claude Code docs "Subagents"/"Hooks"*
 - [ ] Mini Exercise: Draft the ticket classifier's decision rules on paper (in-scope vs. out-of-scope examples)
 - [ ] Project: Write `docs/bugfix-agent-design.md` (business problem, scope, guardrails); scaffold `bugfix-agent/`
 
-**D212 (Tue)**
+**D236 (Tue)**
 - [ ] Theory: Building the planner + tool loop wired to StockPilot MCP + repo file tools — *MCP Python SDK docs (tool implementation, recap)*
 - [ ] Mini Exercise: —
 - [ ] Project: Implement the planner (ticket + repo context → bounded plan); wire `read_file`/`list_dir`/`write_file` scoped to a path allow-list
 
-**D213 (Wed)**
+**D237 (Wed)**
 - [ ] Theory: Implementing the human-approval gate — *Claude Code docs "Permissions"*
 - [ ] Mini Exercise: —
 - [ ] Project: Add the approval gate (agent stops after diff+test output, requires explicit "approve"); add an "open PR" tool only — no merge/push-to-main tool exists
 
-**D214 (Thu)**
+**D238 (Thu)**
 - [ ] Theory: Guardrails: reject-by-default classifier, scoped permission enforcement, adversarial testing — *GitHub Actions docs "Security hardening" (recap)*
 - [ ] Mini Exercise: —
 - [ ] Project: Make the classifier a mandatory first step (reject-by-default); run full test/lint/type-check gate before showing the diff to a human, verbatim
 
-**D215 (Fri)**
+**D239 (Fri)**
 - [ ] Theory: End-to-end real run — *— (application day)*
 - [ ] Mini Exercise: —
 - [ ] Project: Feed the agent one real, defined StockPilot ticket end-to-end: ticket → plan → diff → tests → human approval → PR opened; verify it declines a second, out-of-scope ticket
 
-**D216 (Sat)**
+**D240 (Sat)**
 - [ ] Theory: **Review / retrospective**
 - [ ] Mini Exercise: Redo the classifier's decision rules from memory
 - [ ] Project: Write `docs/bugfix-agent-retro.md` — what worked, what you'd tighten
 
-### Week 37 — Project 2 — Reconciliation Pipeline; Project 3 — Freeform Capstone; Phase Wrap
+### Week 41 — Project 2 — Reconciliation Pipeline; Project 3 — Freeform Capstone; Phase Wrap
 
-**D217 (Mon)**
+**D241 (Mon)**
 - [ ] Theory: Designing the reconciliation pipeline: schedule trigger, read-only token scoping — *GitHub Actions docs "Events that trigger workflows: schedule"*
 - [ ] Mini Exercise: —
 - [ ] Project: Write `docs/reconciliation-pipeline-design.md`; scaffold the GitHub Actions cron job in LedgerBase calling `/reports/trial-balance` with a read-only token
 
-**D218 (Tue)**
+**D242 (Tue)**
 - [ ] Theory: Building the reconciliation-check + report artifact — *— (application day)*
 - [ ] Mini Exercise: —
 - [ ] Project: Implement the reconciliation-check function; render markdown/JSON report artifact; upload as workflow artifact and POST to an n8n webhook
 
-**D219 (Wed)**
+**D243 (Wed)**
 - [ ] Theory: n8n branch + notify workflow, failure-path testing — *n8n docs "Credentials" (webhook auth/HMAC)*
 - [ ] Mini Exercise: —
 - [ ] Project: Build the n8n workflow: authenticated webhook → branch on pass/fail → distinct Slack/email node per outcome; export workflow JSON into the repo
 
-**D220 (Thu)**
+**D244 (Thu)**
 - [ ] Theory: Project 3 kickoff: scoping the freeform capstone — *Recap of MCP docs + Claude Code "Best practices," as needed for your chosen direction*
 - [ ] Mini Exercise: —
 - [ ] Project: Write the one-page design note (business problem, scope, guardrail, what's left out); scaffold its repo/dir
 
-**D221 (Fri)**
+**D245 (Fri)**
 - [ ] Theory: Building the capstone, reusing Phase 8 patterns fast — *— (application day)*
 - [ ] Mini Exercise: —
 - [ ] Project: Implement the MCP tool(s) + tool loop/workflow + the stated guardrail; get one real end-to-end path working
 
-**D222 (Sat)**
+**D246 (Sat)**
 - [ ] Theory: **Phase 8 wrap review**
 - [ ] Mini Exercise: Explain your bug-fix agent's full pipeline out loud, start to finish, from memory
 - [ ] Project: Write `docs/postmortem-phase8.md` (what's deferred to Phase 11, what you'd harden first); tag `v0.8-phase8`
 
 ---
 
-## Phase 9 — Machine Learning Zoomcamp (Weeks 38-44)
+## Phase 9 — Machine Learning Zoomcamp (Weeks 42-49)
 
-### Week 38 — Intro to ML, Linear Regression, StockPilot Demand Forecaster
+### Week 42 — ML Math Foundations
 
-**D223 (Mon)**
+**D247 (Mon)**
+- [ ] Theory: Linear algebra for ML: vectors, matrices, dot products, the geometric intuition behind "a model is a function of a weight vector" — *3Blue1Brown "Essence of Linear Algebra" (free video series) Ch.1-4, or Ch.1-2 of any standard linear algebra text*
+- [ ] Mini Exercise: Implement matrix multiplication from scratch in pure Python (no NumPy), then again with NumPy, compare correctness and timing
+- [ ] Project: `docs/ml-math-notes.md` — vectors/matrices section, in your own words, with the StockPilot feature vector as a concrete running example
+
+**D248 (Tue)**
+- [ ] Theory: Calculus for ML: partial derivatives, the chain rule, why gradients point in the direction of steepest ascent — *Khan Academy "Multivariable calculus" (free) — partial derivatives + gradient sections*
+- [ ] Mini Exercise: Derive, on paper, the gradient of Mean Squared Error with respect to the weight vector for linear regression — no code yet, just the math
+- [ ] Project: Add the derivation to `docs/ml-math-notes.md`, typed out step by step
+
+**D249 (Wed)**
+- [ ] Theory: Gradient descent, implemented from scratch
+- [ ] Mini Exercise: Implement batch gradient descent for linear regression using only NumPy (no scikit-learn), converge on a toy dataset, plot the loss curve
+- [ ] Project: Reproduce Phase 9 Week 43's upcoming baseline linear regression using your own from-scratch gradient descent instead of the normal equation, verify the learned weights match closely
+
+**D250 (Thu)**
+- [ ] Theory: Probability & statistics deepened: distributions, maximum likelihood estimation — *Any intro-statistics MLE chapter (e.g. Bishop's *Pattern Recognition and Machine Learning* §1.2, or a free equivalent)*
+- [ ] Mini Exercise: Derive logistic regression's cross-entropy loss as the maximum-likelihood estimate under a Bernoulli model — on paper, then confirm numerically that maximizing likelihood equals minimizing the cross-entropy you already know from Phase 7/9
+- [ ] Project: Add the MLE derivation to `docs/ml-math-notes.md`, tied explicitly to the logistic regression you'll build in Week 44
+
+**D251 (Fri)**
+- [ ] Theory: The Bayesian view: priors, posteriors, and what L2 regularization actually is
+- [ ] Mini Exercise: Show, numerically, that Ridge regression's solution is the MAP (maximum a posteriori) estimate under a Gaussian prior on the weights — vary the prior's variance and watch it match `alpha`
+- [ ] Project: Implement Ridge regression from scratch via gradient descent (extending Wednesday's code with the L2 penalty term), compare coefficients against `sklearn.Ridge` on the same data
+
+**D252 (Sat)**
+- [ ] Theory: **Review**
+- [ ] Mini Exercise: Redo Tuesday's MSE gradient derivation from memory, on paper, no notes
+- [ ] Project: Re-read `docs/ml-math-notes.md` end to end, confirm every claim in it is something you could reproduce on a whiteboard
+
+### Week 43 — Intro to ML, Linear Regression, StockPilot Demand Forecaster
+
+**D253 (Mon)**
 - [ ] Theory: Supervised learning framing, CRISP-DM, train/val/test split — *ML Zoomcamp Module 1 — Intro to ML; Géron Ch.2 "Look at the Big Picture"*
 - [ ] Mini Exercise: Implement a train/val/test split function from scratch on a toy dataset
 - [ ] Project: EDA on StockPilot's historical order data; aggregate weekly per-product demand
 
-**D224 (Tue)**
+**D254 (Tue)**
 - [ ] Theory: NumPy/Pandas refresher, missing data, groupby aggregation — *Pandas docs "Working with missing data"; Géron Ch.2 data-cleaning section*
 - [ ] Mini Exercise: Pandas groupby/aggregation drill on toy sales data
 - [ ] Project: Build the weekly per-product feature table joining products + order_items + stock_movements
 
-**D225 (Wed)**
+**D255 (Wed)**
 - [ ] Theory: Linear regression from scratch (normal equation) — *ML Zoomcamp Module 2 — Regression; Géron Ch.4 "The Normal Equation"*
 - [ ] Mini Exercise: Implement normal-equation regression with NumPy on toy data, compare to `sklearn.LinearRegression`
 - [ ] Project: Baseline linear regression predicting next-week demand from lag features
 
-**D226 (Thu)**
+**D256 (Thu)**
 - [ ] Theory: Feature engineering, one-hot encoding — *scikit-learn docs "Preprocessing data" (OneHotEncoder); Géron Ch.2 categorical encoding*
 - [ ] Mini Exercise: Encode a categorical column with `OneHotEncoder` vs `pd.get_dummies`, compare output
 - [ ] Project: Add category/supplier one-hot features and a week-of-year seasonality feature
 
-**D227 (Fri)**
+**D257 (Fri)**
 - [ ] Theory: Regularization (Ridge), RMSE evaluation, bias-variance in practice — *ML Zoomcamp Module 2 — Regularized Linear Models; Géron Ch.4 "Ridge Regression"*
 - [ ] Mini Exercise: Plot train vs. validation RMSE across Ridge `alpha` values (a learning curve)
-- [ ] Project: Add Ridge regularization, tune `alpha` on the validation set, record final Week-27 RMSE vs. naive baseline
+- [ ] Project: Add Ridge regularization, tune `alpha` on the validation set, record final Week-43 RMSE vs. naive baseline
 
-**D228 (Sat)**
+**D258 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the normal-equation regression from memory, no notes
 - [ ] Project: Re-read the feature table for anything that smells like leaked future information
 
-### Week 39 — Classification, Evaluation, QuickServe Churn Predictor
+### Week 44 — Classification, Evaluation, QuickServe Churn Predictor
 
-**D229 (Mon)**
+**D259 (Mon)**
 - [ ] Theory: Logistic regression, sigmoid, log-loss — *ML Zoomcamp Module 3 — Classification; Géron Ch.4 "Logistic Regression"*
 - [ ] Mini Exercise: Implement sigmoid + log-loss manually, verify against `sklearn`
 - [ ] Project: EDA on QuickServe customer order history; define the churn label (no repeat order within a cadence window)
 
-**D230 (Tue)**
+**D260 (Tue)**
 - [ ] Theory: Feature importance via coefficients — *scikit-learn docs LogisticRegression; Géron Ch.4 coefficient interpretation*
 - [ ] Mini Exercise: Fit logistic regression on toy data, inspect and plot coefficients
 - [ ] Project: Build the RFM feature table (recency, frequency, monetary, tenure) + baseline logistic regression churn model
 
-**D231 (Wed)**
+**D261 (Wed)**
 - [ ] Theory: Evaluation pitfalls — the accuracy trap, confusion matrix, precision/recall — *ML Zoomcamp Module 4 — Evaluation Metrics; scikit-learn docs "Model evaluation"*
 - [ ] Mini Exercise: Compute a confusion matrix and precision/recall by hand on a small prediction set, verify against `sklearn`
 - [ ] Project: Evaluate the churn model with confusion matrix + precision/recall; document why accuracy is misleading here
 
-**D232 (Thu)**
+**D262 (Thu)**
 - [ ] Theory: ROC/AUC, k-fold cross-validation — *ML Zoomcamp Module 4 — ROC/AUC; scikit-learn docs "Cross-validation"*
 - [ ] Mini Exercise: Plot an ROC curve for a toy classifier, compute AUC manually vs. `sklearn`
 - [ ] Project: Add k-fold CV to churn-model training, report mean/std AUC across folds
 
-**D233 (Fri)**
+**D263 (Fri)**
 - [ ] Theory: Class imbalance handling — *ML Zoomcamp Module 4 imbalance notes; scikit-learn docs `class_weight` parameter*
 - [ ] Mini Exercise: Compare `class_weight='balanced'` vs. undersampling on a toy imbalanced dataset
-- [ ] Project: Apply class-weight balancing to the churn model, re-evaluate precision/recall/AUC, pick the Week-28 final model
+- [ ] Project: Apply class-weight balancing to the churn model, re-evaluate precision/recall/AUC, pick the Week-44 final model
 
-**D234 (Sat)**
+**D264 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the manual confusion-matrix calculation from memory
-- [ ] Project: Re-read the Week-28 model comparison notes for anything you'd argue differently now
+- [ ] Project: Re-read the Week-44 model comparison notes for anything you'd argue differently now
 
-### Week 40 — Deployment, Trees, Churn Predictor Dockerized + Ensembles
+### Week 45 — Deployment, Trees, Churn Predictor Dockerized + Ensembles
 
-**D235 (Mon)**
+**D265 (Mon)**
 - [ ] Theory: Deployment patterns recap — Flask/FastAPI + Docker for model serving — *Flask docs "Quickstart"; FastAPI docs (recap)*
 - [ ] Mini Exercise: Minimal FastAPI `/predict` endpoint serving a pickled sklearn model, hit it with curl
-- [ ] Project: Wrap the Week-28 churn model in a FastAPI scoring service (`/predict` with a Pydantic request/response schema)
+- [ ] Project: Wrap the Week-44 churn model in a FastAPI scoring service (`/predict` with a Pydantic request/response schema)
 
-**D236 (Tue)**
+**D266 (Tue)**
 - [ ] Theory: Containerizing the model service — *Docker docs "Best practices for writing Dockerfiles" (model-artifact angle)*
 - [ ] Mini Exercise: Write a multi-stage Dockerfile for the scoring service, check the resulting image size
 - [ ] Project: docker-compose for the churn scoring service, with a `/health` endpoint
 
-**D237 (Wed)**
+**D267 (Wed)**
 - [ ] Theory: Decision trees — *ML Zoomcamp Module 6 — Decision Trees; Géron Ch.6*
 - [ ] Mini Exercise: Fit a `DecisionTreeClassifier` on toy data, visualize it, discuss overfitting via `max_depth`
-- [ ] Project: Rebuild the churn model as a decision tree; compare AUC/precision-recall against Week 39's logistic regression on the same held-out fold
+- [ ] Project: Rebuild the churn model as a decision tree; compare AUC/precision-recall against Week 44's logistic regression on the same held-out fold
 
-**D238 (Thu)**
+**D268 (Thu)**
 - [ ] Theory: Random forests / ensembling (bagging) — *ML Zoomcamp Module 6 — Random Forest; Géron Ch.7*
 - [ ] Mini Exercise: Bagging demo: train 10 trees on bootstrap samples, average predictions, compare variance to a single tree
 - [ ] Project: Build a `RandomForestClassifier` churn model, tune `n_estimators`/`max_depth` via CV
 
-**D239 (Fri)**
+**D269 (Fri)**
 - [ ] Theory: Gradient boosting (XGBoost) — *XGBoost docs "Introduction to Boosted Trees"; ML Zoomcamp Module 6 — XGBoost*
 - [ ] Mini Exercise: Fit an `XGBClassifier` on toy data, plot feature importances
 - [ ] Project: Build an XGBoost churn model; final comparison table (logreg vs. tree vs. forest vs. XGBoost); wire the winner into the scoring service
 
-**D240 (Sat)**
+**D270 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the bagging demo from memory, explain variance reduction out loud
 - [ ] Project: Re-read the model comparison table and confirm the winner is justified, not just the last one tried
 
-### Week 41 — Deep Learning, CarePoint Document-Image Classifier
+### Week 46 — Deep Learning, CarePoint Document-Image Classifier
 
-**D241 (Mon)**
+**D271 (Mon)**
 - [ ] Theory: Neural network basics — layers, activations, backprop intuition — *ML Zoomcamp "Neural Networks & Deep Learning" module; Géron Ch.10*
 - [ ] Mini Exercise: Forward-pass-only tiny dense net in NumPy on toy data
 - [ ] Project: Assemble a labeled CarePoint scanned-document dataset (referral letter, insurance card, lab result, prescription) + data-loading pipeline
 
-**D242 (Tue)**
+**D272 (Tue)**
 - [ ] Theory: CNNs — convolution, pooling — *ML Zoomcamp CNN section; Géron Ch.14*
 - [ ] Mini Exercise: Build a tiny CNN in Keras on a toy image dataset, train a few epochs
 - [ ] Project: Define and train a baseline CNN for CarePoint document-type classification, log accuracy
 
-**D243 (Wed)**
+**D273 (Wed)**
 - [ ] Theory: Transfer learning — *Keras docs "Transfer learning & fine-tuning"; ML Zoomcamp transfer-learning section*
 - [ ] Mini Exercise: Load a pretrained model via `keras.applications`, freeze the base, fine-tune the head on toy data
 - [ ] Project: Replace the baseline CNN with a pretrained-base + custom-head model for the document classifier, compare accuracy to Tuesday's baseline
 
-**D244 (Thu)**
+**D274 (Thu)**
 - [ ] Theory: Keras training-loop internals — callbacks, checkpoints — *Keras docs "Training & evaluation with the built-in methods"; "Writing your own callbacks"*
 - [ ] Mini Exercise: Add `EarlyStopping` + `ModelCheckpoint` to a toy training loop
 - [ ] Project: Add early stopping and best-model checkpointing to the document classifier's training run, retrain
 
-**D245 (Fri)**
+**D275 (Fri)**
 - [ ] Theory: Regularization/dropout for deep nets — *Géron Ch.11 regularization section; Keras docs on image augmentation*
 - [ ] Mini Exercise: Add `Dropout` layers to the toy CNN, compare the train/val gap with vs. without
 - [ ] Project: Add dropout + data augmentation to the document classifier, final model selection, evaluate on a held-out test set, write a short model card
 
-**D246 (Sat)**
+**D276 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the transfer-learning freeze/fine-tune setup from memory
 - [ ] Project: Re-read the model card and confirm the stated limitations are actually true
 
-### Week 42 — Serverless, Kubernetes, KServe — Three-Way Deployment
+### Week 47 — Serverless, Kubernetes, KServe — Three-Way Deployment
 
-**D247 (Mon)**
+**D277 (Mon)**
 - [ ] Theory: AWS Lambda / serverless model serving concepts — *AWS Lambda docs "Building Lambda functions with Python"; ML Zoomcamp Module 8 — Serverless*
 - [ ] Mini Exercise: Package a tiny sklearn model + Lambda handler locally, invoke it
 - [ ] Project: Convert the churn model to a Lambda-compatible handler (model loaded once outside the handler, cold-start aware)
 
-**D248 (Tue)**
+**D278 (Tue)**
 - [ ] Theory: Lightweight-inference packaging, cold-start tradeoffs — *AWS Lambda docs "Container images"; ML Zoomcamp Module 8*
 - [ ] Mini Exercise: Measure cold-start latency of the local handler across a few repeated invokes
 - [ ] Project: Package the model as a Lambda container image, deploy locally (SAM/LocalStack), measure invoke latency
 
-**D249 (Wed)**
+**D279 (Wed)**
 - [ ] Theory: Kubernetes deployment of a model service (reusing Phase 5's `kind` cluster) — *Kubernetes docs "Deployments" + "Services" (recap)*
 - [ ] Mini Exercise: —
-- [ ] Project: Write Deployment + Service YAML for the FastAPI scoring service (Week 40's image), deploy to the local `kind` cluster
+- [ ] Project: Write Deployment + Service YAML for the FastAPI scoring service (Week 45's image), deploy to the local `kind` cluster
 
-**D250 (Thu)**
+**D280 (Thu)**
 - [ ] Theory: Scaling the K8s model service — HPA, readiness/liveness probes for ML pods — *Kubernetes docs "HorizontalPodAutoscaler Walkthrough"; "Configure Liveness, Readiness and Startup Probes"*
 - [ ] Mini Exercise: —
 - [ ] Project: Add readiness/liveness probes tuned to model load time, add an HPA based on CPU, lightly load-test to confirm scale-out
 
-**D251 (Fri)**
+**D281 (Fri)**
 - [ ] Theory: KServe model serving on Kubernetes — *KServe docs "Getting Started" / `InferenceService` concept guide*
 - [ ] Mini Exercise: —
 - [ ] Project: Install KServe on the `kind` cluster, deploy the model as an `InferenceService`, hit its predict endpoint; write `docs/serving-comparison.md` (Lambda vs. raw K8s Deployment vs. KServe: cold start, ops overhead, autoscaling, cost story)
 
-**D252 (Sat)**
+**D282 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Explain the Lambda-vs-K8s-vs-KServe tradeoffs out loud, unscripted
 - [ ] Project: Re-read `docs/serving-comparison.md` for anything you'd argue differently now
 
-### Week 43 — Project 1 Finalize — StockPilot Demand Forecaster
+### Week 48 — Project 1 Finalize — StockPilot Demand Forecaster
 
-**D253 (Mon)**
+**D283 (Mon)**
 - [ ] Theory: Revisit and polish EDA + feature set — *Géron Ch.2 "Fine-Tune Your Model" (recap); ML Zoomcamp Regression module (recap)*
 - [ ] Mini Exercise: —
 - [ ] Project: Re-run EDA with fresh eyes; prune/expand features (rolling averages, promotions flag); document data assumptions in the README
 
-**D254 (Tue)**
+**D284 (Tue)**
 - [ ] Theory: Final model selection (linear/Ridge vs. tree-based regressor) — *scikit-learn docs "Choosing the right estimator"; XGBoost docs regression-objective section*
 - [ ] Mini Exercise: —
 - [ ] Project: Train/compare 3-4 candidate regressors with consistent CV; pick the winner by RMSE plus a stated business rationale (interpretability vs. accuracy for a small shop owner)
 
-**D255 (Wed)**
+**D285 (Wed)**
 - [ ] Theory: Deployment — *FastAPI docs (recap); Docker docs (recap)*
 - [ ] Mini Exercise: —
-- [ ] Project: Wrap the final demand model in the same FastAPI-scoring-service pattern from Week 40, dockerize, wire an integration point into StockPilot's `/products/{id}/forecast`
+- [ ] Project: Wrap the final demand model in the same FastAPI-scoring-service pattern from Week 45, dockerize, wire an integration point into StockPilot's `/products/{id}/forecast`
 
-**D256 (Thu)**
+**D286 (Thu)**
 - [ ] Theory: README + model card — *Model-card guidance (Google Model Cards overview); scikit-learn docs "Model persistence"*
 - [ ] Mini Exercise: —
 - [ ] Project: Write `README.md` (setup/run) and `docs/model-card.md` (training data, features, metric, known limitations, intended use)
 
-**D257 (Fri)**
+**D287 (Fri)**
 - [ ] Theory: Retrospective + improvements write-up
 - [ ] Mini Exercise: —
 - [ ] Project: Write `docs/postmortem-demand-forecaster.md` (more history, holiday effects, hierarchical forecasting, MLflow foreshadowing Phase 10); tag `v0.1-demand-forecaster`
 
-**D258 (Sat)**
+**D288 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Explain the full demand-forecaster pipeline end to end, out loud, unscripted
 - [ ] Project: Re-read the postmortem and confirm every "deferred" item is genuinely deferred, not silently done
 
-### Week 44 — Project 2 Finalize + Project 3 — Churn Predictor & CarePoint No-Show Predictor
+### Week 49 — Project 2 Finalize + Project 3 — Churn Predictor & CarePoint No-Show Predictor
 
-**D259 (Mon)**
+**D289 (Mon)**
 - [ ] Theory: Formalize the churn predictor's training pipeline — *scikit-learn docs "Pipeline and FeatureUnion" (recap); XGBoost docs "Python Package Introduction"*
 - [ ] Mini Exercise: —
-- [ ] Project: Refactor Weeks 39-40's churn work into a clean `training.py` (sklearn `Pipeline`: preprocessing + model) + a `predict_service` package; re-save the winning XGBoost model
+- [ ] Project: Refactor Weeks 44-45's churn work into a clean `training.py` (sklearn `Pipeline`: preprocessing + model) + a `predict_service` package; re-save the winning XGBoost model
 
-**D260 (Tue)**
+**D290 (Tue)**
 - [ ] Theory: Testing + CI for the churn predictor — *pytest docs (recap); GitHub Actions docs (recap, ML-artifact caching angle)*
 - [ ] Mini Exercise: —
 - [ ] Project: Add unit tests (feature engineering, evaluation metrics) + a CI workflow that retrains on a sample and asserts AUC clears a threshold ("model regression test")
 
-**D261 (Wed)**
+**D291 (Wed)**
 - [ ] Theory: Documentation + ship
 - [ ] Mini Exercise: —
-- [ ] Project: README + model card for the churn predictor; finalize the Week-29 Dockerized scoring service; tag `v0.1-churn-predictor`
+- [ ] Project: README + model card for the churn predictor; finalize the Week-45 Dockerized scoring service; tag `v0.1-churn-predictor`
 
-**D262 (Thu)**
+**D292 (Thu)**
 - [ ] Theory: CarePoint No-Show Predictor — EDA + baseline — *ML Zoomcamp Classification + Trees modules (recap); Géron Ch.6/7 (recap)*
 - [ ] Mini Exercise: —
 - [ ] Project: EDA on CarePoint appointment data; define the no-show label; engineer features (lead time, prior no-show rate, day-of-week, reminder-sent flag); baseline logistic regression + decision tree comparison
 
-**D263 (Fri)**
+**D293 (Fri)**
 - [ ] Theory: No-Show Predictor — final model + deployment — *XGBoost docs (recap)*
 - [ ] Mini Exercise: —
 - [ ] Project: Train an XGBoost no-show model (class-weight balanced); evaluate with a recall-weighted metric; wrap in a FastAPI scoring service, dockerize, README + model card; tag `v0.1-noshow-predictor`
 
-**D264 (Sat)**
+**D294 (Sat)**
 - [ ] Theory: **Phase-wide review**
 - [ ] Mini Exercise: Explain, unscripted, why each of the three projects picked the metric it picked
 - [ ] Project: `docs/postmortem-phase9.md` — full phase retrospective across all 3 projects and all 3 serving methods; tag `v0.9-phase9`
 
 ---
 
-## Phase 10 — MLOps Engineering Zoomcamp (Weeks 45-50)
+## Phase 10 — MLOps Engineering Zoomcamp (Weeks 50-55)
 
-### Week 45 — MLflow Tracking, Demand Forecaster Instrumentation
+### Week 50 — MLflow Tracking, Demand Forecaster Instrumentation
 
-**D265 (Mon)**
+**D295 (Mon)**
 - [ ] Theory: MLOps maturity levels & why MLOps — *Google Cloud Architecture Center — "MLOps: CD & automation pipelines in ML" §maturity levels*
 - [ ] Mini Exercise: Score your Phase-9 training scripts against the 3 maturity levels (manual → automated pipeline → CI/CD)
 - [ ] Project: New module `mlops/demand-forecaster/`, copy in the Phase-9 training script as-is
 
-**D266 (Tue)**
+**D296 (Tue)**
 - [ ] Theory: Reproducible environments: Poetry, Makefiles — *Poetry docs "Basic usage"*
 - [ ] Mini Exercise: Convert a scratch `requirements.txt` to a pinned `pyproject.toml` with Poetry
 - [ ] Project: Add `pyproject.toml` (poetry) + `Makefile` (`make install`, `make train`, `make test`) to the demand-forecaster module
 
-**D267 (Wed)**
+**D297 (Wed)**
 - [ ] Theory: MLflow tracking basics: runs, params, metrics, artifacts — *MLflow docs — Tracking Quickstart*
 - [ ] Mini Exercise: Instrument a toy `LinearRegression` script with `mlflow.start_run()`, log 2 params + 1 metric + the model artifact
 - [ ] Project: Wrap the real training script: log hyperparams, MAE/RMSE/MAPE, and artifacts (model, feature list) on every run
 
-**D268 (Thu)**
+**D298 (Thu)**
 - [ ] Theory: MLflow Model Registry: versioning & staging — *MLflow docs — Model Registry guide*
 - [ ] Mini Exercise: Register the toy model, transition it None → Staging → Production via the API
 - [ ] Project: Register `stockpilot-demand-forecaster`, transition the current best run's model to `Staging`
 
-**D269 (Fri)**
+**D299 (Fri)**
 - [ ] Theory: Comparing many hyperparameter runs — *Huyen, *Designing ML Systems* Ch.6 (Model Development & Offline Evaluation)*
 - [ ] Mini Exercise: Run a 5-point grid search on the toy model, compare runs in the MLflow UI (parallel-coordinates view)
 - [ ] Project: Sweep ~12 demand-forecaster hyperparam combos (XGBoost `max_depth`/`n_estimators`/`learning_rate`), promote the lowest-RMSE run's version to `Production`, archive the rest
 
-**D270 (Sat)**
+**D300 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the toy MLflow instrumentation from memory, no notes
 - [ ] Project: Re-read the registered model's run params, verify you can explain every choice made this week
 
-### Week 46 — Orchestration, Churn Predictor Scheduled Flow
+### Week 51 — Orchestration, Churn Predictor Scheduled Flow
 
-**D271 (Mon)**
+**D301 (Mon)**
 - [ ] Theory: Workflow orchestration concepts, DAGs — *Prefect docs — "Why Prefect?" + Flows concepts*
 - [ ] Mini Exercise: Write a 3-task toy Prefect flow (`extract → transform → load` on fake data), run it locally
 - [ ] Project: Sketch the churn-predictor DAG (`ingest → train → evaluate → register`) in `docs/`, scaffold `flows/churn_training_flow.py` with empty `@task` stubs
 
-**D272 (Tue)**
+**D302 (Tue)**
 - [ ] Theory: Building a training pipeline as a DAG — *Prefect docs — Flows & Tasks*
 - [ ] Mini Exercise: Add a retry to the toy flow's `transform` task
 - [ ] Project: Implement each task body: `ingest_transactions`, `build_rfm_features`, `train_model`, `evaluate_model`, `register_if_better`, wire them into the flow
 
-**D273 (Wed)**
+**D303 (Wed)**
 - [ ] Theory: Scheduling, retries, parameterized runs — *Prefect docs — Schedules + Retries*
 - [ ] Mini Exercise: Add `retries=3, retry_delay_seconds=30` to a toy task that fails twice then succeeds, watch it recover
 - [ ] Project: Add a daily schedule to the churn flow, retry policy on `ingest_transactions` (simulated flaky DB read), parameterize by `training_window_days`
 
-**D274 (Thu)**
+**D304 (Thu)**
 - [ ] Theory: Triggering deployment on new model registration — *MLflow docs — Registry stage transitions + Prefect docs on task composition*
 - [ ] Mini Exercise: Write a toy task that polls the registry for the latest `Production` version, prints "would deploy" only if it changed
-- [ ] Project: Add a `maybe_deploy` task at the end of the churn flow: if `register_if_better` promoted a new `Production` version, trigger a stub redeploy task (real deploy logic lands Week 47)
+- [ ] Project: Add a `maybe_deploy` task at the end of the churn flow: if `register_if_better` promoted a new `Production` version, trigger a stub redeploy task (real deploy logic lands Week 52)
 
-**D275 (Fri)**
+**D305 (Fri)**
 - [ ] Theory: Observability of pipeline runs — *Prefect docs — UI, states & logging*
 - [ ] Mini Exercise: —
 - [ ] Project: Wire structured logging (reuse `structlog` from Phase 1) inside each task, verify flow-run states/logs are visible end-to-end in the Prefect UI
 
-**D276 (Sat)**
+**D306 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the toy retry-and-recover flow from memory
 - [ ] Project: Re-trace the full churn DAG on paper without opening the code
 
-### Week 47 — Deployment Patterns, No-Show Predictor Dual Deploy
+### Week 52 — Deployment Patterns, No-Show Predictor Dual Deploy
 
-**D277 (Mon)**
+**D307 (Mon)**
 - [ ] Theory: Deployment patterns: batch / web service / streaming — *Huyen Ch.7 (Model Deployment & Prediction Service) §batch vs. online*
 - [ ] Mini Exercise: Write comparison notes: latency/cost/complexity for batch vs. web vs. streaming on a toy example
 - [ ] Project: Write `docs/deployment-decision.md` first draft for no-show-predictor: CarePoint's actual need (nightly list vs. booking-time prediction), decide to build both this week to compare directly
 
-**D278 (Tue)**
+**D308 (Tue)**
 - [ ] Theory: Batch scoring job design — *MLflow docs — "Deploy MLflow Models" (pyfunc, batch)*
 - [ ] Mini Exercise: Load a registered MLflow model in a toy script, score a 100-row CSV, write predictions to a new CSV
 - [ ] Project: Build `batch_score.py`: loads the Production model from the registry, scores tomorrow's appointments, writes `no_show_risk` back into CarePoint
 
-**D279 (Wed)**
+**D309 (Wed)**
 - [ ] Theory: Web service deployment: FastAPI + Docker — *FastAPI docs (reused from Phase 1) + MLflow docs pyfunc serving*
 - [ ] Mini Exercise: —
 - [ ] Project: `POST /predict/no-show-risk` FastAPI endpoint loading the same Production model, Dockerfile, added to CarePoint's compose
 
-**D280 (Thu)**
+**D310 (Thu)**
 - [ ] Theory: Streaming deployment concept (Kafka consumer) — *Huyen Ch.7 §streaming; Phase-3 Kafka notes (reused)*
 - [ ] Mini Exercise: Sketch (don't wire up) a toy Kafka consumer that would score each `appointment.created` event as it arrives
 - [ ] Project: Write `docs/streaming-option.md` + a stubbed `score_appointment_event(event) -> float`; note why a Kafka-consumer deployment isn't adopted this week
 
-**D281 (Fri)**
+**D311 (Fri)**
 - [ ] Theory: Choosing the right pattern for a given SLA — *Huyen Ch.7 §choosing a deployment pattern*
 - [ ] Mini Exercise: —
 - [ ] Project: Finish `docs/deployment-decision.md`: side-by-side batch vs. web-service table (staleness, infra cost, latency, failure mode) with a concrete recommendation — web service as the source of truth at booking time, batch as the staff's daily overview
 
-**D282 (Sat)**
+**D312 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the batch-scoring toy script from memory
 - [ ] Project: Re-read the finished decision doc, argue the opposite recommendation out loud, then explain why you didn't pick it
 
-### Week 48 — Monitoring + Best Practices, Demand Forecaster Drift + CI Gate
+### Week 53 — Monitoring + Best Practices, Demand Forecaster Drift + CI Gate
 
-**D283 (Mon)**
+**D313 (Mon)**
 - [ ] Theory: ML monitoring concepts: data drift, target drift, model decay — *Huyen Ch.8 (Data Distribution Shifts & Monitoring)*
 - [ ] Mini Exercise: Compute a toy PSI (population stability index) between two synthetic distributions
 - [ ] Project: Write `docs/monitoring-plan.md` for demand-forecaster: drift-risk features (seasonality, price changes), what "decay" looks like (RMSE creeping up week over week)
 
-**D284 (Tue)**
+**D314 (Tue)**
 - [ ] Theory: Building a drift dashboard with Evidently — *Evidently AI docs — Get Started + Data Drift report*
 - [ ] Mini Exercise: Run Evidently's `DataDriftPreset` on two toy dataframes (reference vs. current), view the HTML report
 - [ ] Project: Generate an Evidently drift report comparing demand-forecaster's training reference data vs. last week's live order data; export key metrics as Prometheus-scrapable numbers (reuse Phase 4 Prometheus client)
 
-**D285 (Wed)**
+**D315 (Wed)**
 - [ ] Theory: Testing ML code: feature-transform unit tests, data validation — *Huyen Ch.5 (Feature Engineering) §validation; pytest docs (reused)*
 - [ ] Mini Exercise: Write a unit test that catches a broken feature transform (a lag feature shifted by the wrong number of periods)
 - [ ] Project: Add unit tests for every feature-engineering function in demand-forecaster (lag features, rolling means, categorical encodings) + a pre-training data-validation check
 
-**D286 (Thu)**
+**D316 (Thu)**
 - [ ] Theory: CI/CD for ML: model-quality gates in GitHub Actions — *GitHub Actions docs (reused, Phase 4) + MLflow docs on comparing run metrics*
 - [ ] Mini Exercise: —
 - [ ] Project: Add a GitHub Actions job that retrains demand-forecaster on a fixed CI dataset sample, compares new RMSE to the current Production model's logged RMSE, fails if it regresses beyond tolerance
 
-**D287 (Fri)**
+**D317 (Fri)**
 - [ ] Theory: IaC intro for ML infra: Terraform — *Terraform docs — Get Started (Docker provider tutorial)*
 - [ ] Mini Exercise: Write a minimal Terraform file provisioning one local Docker container (the MLflow tracking server) via the `docker` provider; `plan`/`apply`/`destroy` it
 - [ ] Project: Write (don't necessarily apply to real cloud) a Terraform stub describing the MLflow tracking server + Postgres backend as resources — deliberately shallow, real cloud provisioning explicitly deferred to Phase 11
 
-**D288 (Sat)**
+**D318 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the toy Evidently drift-report run from memory
 - [ ] Project: Re-read the CI-gate workflow file, explain every step out loud without looking
 
-### Week 49 — Project 1 — Demand Forecaster, Fully Productionized
+### Week 54 — Project 1 — Demand Forecaster, Fully Productionized
 
-**D289 (Mon)**
+**D319 (Mon)**
 - [ ] Theory: Consolidating tracking + orchestration for Project 1 — *MLflow docs — MLproject packaging; Prefect docs — Deployments*
 - [ ] Mini Exercise: —
-- [ ] Project: Build the full `ingest → train → evaluate → register` Prefect flow for demand-forecaster (mirrors Week 46's churn-flow pattern), wire it to the existing MLflow tracking/registry from Week 45
+- [ ] Project: Build the full `ingest → train → evaluate → register` Prefect flow for demand-forecaster (mirrors Week 51's churn-flow pattern), wire it to the existing MLflow tracking/registry from Week 50
 
-**D290 (Tue)**
-- [ ] Theory: Consolidating deployment (batch + web service) for Project 1 — *— (apply Week 47 patterns)*
+**D320 (Tue)**
+- [ ] Theory: Consolidating deployment (batch + web service) for Project 1 — *— (apply Week 52 patterns)*
 - [ ] Mini Exercise: —
 - [ ] Project: Add both the nightly batch scoring job and the FastAPI web-service endpoint for demand-forecaster (mirrors CarePoint's dual deployment), Dockerized, added to StockPilot's compose
 
-**D291 (Wed)**
-- [ ] Theory: Consolidating monitoring + CI gate for Project 1 — *— (apply Week 48 patterns)*
+**D321 (Wed)**
+- [ ] Theory: Consolidating monitoring + CI gate for Project 1 — *— (apply Week 53 patterns)*
 - [ ] Mini Exercise: —
 - [ ] Project: Wire the Evidently drift report + Prometheus export + Grafana dashboard permanently into this module; finalize the CI RMSE-regression gate as a required check on `main`
 
-**D292 (Thu)**
+**D322 (Thu)**
 - [ ] Theory: Hardening: retries, alerting, failure modes — *Prefect docs — Automations / state-change hooks*
 - [ ] Mini Exercise: —
 - [ ] Project: Add a Prefect notification/state-change hook that alerts (log line or webhook stub) when the training flow fails, or when a retrain is auto-rejected by the quality gate
 
-**D293 (Fri)**
+**D323 (Fri)**
 - [ ] Theory: Polish: README, architecture diagram, tagged release
 - [ ] Mini Exercise: —
 - [ ] Project: Write the module's `README.md` (architecture diagram, how to run tracking/orchestration/deployment/monitoring locally), tag `v0.1-mlops-demand-forecaster`
 
-**D294 (Sat)**
+**D324 (Sat)**
 - [ ] Theory: **Review / Project 1 retrospective**
 - [ ] Mini Exercise: Explain the full tracking → orchestration → deployment → monitoring pipeline out loud, unscripted
 - [ ] Project: Write `docs/retrospective-project1.md`: what took longer than expected, what you'd change to build Projects 2 and 3 faster
 
-### Week 50 — Project 2 — Churn Predictor, Project 3 — No-Show Predictor, Phase Wrap
+### Week 55 — Project 2 — Churn Predictor, Project 3 — No-Show Predictor, Phase Wrap
 
-**D295 (Mon)**
-- [ ] Theory: Project 2 — Churn Predictor: tracking + registry — *— (apply Week 45 patterns)*
+**D325 (Mon)**
+- [ ] Theory: Project 2 — Churn Predictor: tracking + registry — *— (apply Week 50 patterns)*
 - [ ] Mini Exercise: —
-- [ ] Project: Instrument churn-predictor training with MLflow tracking + registry (reuse Week 45's code as a template), register the best model
+- [ ] Project: Instrument churn-predictor training with MLflow tracking + registry (reuse Week 50's code as a template), register the best model
 
-**D296 (Tue)**
-- [ ] Theory: Project 2 — Churn Predictor: deployment + monitoring — *— (apply Weeks 46–48 patterns)*
+**D326 (Tue)**
+- [ ] Theory: Project 2 — Churn Predictor: deployment + monitoring — *— (apply Weeks 51–53 patterns)*
 - [ ] Mini Exercise: —
-- [ ] Project: Deploy churn-predictor as a FastAPI web service (orchestration flow already exists from Week 46), add the drift-monitoring dashboard (Evidently + Grafana, reusing Week 48's pattern)
+- [ ] Project: Deploy churn-predictor as a FastAPI web service (orchestration flow already exists from Week 51), add the drift-monitoring dashboard (Evidently + Grafana, reusing Week 53's pattern)
 
-**D297 (Wed)**
-- [ ] Theory: Project 2 — Churn Predictor: CI gate, polish, tag — *— (apply Week 48's CI-gate pattern)*
+**D327 (Wed)**
+- [ ] Theory: Project 2 — Churn Predictor: CI gate, polish, tag — *— (apply Week 53's CI-gate pattern)*
 - [ ] Mini Exercise: —
 - [ ] Project: Add the model-quality CI gate, write the README, tag `v0.1-mlops-churn-predictor`
 
-**D298 (Thu)**
-- [ ] Theory: Project 3 — No-Show Predictor: tracking + orchestration — *— (apply Weeks 45–46 patterns)*
+**D328 (Thu)**
+- [ ] Theory: Project 3 — No-Show Predictor: tracking + orchestration — *— (apply Weeks 50–51 patterns)*
 - [ ] Mini Exercise: —
-- [ ] Project: Add MLflow tracking/registry **and** a Prefect training flow to no-show-predictor in one sitting (deployment already exists from Week 47)
+- [ ] Project: Add MLflow tracking/registry **and** a Prefect training flow to no-show-predictor in one sitting (deployment already exists from Week 52)
 
-**D299 (Fri)**
-- [ ] Theory: Project 3 — No-Show Predictor: monitoring, CI gate, polish, tag — *— (apply Weeks 47–48 patterns)*
+**D329 (Fri)**
+- [ ] Theory: Project 3 — No-Show Predictor: monitoring, CI gate, polish, tag — *— (apply Weeks 52–53 patterns)*
 - [ ] Mini Exercise: —
-- [ ] Project: Add the drift dashboard + CI quality gate (reuse Week 48's pattern), write the README, tag `v0.1-mlops-no-show-predictor`
+- [ ] Project: Add the drift dashboard + CI quality gate (reuse Week 53's pattern), write the README, tag `v0.1-mlops-no-show-predictor`
 
-**D300 (Sat)**
+**D330 (Sat)**
 - [ ] Theory: **Phase 10 wrap review**
 - [ ] Mini Exercise: Explain, unscripted, the full tracking → orchestration → deployment → monitoring pipeline for all 3 models back to back
 - [ ] Project: Write `docs/postmortem-phase10.md` (what's deferred: full IaC/Terraform, Kubernetes-based serving, feature stores, A/B testing infra), tag `v0.10-phase10`
 
 ---
 
-## Phase 11 — Data Engineering Zoomcamp (Weeks 51-56)
+## Phase 11 — Data Engineering Zoomcamp (Weeks 56-61)
 
-### Week 51 — Docker & Terraform, Warehouse Provisioning
+### Week 56 — Docker & Terraform, Warehouse Provisioning
 
-**D301 (Mon)**
+**D331 (Mon)**
 - [ ] Theory: IaC concepts, Terraform basics: providers, resources, HCL — *Terraform docs "What is Terraform" + "Configuration Language"*
 - [ ] Mini Exercise: Throwaway `.tf` file provisioning a local `null_resource`, run plan/apply/destroy
 - [ ] Project: Init `year2-analytics-platform/` repo, `terraform/` scaffold, document local-state backend decision
 
-**D302 (Tue)**
+**D332 (Tue)**
 - [ ] Theory: Terraform state + providers deep dive; provisioning a warehouse dataset — *Terraform docs "State" + Google provider `bigquery_dataset` resource*
 - [ ] Mini Exercise: `plan`/`apply`/`destroy` a real dataset twice, read the state file by hand once
 - [ ] Project: `main.tf` provisioning `raw` + `staging` BigQuery datasets
 
-**D303 (Wed)**
+**D333 (Wed)**
 - [ ] Theory: Containerizing data pipelines (reusing Phase 1 Docker skills) — *Docker Compose docs (recap)*
 - [ ] Mini Exercise: Dockerfile for a tiny Python script reading Postgres, writing a CSV
 - [ ] Project: `docker-compose.yml` scaffold: local Postgres mirror + placeholder Airflow service
 
-**D304 (Thu)**
+**D334 (Thu)**
 - [ ] Theory: Local vs cloud dev environment parity — *Terraform docs workspaces/environments pattern*
 - [ ] Mini Exercise: Config loader switching between a local Postgres "fake warehouse" and real BigQuery via one env flag
 - [ ] Project: `warehouse_client.py` abstraction so later pipeline code is warehouse-agnostic
 
-**D305 (Fri)**
+**D335 (Fri)**
 - [ ] Theory: Provisioning the real cloud warehouse end-to-end + least-privilege IAM — *Terraform docs `google_service_account` + dataset IAM binding*
 - [ ] Mini Exercise: `terraform validate` + apply against a real GCP sandbox project
 - [ ] Project: Finalize `raw`/`staging`/`marts` datasets + one dataset-scoped service account; write `docs/architecture.md`
 
-**D306 (Sat)**
+**D336 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo Tuesday's dataset provisioning from memory, no notes
 - [ ] Project: Re-read `docs/architecture.md` for anything under-specified
 
-### Week 52 — Workflow Orchestration (Airflow)
+### Week 57 — Workflow Orchestration (Airflow)
 
-**D307 (Mon)**
+**D337 (Mon)**
 - [ ] Theory: Orchestration concepts: DAGs, operators, scheduler — *Airflow docs "Core Concepts: DAGs"*
 - [ ] Mini Exercise: Hello-world DAG, 2 `PythonOperator` tasks with a dependency
 - [ ] Project: Bring up local Airflow via Docker Compose (webserver+scheduler+metadata DB)
 
-**D308 (Tue)**
+**D338 (Tue)**
 - [ ] Theory: Extract step: incremental pulls via an `updated_at` watermark — *Airflow docs "Connections & Hooks" (`PostgresHook`)*
 - [ ] Mini Exercise: Script pulling rows from StockPilot's `orders` where `updated_at > last_watermark`
 - [ ] Project: `extract_load_stockpilot.py`: extract task landing StockPilot into `raw`
 
-**D309 (Wed)**
+**D339 (Wed)**
 - [ ] Theory: Load step: landing raw data into staging — *BigQuery docs "Loading data"*
 - [ ] Mini Exercise: Load a CSV into a staging table via the BigQuery Python client
 - [ ] Project: Complete StockPilot's load task into `staging`; add QuickServe's extract task
 
-**D310 (Thu)**
+**D340 (Thu)**
 - [ ] Theory: Idempotent, retriable pipeline design (MERGE vs INSERT) — *BigQuery docs "MERGE statement"*
 - [ ] Mini Exercise: Rerun the same DAG run twice, assert no duplicate rows land
 - [ ] Project: Convert QuickServe + PeopleOps loads to idempotent `MERGE`-based upserts
 
-**D311 (Fri)**
+**D341 (Fri)**
 - [ ] Theory: Backfills, `schedule_interval`, catchup — *Airflow docs "DAG Runs" + backfill command reference*
 - [ ] Mini Exercise: Backfill a toy DAG over a 7-day historical window
 - [ ] Project: Finalize `@daily` schedules for all 3 DAGs; run one real historical backfill
 
-**D312 (Sat)**
+**D342 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the MERGE-upsert idempotency test from memory
 - [ ] Project: Trace one row from StockPilot Postgres through to `staging` by hand
 
-### Week 53 — Data Warehouse + Analytics Engineering (dbt)
+### Week 58 — Data Warehouse + Analytics Engineering (dbt)
 
-**D313 (Mon)**
+**D343 (Mon)**
 - [ ] Theory: Warehouse fundamentals: columnar storage, partitioning, clustering — *BigQuery docs "Partitioned tables"*
 - [ ] Mini Exercise: Create a date-partitioned+clustered table, compare bytes-scanned with/without a partition filter
 - [ ] Project: Apply date-partitioning + clustering to `stg_orders`, `stg_stock_movements`
 
-**D314 (Tue)**
+**D344 (Tue)**
 - [ ] Theory: Query optimization on a columnar warehouse vs Postgres tuning — *BigQuery docs "Query optimization best practices"*
 - [ ] Mini Exercise: Rewrite a `SELECT *` into a column-pruned query, compare bytes-scanned estimates
-- [ ] Project: Audit and fix 3 wasteful queries in the Week 52 load tasks
+- [ ] Project: Audit and fix 3 wasteful queries in the Week 57 load tasks
 
-**D315 (Wed)**
+**D345 (Wed)**
 - [ ] Theory: dbt fundamentals: models, sources, tests — *dbt docs "Build your first models"*
 - [ ] Mini Exercise: `dbt init`, one source + one staging model + one `not_null`/`unique` test
 - [ ] Project: `dbt/` project scaffold, `sources.yml` pointing at `raw`/`staging`
 
-**D316 (Thu)**
+**D346 (Thu)**
 - [ ] Theory: Staging → intermediate → marts layering — *dbt docs "How we structure our dbt projects"*
 - [ ] Mini Exercise: Build one intermediate model joining 2 staging models
 - [ ] Project: `stg_stockpilot__orders`, `stg_quickserve__sales`, `stg_peopleops__leave_requests`, `int_orders_enriched`
 
-**D317 (Fri)**
+**D347 (Fri)**
 - [ ] Theory: dbt tests + docs, lineage graph — *dbt docs "Testing" + "Documentation"*
 - [ ] Mini Exercise: Add one singular test, run `dbt docs generate`, browse the lineage graph
 - [ ] Project: Build `marts`: `fct_orders`, `dim_products`, `fct_leave_requests` with schema tests
 
-**D318 (Sat)**
+**D348 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo Wednesday's `dbt init` from memory
 - [ ] Project: Re-read the lineage graph for anything mis-joined
 
-### Week 54 — Data Platforms + Batch Processing (Spark)
+### Week 59 — Data Platforms + Batch Processing (Spark)
 
-**D319 (Mon)**
+**D349 (Mon)**
 - [ ] Theory: Lakehouse concepts / data platform architecture (bronze/silver/gold) — *Databricks "What is a data lakehouse" overview*
 - [ ] Mini Exercise: Map this platform's raw/staging/marts onto bronze/silver/gold in one paragraph
 - [ ] Project: Update `docs/architecture.md` with the lakehouse-terms mapping
 
-**D320 (Tue)**
+**D350 (Tue)**
 - [ ] Theory: Spark fundamentals: RDDs vs DataFrames, SparkSession — *Spark docs "RDD Programming Guide" + "SQL, DataFrames and Datasets Guide"*
 - [ ] Mini Exercise: Local PySpark script: read a CSV, `groupBy().agg()`, `.show()`
 - [ ] Project: `spark/` scaffold; PySpark job skeleton reading from BigQuery via the Spark-BigQuery connector
 
-**D321 (Wed)**
+**D351 (Wed)**
 - [ ] Theory: Batch aggregation: yearly stock-movement/order analytics — *Spark docs "DataFrame aggregation functions"*
 - [ ] Mini Exercise: Aggregate a synthetic multi-million-row CSV by month+product, time it
 - [ ] Project: `yearly_stock_movement_agg.py`: joins StockPilot stock movements + QuickServe sales for the full year, writes to a `marts` table
 
-**D322 (Thu)**
+**D352 (Thu)**
 - [ ] Theory: Spark joins & performance tuning: broadcast join, shuffle — *Spark docs "Performance Tuning"*
 - [ ] Mini Exercise: Compare a shuffle join vs a broadcast join on skewed synthetic data via `.explain()`
 - [ ] Project: Tune the yearly aggregation job: broadcast `dim_products`, repartition on `product_id`
 
-**D323 (Fri)**
+**D353 (Fri)**
 - [ ] Theory: Choosing warehouse-SQL vs Spark for a given batch job
 - [ ] Mini Exercise: —
 - [ ] Project: `docs/spark-vs-warehouse-sql.md`; re-implement one small job as a plain dbt SQL model for comparison
 
-**D324 (Sat)**
+**D354 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the broadcast-join tuning from memory
 - [ ] Project: Re-read `docs/spark-vs-warehouse-sql.md` for a decision you'd now make differently
 
-### Week 55 — Streaming
+### Week 60 — Streaming
 
-**D325 (Mon)**
+**D355 (Mon)**
 - [ ] Theory: Streaming concepts recap, bridging Phase 3's Kafka — *Kafka docs "Introduction" (recap) + ksqlDB docs "Overview"*
 - [ ] Mini Exercise: Stand up local Kafka (Phase 3 compose), produce/consume 10 test messages
 - [ ] Project: Add a Kafka broker service back into this repo's compose, pointed at FleetTrack's existing topic
 
-**D326 (Tue)**
+**D356 (Tue)**
 - [ ] Theory: Kafka Streams / ksqlDB for real-time aggregation — *ksqlDB docs "Create a Stream" + "Aggregate Streaming Data"*
 - [ ] Mini Exercise: A ksqlDB stream + rolling `GROUP BY` count on a toy topic
 - [ ] Project: `deliveries_stream.sql`: ksqlDB stream over FleetTrack's `delivery_events` topic
 
-**D327 (Wed)**
+**D357 (Wed)**
 - [ ] Theory: Streaming FleetTrack's events into the warehouse — *BigQuery docs "Streaming data" (insert API)*
 - [ ] Mini Exercise: Minimal consumer inserting one row per event via the streaming-insert API
 - [ ] Project: `streaming/consumer.py` consuming `delivery_events`, upserting into `deliveries_in_progress`
 
-**D328 (Thu)**
+**D358 (Thu)**
 - [ ] Theory: Exactly-once vs at-least-once semantics — *Kafka docs "Message Delivery Semantics"*
 - [ ] Mini Exercise: Reprocess the same message twice, observe the duplicate, then fix it
 - [ ] Project: Make the consumer idempotent: `MERGE` keyed on `delivery_id` + `event_type`
 
-**D329 (Fri)**
+**D359 (Fri)**
 - [ ] Theory: Real-time dashboard on streamed data (Grafana, Phase 4 stack) — *Grafana docs "Add a data source"*
 - [ ] Mini Exercise: Point Grafana at the warehouse table, one panel: live in-progress count
 - [ ] Project: `dashboards/grafana/deliveries-in-progress.json`, panel refreshing every 10s
 
-**D330 (Sat)**
+**D360 (Sat)**
 - [ ] Theory: **Review**
 - [ ] Mini Exercise: Redo the idempotent-upsert fix from memory
 - [ ] Project: Re-watch the dashboard while manually firing a few test events
 
-### Week 56 — Project 1 + Project 2 + Project 3, Full Program Wrap
+### Week 61 — Project 1 + Project 2 + Project 3, Full Program Wrap
 
-**D331 (Mon)**
+**D361 (Mon)**
 - [ ] Theory: Project 1 integration: run the full batch pipeline top to bottom for the first time — *dbt docs "dbt run" / orchestrating dbt (recap)*
 - [ ] Mini Exercise: —
 - [ ] Project: `terraform apply` → trigger all 4 Airflow DAGs → `dbt run && dbt test`; record total run time
 
-**D332 (Tue)**
+**D362 (Tue)**
 - [ ] Theory: Project 1: unified BI-style dashboard (StockPilot+QuickServe+PeopleOps+LedgerBase) — *Grafana docs "Panels" (recap)*
 - [ ] Mini Exercise: —
 - [ ] Project: Build the unified dashboard: revenue, inventory value, headcount/leave, ledger balance, all from `marts`
 
-**D333 (Wed)**
+**D363 (Wed)**
 - [ ] Theory: Project 1: hardening — remaining dbt tests, docs, milestone tag — *dbt docs "dbt-utils" package (recap)*
 - [ ] Mini Exercise: —
 - [ ] Project: Add referential-integrity + `accepted_values` tests, `dbt docs generate`, tag `v0.1-year2-analytics-platform`
 
-**D334 (Thu)**
+**D364 (Thu)**
 - [ ] Theory: Project 2 (smaller, faster — extends Project 1's infra): land the streaming layer as a first-class part of the platform
 - [ ] Mini Exercise: —
-- [ ] Project: Fold Week 55's streaming consumer + dashboard panel officially into this repo; finalize its dbt tests/docs; tag `v0.2-plus-streaming`
+- [ ] Project: Fold Week 60's streaming consumer + dashboard panel officially into this repo; finalize its dbt tests/docs; tag `v0.2-plus-streaming`
 
-**D335 (Fri)**
+**D365 (Fri)**
 - [ ] Theory: Project 3 (smaller still — extends Project 1's infra): freeform extension — AtlasMarket vendor analytics
 - [ ] Mini Exercise: —
 - [ ] Project: Extract AtlasMarket vendor/order data, `fct_vendor_revenue` dbt model, one new dashboard panel, tag `v0.3-plus-vendor-analytics`
 
-**D336 (Sat)**
+**D366 (Sat)**
 - [ ] Theory: **FULL 12-MONTH PROGRAM WRAP**
 - [ ] Mini Exercise: —
 - [ ] Project: Write `docs/program-retrospective.md`: a phase-by-phase retrospective across all 11 phases and every project, from StockPilot's first decorator to this platform's last dbt model; tag `v2.0-year-plan-complete`
 
 ---
 
-**PROGRAM COMPLETE — 336 days, 56 weeks, 11 phases, 25 projects. Tag `v2.0-year-plan-complete`.**
+**PROGRAM COMPLETE — 366 days, 61 weeks, 11 phases, 28 projects. Tag `v2.0-year-plan-complete`.**
