@@ -20,6 +20,6 @@ select
     address.city,
     address.state
 from person
-left join adress on adress.person_id = person.person_id;
+left join address on address.person_id = person.person_id;
 
 
