@@ -16,4 +16,5 @@ select
     current_stock,
     reorder_level
 from products
-where current_stock < reorder_level;
+where current_stock < reorder_level
+order by (reorder_level - current_stock) desc;
