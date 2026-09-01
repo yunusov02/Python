@@ -36,9 +36,9 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 **D3 (Wed)**
 - [X] Theory: Class-based decorators, stacking order — *docs.python.org `functools`*
 - [X] Mini Exercise: Combine `@timer` + `@retry`, verify stacking order
-- [ ] Project: Add `Supplier`, `StockMovement`, `Order`, `OrderItem` models + Alembic init migration
-- [ ] DSA: Warm-up: implement a hash table from scratch; Two Sum
-- [ ] SQL: StockPilot: products with no supplier
+- [X] Project: Add `Supplier`, `StockMovement`, `Order`, `OrderItem` models + Alembic init migration
+- [X] DSA: Warm-up: implement a hash table from scratch; Two Sum
+- [X] SQL: StockPilot: products with no supplier
 
 **D4 (Thu)**
 - [ ] Theory: Reference counting basics — *Fluent Python Ch.6 (weak refs intro)*
