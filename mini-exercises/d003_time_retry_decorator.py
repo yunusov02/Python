@@ -1,5 +1,5 @@
+import time
 import functools
-
 
 
 def retry(times=3):
@@ -19,17 +19,42 @@ def retry(times=3):
                 except Exception as e:
                     last_error = e
 
+        
             raise last_error
+
 
         return wrapper
 
     return decorator
 
-    
+
+def timer(func):
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+
+        start = time.perf_counter()
+
+        res = func(*args, **kwargs)
+
+        end = time.perf_counter()
+
+        print(f"{func.__name__} function worked {end - start}s")
+
+        return res
+
+    return wrapper
+
+
+
+
 attempts = 0
 
-@retry(5)
+@timer
+@retry(6)
 def flaky_function():
+
+    time.sleep(1)
 
     global attempts
     attempts += 1
@@ -40,15 +65,6 @@ def flaky_function():
 
     return "Worked!"      
 
-@retry(3)
-def always_fails():
-    raise ValueError("Never Works")
 
 
-
-try:
-    res = always_fails()
-    print(res)
-except Exception as e:
-    print(e)
-
+print(flaky_function())

@@ -20,22 +20,22 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 ### Week 1 — Decorators, Closures, Project Skeleton
 
 **D1 (Mon)**
-- [ ] Theory: Functions as objects, closures — *Fluent Python Ch.7 §1-2*
-- [ ] Mini Exercise: Write a `@timer` decorator
-- [ ] Project: Scaffold repo: folder structure, `pyproject.toml`, ruff/mypy config
-- [ ] DSA: Contains Duplicate
-- [ ] SQL: Combine Two Tables
+- [X] Theory: Functions as objects, closures — *Fluent Python Ch.7 §1-2*
+- [X] Mini Exercise: Write a `@timer` decorator
+- [X] Project: Scaffold repo: folder structure, `pyproject.toml`, ruff/mypy config
+- [X] DSA: Contains Duplicate
+- [X] SQL: Combine Two Tables
 
 **D2 (Tue)**
-- [ ] Theory: Decorators with args, `functools.wraps` — *Fluent Python Ch.7 §3*
-- [ ] Mini Exercise: Write `@retry(times=3)`
-- [ ] Project: Define `User`, `Product`, `Category` SQLAlchemy models
-- [ ] DSA: Valid Anagram
-- [ ] SQL: StockPilot: products where current_stock < reorder_level
+- [X] Theory: Decorators with args, `functools.wraps` — *Fluent Python Ch.7 §3*
+- [X] Mini Exercise: Write `@retry(times=3)`
+- [X] Project: Define `User`, `Product`, `Category` SQLAlchemy models
+- [X] DSA: Valid Anagram
+- [X] SQL: StockPilot: products where current_stock < reorder_level
 
 **D3 (Wed)**
-- [ ] Theory: Class-based decorators, stacking order — *docs.python.org `functools`*
-- [ ] Mini Exercise: Combine `@timer` + `@retry`, verify stacking order
+- [X] Theory: Class-based decorators, stacking order — *docs.python.org `functools`*
+- [X] Mini Exercise: Combine `@timer` + `@retry`, verify stacking order
 - [ ] Project: Add `Supplier`, `StockMovement`, `Order`, `OrderItem` models + Alembic init migration
 - [ ] DSA: Warm-up: implement a hash table from scratch; Two Sum
 - [ ] SQL: StockPilot: products with no supplier
