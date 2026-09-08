@@ -41,11 +41,11 @@ Order rationale for the Zoomcamp track: LLM Zoomcamp comes first because it's th
 - [X] SQL: StockPilot: products with no supplier
 
 **D4 (Thu)**
-- [ ] Theory: Reference counting basics — *Fluent Python Ch.6 (weak refs intro)*
-- [ ] Mini Exercise: `sys.getrefcount` experiment script
-- [ ] Project: Implement `core/config.py` (Pydantic settings) + `db/session.py` (async engine/session)
-- [ ] DSA: Group Anagrams
-- [ ] SQL: Find Customer Referee
+- [X] Theory: Reference counting basics — *Fluent Python Ch.6 (weak refs intro)*
+- [X] Mini Exercise: `sys.getrefcount` experiment script
+- [X] Project: Implement `core/config.py` (Pydantic settings) + `db/session.py` (async engine/session)
+- [X] DSA: Group Anagrams
+- [X] SQL: Find Customer Referee
 
 **D5 (Fri)**
 - [ ] Theory: Reference cycles + `gc` module — *docs.python.org `gc`*
