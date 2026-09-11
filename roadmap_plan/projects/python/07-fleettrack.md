@@ -8,7 +8,7 @@
 | Level | Middle |
 | Phase | 5 — Scaling & Advanced Architecture |
 | Weeks | 19–20 (D109–D120) |
-| Stack | Python, FastAPI, PostgreSQL, RabbitMQ, Prometheus/Grafana, Pact, **React + TS + TanStack Query**, WebSockets (stretch) |
+| Stack | Python, FastAPI, PostgreSQL (**JSONB + GIN**), RabbitMQ, Prometheus/Alertmanager/Grafana, OpenTelemetry, Pact, **React + TS + TanStack Query**, **WebSockets** (required) + SSE (comparison), Redis pub/sub (WS fan-out) |
 | Repo | `fleettrack/` + `fleettrack-web/` |
 
 > **This project exists to close one specific gap you documented in Phase 3
@@ -41,19 +41,30 @@ later, that nobody can explain.
 4. A `delivery_view` CQRS read model, kept current by a consumer
 5. A dispatcher dashboard reading **only** the read model
 6. A 3-step choreographed cancellation saga
-7. `fleettrack-web/`: the dispatcher table, polling
+7. `fleettrack-web/`: the dispatcher table, **polling first, then WebSocket push**
+7a. A **WebSocket** dashboard that survives two replicas (fan-out over Redis
+   pub/sub), authenticates the socket, heartbeats, and reconnects — plus an
+   **SSE** variant, so the polling/SSE/WS comparison is something you built
+7b. `POST /deliveries/{id}/cancel` returning **`202 Accepted`** with a saga
+   status resource to poll — the REST contract for a long-running operation
 
 **Proof it is correct**
 8. A fault-injection test: kill RabbitMQ mid-relay → **no event lost**, retried
    on the next poll
 9. A Pact contract on `DeliveryStatusChanged`, failing CI on a shape change
 10. An idempotency test: the same event applied twice does not double-apply
-11. An **outbox-lag Grafana panel** with a threshold you can justify
+11. An **outbox-lag Grafana panel** with a threshold you can justify — and an
+    **Alertmanager rule** on it that fires when you stop the relay
+12. One **trace** spanning API → outbox → relay → RabbitMQ → projection consumer,
+    because `traceparent` rides in the message headers
+13. `outbox.payload` as **JSONB** with a GIN index, queried by `payload->>'driver_id'`
+14. An outbox **cleanup** job, and a written **event-schema versioning** rule
+    (v1 → v2 with an upcaster) tested against Pact
 
 **Written artefacts**
 12. `docs/cancellation-saga.md` — designed on paper **before** any code
 13. The CQRS staleness tradeoff, written down with the WareFlow contrast
-14. The polling-vs-push comparison, having built both
+15. The polling-vs-SSE-vs-WebSocket comparison, having built all three
 
 ---
 
@@ -65,7 +76,8 @@ later, that nobody can explain.
 - A CQRS read model for the dispatcher dashboard
 - A choreographed cancellation saga (overview depth, one hands-on example)
 - Outbox-lag metric on Grafana
-- A polling dispatcher frontend, plus a WebSocket-push stretch alternative
+- A polling dispatcher frontend, then the same view over **WebSocket push** (required) and **SSE** (comparison)
+- Trace propagation through the broker; alerting on outbox lag; outbox cleanup; JSONB payloads; event versioning
 
 **Out of scope — named**
 
@@ -111,7 +123,15 @@ dashboard's query shape.
 Three steps across contexts, coordinated by events.
 
 ### 5.5 Dispatcher UI
-A table that polls; and, as a stretch, the same view over a WebSocket push.
+A table that polls; then the same view over a **WebSocket** push — with auth on
+connect, heartbeats, reconnection, and fan-out across replicas — and, for the
+comparison, over SSE. Build polling first so the push versions have a baseline.
+
+### 5.6 Long-running operations over REST
+Cancelling triggers a saga that finishes seconds later. The endpoint returns
+**`202 Accepted`** with `Location: /sagas/{id}`; the client polls that resource
+(`pending | compensating | completed | failed`). Returning `200` and pretending
+it finished is the lie this section exists to stop.
 
 ---
 
@@ -149,16 +169,29 @@ dashboard is fine. It would **not** have been fine for stock reservation back in
 WareFlow, where a stale number causes an oversell. That contrast — same technique,
 opposite verdict — is the interview answer.
 
-**Polling vs push:** the dashboard polls. Week 20's stretch mini-project rebuilds
-the same read model behind a **WebSocket push**, specifically so the tradeoff is
-something you have felt on both sides rather than picked once and never revisited.
+**Polling, SSE, WebSocket:** the dashboard polls first. Then the same read model
+is pushed over a **WebSocket** and over **Server-Sent Events**, specifically so
+the trade-off is something you have felt from all three sides.
 
-| | Polling | WebSocket push |
-|---|---|---|
-| Latency | Bounded by the interval | Immediate |
-| Server cost | N clients × 1/interval requests | N held connections |
-| Failure mode | Misses nothing; just late | Silent disconnect looks like "no updates" |
-| Complexity | Trivial | Reconnection, backpressure, auth on the socket |
+| | Polling | SSE | WebSocket push |
+|---|---|---|---|
+| Direction | Client pulls | Server → client only | Both ways |
+| Latency | Bounded by the interval | Immediate | Immediate |
+| Transport | Plain HTTP | Plain HTTP, `text/event-stream`, auto-reconnect built into `EventSource` | Upgrade; Nginx needs `Upgrade`/`Connection` headers and a long `proxy_read_timeout` |
+| Server cost | N × 1/interval requests | N held connections | N held connections |
+| Failure mode | Misses nothing; just late | Reconnects itself; `Last-Event-ID` can resume | Silent disconnect looks like "no updates" unless you heartbeat |
+| Auth | Normal headers | Normal headers (cookie or query param — `EventSource` cannot set headers) | Token on the first message or a short-lived ticket in the query string; never the long-lived token in the URL |
+| **Scaling** | Stateless | Stateful: with 2 replicas, an event consumed by replica A must reach a client connected to B → **fan-out via Redis pub/sub** | Same |
+| Complexity | Trivial | Low | Reconnection, **backpressure** (a slow client must not stall the consumer), heartbeat, auth |
+
+**The WebSocket build, concretely:** `/ws/dispatch` endpoint in FastAPI; the
+read-model consumer publishes each change to a Redis channel; every replica
+subscribes and forwards to its own connected sockets; a `ping` every 20s and a
+client that reconnects with backoff; a bounded per-socket send queue that drops
+or closes a client that cannot keep up. Run **two API replicas** behind Nginx
+and prove a change lands on a socket connected to the *other* replica. Write
+down what Nginx needed (`proxy_http_version 1.1`, `Upgrade`, `Connection
+"upgrade"`, timeouts) and what would change with sticky sessions vs pub/sub.
 
 ---
 
@@ -195,9 +228,14 @@ deliveries(id, driver_id, status, created_at)
 delivery_events(id, delivery_id, from_status, to_status, created_at)
     -- append-only
 
-outbox(id, aggregate_type, aggregate_id, event_type, payload,
-       created_at, sent_at NULL)
+outbox(id, aggregate_type, aggregate_id, event_type, event_version,
+       payload jsonb, trace_context jsonb, created_at, sent_at NULL)
     -- partial index WHERE sent_at IS NULL, for efficient relay polling
+    -- GIN index ON payload jsonb_path_ops, for ops queries by driver/delivery
+    -- cleanup: rows with sent_at < now() - interval '7 days' archived/deleted nightly
+
+sagas(id, delivery_id, status, step, started_at, finished_at NULL, error NULL)
+    -- the pollable resource behind 202 Accepted
 
 delivery_view(id, driver_name, status, last_updated)   -- CQRS read model
 ```
@@ -215,7 +253,11 @@ delivered`, plus `cancelled` from any pre-delivery state.
 | POST | `/deliveries/{id}/assign` | dispatcher | |
 | PATCH | `/deliveries/{id}/status` | driver (own) / dispatcher | State-machine validated; writes the outbox row in the same tx |
 | GET | `/dispatch/dashboard` | dispatcher+ | Reads `delivery_view` **only** — never `deliveries` |
-| POST | `/deliveries/{id}/cancel` | dispatcher | Triggers the saga |
+| POST | `/deliveries/{id}/cancel` | dispatcher | Triggers the saga. **`202 Accepted`** + `Location: /sagas/{id}` |
+| GET | `/sagas/{id}` | dispatcher+ | Saga status resource |
+| WS | `/ws/dispatch` | dispatcher+ | Push variant of the dashboard; ticket auth, heartbeat |
+| GET | `/sse/dispatch` | dispatcher+ | SSE variant, `Last-Event-ID` resume |
+| GET | `/ops/outbox?driver_id=` | ops_manager | JSONB query `payload->>'driver_id'` via the GIN index |
 | GET | `/ops/outbox-lag` | ops_manager | Also exported as a metric |
 
 ---
@@ -228,7 +270,12 @@ delivered`, plus `cancelled` from any pre-delivery state.
 | **Partial index** `WHERE sent_at IS NULL` | The relay's polling query | Without it the relay scans a table that only grows |
 | **RabbitMQ** | Carries relayed events to the read-model consumer, the saga steps, and downstream billing | Reused from WareFlow; the transport is not the lesson this time — the *guarantee* is |
 | **Outbox relay worker** | A separate process: poll → publish → mark sent | Claim rows with `FOR UPDATE SKIP LOCKED` so multiple replicas are safe |
-| **Prometheus + Grafana** | **Outbox lag** = `now() - oldest unsent row`; queue depth; consumer lag on the read model | Outbox lag is the single most important metric this project produces. If the relay stops, everything downstream is silently stale while the API looks perfectly healthy |
+| **Prometheus + Grafana** | **Outbox lag** = `now() - oldest unsent row`; queue depth; consumer lag on the read model; WebSocket connections per replica | Outbox lag is the single most important metric this project produces. If the relay stops, everything downstream is silently stale while the API looks perfectly healthy |
+| **Alertmanager** | `outbox_lag_seconds > 30 for 2m` → page. Stop the relay, watch it fire, restart, watch it resolve | LedgerBase built the alerting stack; this is the first alert whose threshold you had to *derive* (from relay poll interval + tolerable dashboard staleness) |
+| **OpenTelemetry through the broker** | The API span's `traceparent` is stored in `outbox.trace_context`; the relay puts it in the AMQP headers; the consumer extracts it and continues the trace | A trace that stops at "published" is half a trace. Seeing API → relay → consumer → projection as one waterfall — with the outbox lag visible as a gap — is the demo of this project |
+| **JSONB + GIN** | `outbox.payload jsonb` with `GIN (payload jsonb_path_ops)`; ops queries by `payload->>'driver_id'` or `@>` containment | Payloads are semi-structured by nature; know when JSONB is right (heterogeneous event payloads) and when it is a schema you were too lazy to design |
+| **Redis pub/sub** | Fan-out of read-model changes to WebSocket/SSE connections across replicas | The only Redis use in FleetTrack, and it is not a cache — say so |
+| **Outbox cleanup** | Beat job: delete (or move to `outbox_archive`) rows sent more than 7 days ago, in batches | The partial index keeps the relay fast; nothing keeps the table small unless you do |
 | **Pact** | Contract test on `DeliveryStatusChanged` | Reused from WareFlow, not re-derived |
 | **WebSocket (stretch)** | The push variant of the dispatcher dashboard | Built to compare, not to replace |
 | **Docker Compose** | Same stack as Phase 4 — **no new services** | Notable in itself: this project's difficulty is design, not infrastructure |
@@ -252,16 +299,25 @@ delivered`, plus `cancelled` from any pre-delivery state.
 - Outbox relay worker: poll → publish → mark sent
 - **Fault injection:** kill RabbitMQ mid-relay, confirm no event is lost and it is
   retried on the next poll
-- Add the **outbox-lag metric** to the Phase 4 Prometheus/Grafana stack
+- Add the **outbox-lag metric** to the Phase 4 Prometheus/Grafana stack, and the
+  **Alertmanager rule**; fire it by stopping the relay
+- `outbox.payload` as JSONB + GIN; `GET /ops/outbox?driver_id=`
+- `traceparent` into `outbox.trace_context` → AMQP headers → consumer; one trace
+  end to end in Tempo/Jaeger
+- Outbox cleanup job
 
-### Stage 2 — CQRS read model & saga *(D115–D120, Week 20)*
+### Stage 2 — CQRS read model, saga, real-time *(D115–D120, Week 20)* *(v2: +3 days)*
 - `delivery_view` read model table
 - Consumer updating `delivery_view` on each event — **idempotently**
 - `GET /dispatch/dashboard` reading only from `delivery_view`
 - `fleettrack-web/`: dispatcher table polling every few seconds
 - **Design the cancellation saga on paper first** → `docs/cancellation-saga.md`
-- Implement the 3-step choreographed saga
-- *(Stretch)* the WebSocket-push variant, and the written comparison
+- Implement the 3-step choreographed saga; `POST .../cancel` → `202` + `/sagas/{id}`
+- **WebSocket** dashboard: ticket auth, heartbeat, reconnect, bounded send queue,
+  Redis pub/sub fan-out, **two replicas behind Nginx**
+- **SSE** variant with `Last-Event-ID`; the three-way comparison written up
+- **Event schema versioning**: `DeliveryStatusChanged` v2 adds a field and renames
+  one; consumer upcasts v1 → v2; Pact covers both shapes
 - Tag `v0.1-fleettrack`
 
 ---
@@ -278,6 +334,14 @@ delivered`, plus `cancelled` from any pre-delivery state.
 | State machine | Every illegal transition is refused |
 | Saga | Each compensating step, plus at least one deliberate mid-saga failure |
 | Metric | Stop the relay; assert outbox lag rises and the alert threshold is crossed |
+| **Alert** | The `outbox_lag` alert fires within its `for` window and resolves after the relay restarts |
+| **WebSocket** | A change consumed by replica A reaches a client connected to replica B; a client that stops reading is disconnected, not the consumer stalled; an expired ticket is refused on connect; a dropped connection is re-established and no update is lost (the client refetches on reconnect) |
+| SSE | `Last-Event-ID` resume delivers exactly the events missed during a disconnect |
+| 202 | Cancel returns `202` immediately; `/sagas/{id}` moves `pending → completed`; a mid-saga failure shows `failed` with the compensation state |
+| Tracing | One `trace_id` spans the API request, the relay publish and the projection consumer |
+| JSONB | The `driver_id` query uses the GIN index (`EXPLAIN` shows a bitmap index scan) |
+| Versioning | A v1 payload from the old publisher is upcast and applied by the v2 consumer; Pact fails CI if v2 drops a field v1 consumers need |
+| Cleanup | Sent rows older than the retention are removed; unsent rows never are |
 
 ---
 
@@ -295,7 +359,14 @@ delivered`, plus `cancelled` from any pre-delivery state.
 - [ ] 3-step choreographed saga working, failure modes documented
 - [ ] Pact contract green in CI
 - [ ] `fleettrack-web/` dispatcher table live
-- [ ] Polling-vs-push comparison written *(stretch: both built)*
+- [ ] WebSocket dashboard: auth, heartbeat, reconnect, backpressure, fan-out across two replicas
+- [ ] SSE variant; polling/SSE/WebSocket comparison written from having built all three
+- [ ] `202 Accepted` + saga status resource
+- [ ] Alertmanager rule on outbox lag, fired and resolved
+- [ ] Trace continues through the outbox and broker into the consumer
+- [ ] JSONB payload + GIN; ops query uses the index
+- [ ] Event schema v1 → v2 with an upcaster, Pact-covered
+- [ ] Outbox cleanup job
 - [ ] Tag `v0.1-fleettrack`
 
 ---
@@ -315,6 +386,17 @@ delivered`, plus `cancelled` from any pre-delivery state.
 7. Polling vs WebSocket push for a dashboard — you've built both; when does each win?
 8. Why not Kafka here?
 9. What would CDC change about this design?
+10. Your dashboard has two API replicas. A driver updates a delivery; how does the
+    update reach a WebSocket connected to the *other* replica?
+11. How do you authenticate a WebSocket, and why not put the JWT in the URL?
+12. What is backpressure on a WebSocket, and what happens to your consumer if one
+    client reads slowly and you did nothing about it?
+13. SSE or WebSocket for a dashboard that only ever pushes — which and why?
+14. Why does `cancel` return `202` and not `200`? What does the client do next?
+15. How does a trace survive a trip through RabbitMQ?
+16. How did you derive the 30-second alert threshold on outbox lag?
+17. When is JSONB the right column type, and when is it a design smell?
+18. How do you change an event's schema without breaking a consumer that has not deployed yet?
 
 ---
 
@@ -330,6 +412,13 @@ delivered`, plus `cancelled` from any pre-delivery state.
 - Two relay replicas double-publishing because rows are not claimed
 - Monitoring the API's health but not the relay's lag — the system looks fine while
   going quietly stale
+- A WebSocket that works with one replica and silently drops half the updates with two
+- No heartbeat, so a dead socket looks like a quiet fleet
+- An unbounded per-client send buffer, so one slow browser stalls the read-model consumer
+- The JWT in the WebSocket URL — logged by every proxy on the path
+- `200 OK` from `cancel` while the saga is still running
+- Publishing a v2 event before every consumer can read it
+- An outbox table that grows forever because nothing deletes sent rows
 
 ---
 

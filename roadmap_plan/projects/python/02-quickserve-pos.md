@@ -44,10 +44,16 @@ directly, and without waiting for someone to build them a screen.
 9. Cache invalidation proven to fire on every write path that touches a price
 10. Discount rounding covered by explicit edge-case tests
 11. Throttling on `/checkout` verified
+12. **HTTP caching** on `GET /receipts/{id}` (immutable → long `Cache-Control`) and
+    `GET /products` (`ETag` / `If-None-Match` → `304`), so you can explain
+    server-side cache versus client/CDN cache
+13. `GET /receipts/{id}` proven **N+1-free** with `assertNumQueries`
 
 **Written artefacts**
-12. `docs/cache-stampede-notes.md` — the risk, and the mitigations you did not build
-13. The framework-choice rationale, written down while the reasons are fresh
+14. `docs/cache-stampede-notes.md` — the risk, and the mitigations you did not build
+15. `docs/redis-notes.md` — eviction policy, persistence, and what happens when
+    Redis is full or restarts
+16. The framework-choice rationale, written down while the reasons are fresh
 
 ---
 
@@ -61,6 +67,9 @@ directly, and without waiting for someone to build them a screen.
 - Redis cache-aside on product search, with correct invalidation
 - Rate limiting on checkout
 - Access + refresh token auth
+- HTTP caching headers (`ETag`, `Cache-Control`) alongside the Redis cache
+- Daily sales report as a **materialized view**, compared with the live query
+- Discount rules as an explicit **Strategy** pattern
 
 **Out of scope — named, with the reason**
 
@@ -101,6 +110,12 @@ A discount is fixed or percent, optionally capped. Validation rules live in the
 model and are unit-tested — a percent discount above 100, a negative value, or a
 cap on a fixed discount are all rejected.
 
+The calculation is an explicit **Strategy**: `FixedDiscount`, `PercentDiscount`,
+each with `apply(line_total_cents) -> int`, wrapped by a `Capped` decorator.
+Name the pattern in the code and in the postmortem — "which design patterns have
+you actually used" is a real question, and "Strategy for discount rules" is a
+real answer.
+
 ### 5.3 Sales (`sales` app)
 The checkout service turns a cart payload into a receipt:
 
@@ -121,6 +136,11 @@ that receipt.
 
 ### 5.5 Reporting
 Daily sales for a given date: gross, discounts, tax, net, count of receipts.
+
+Build it twice: as a live aggregate query, and as a **materialized view**
+(`daily_sales_mv`) refreshed with `REFRESH MATERIALIZED VIEW CONCURRENTLY`
+(needs a unique index on the view) from a management command. Time both at
+1M receipt lines and write down when a matview is worth the staleness.
 
 ---
 
@@ -157,6 +177,13 @@ onto `receipt_items` at checkout. Nothing recomputes a past receipt.
 | `receipts.created_at` | Daily sales report range scan |
 | `receipt_items.receipt_id` | Receipt detail fetch |
 
+**N+1 in Django.** `GET /receipts/{id}` needs the receipt, its items and each
+item's product. Write it naively first, count the queries with
+`django-debug-toolbar` or `assertNumQueries`, then fix with
+`select_related("product")` / `prefetch_related("items__product")`. Know the
+difference: `select_related` is a JOIN for FK/one-to-one; `prefetch_related` is
+a second query for reverse FK / M2M.
+
 **Django Admin** is customized — list display, filters, search, inline receipt
 items — so a manager can work without an API client. This customization *is* the
 justification for choosing Django; if you skip it, the choice was arbitrary.
@@ -169,9 +196,9 @@ justification for choosing Django; if you skip it, the choice was arbitrary.
 |---|---|---|---|
 | POST | `/auth/token` | public | simplejwt: access + refresh |
 | POST | `/auth/token/refresh` | public | |
-| GET | `/products?search=` | cashier+ | **Redis cache-aside**, short TTL |
+| GET | `/products?search=` | cashier+ | **Redis cache-aside**, short TTL; **`ETag`** on the response, `304` on `If-None-Match` |
 | POST | `/checkout` | cashier+ | Cart payload → receipt. **Throttled** |
-| GET | `/receipts/{id}` | cashier+ | |
+| GET | `/receipts/{id}` | cashier+ | Immutable → `Cache-Control: private, max-age=86400, immutable`. `select_related`/`prefetch_related`, `assertNumQueries` |
 | POST | `/returns` | cashier+ | Against an existing receipt |
 | GET | `/reports/daily-sales?date=` | manager | |
 
@@ -225,7 +252,8 @@ quickserve/
 | **Docker Compose** | `api` + `postgres` + **`redis`** | |
 | **GitHub Actions** | Same lint / typecheck / test gate as Phase 1, now against Postgres **and** Redis service containers | |
 | **`hey`** | Benchmarking `GET /products?search=` before and after the cache | The numbers in `docs/caching-notes.md` |
-
+| **HTTP caching headers** | `ETag` on `GET /products`, `Cache-Control ... immutable` on `GET /receipts/{id}` | A different layer from Redis: the *client* (or a CDN) skips the request entirely. Two caches, two invalidation stories — know which is which |
+| **Materialized view** | `daily_sales_mv`, refreshed `CONCURRENTLY` | Precomputed report vs live aggregate: measured, with the staleness written down |
 **Deliberately NOT connected:**
 
 | Component | Why not |
@@ -260,6 +288,27 @@ for this) tracing every code path that can change a price: the API route, the
 Django Admin form, a data migration, a management command. A cache with one
 uninvalidated write path is worse than no cache, because it fails silently.
 
+### Redis itself — `docs/redis-notes.md`
+
+You are now depending on Redis for correctness of throttling and for latency of
+search. Know the box you are leaning on:
+
+| Question | What to write down |
+|---|---|
+| What happens when memory is full? | `maxmemory` + eviction policy. `allkeys-lru` is right for a cache; `noeviction` would make DRF throttling raise errors |
+| Does it survive a restart? | RDB snapshots vs AOF. For a cache: probably neither; for throttle counters: it does not matter much; **for PeopleOps' Celery broker next project: it matters a lot** |
+| Single-threaded — so what? | One slow command (`KEYS *`) blocks everything. Use `SCAN` |
+| What is the invalidation key shape? | Namespaced keys (`products:search:<term>:<page>`), so you can delete by prefix without `KEYS` |
+
+### CSRF and CORS — why Admin needs one and the API does not
+
+Django Admin uses session auth → it needs CSRF protection (a cookie is sent
+automatically by the browser). DRF with JWT in an `Authorization` header does
+not — the browser will not add that header on its own. Write one paragraph on
+why, and set `CORS` only when a frontend actually appears (CarePoint). Getting
+this backwards (CSRF-exempting a session endpoint, or CSRF-protecting a JWT API
+"to be safe") is a common junior mistake.
+
 ---
 
 ## 13. Build Plan (consolidated)
@@ -291,8 +340,11 @@ the benchmark numbers are written down.
 - Wire refresh-token auth into QuickServe
 - `UserRateThrottle` on `/checkout`
 - `POST /returns` with over-return rejection
-- `GET /reports/daily-sales?date=`
-- `docs/cache-stampede-notes.md`
+- `GET /reports/daily-sales?date=` — live query **and** `daily_sales_mv`, timed
+- `ETag`/`304` on `/products`, `Cache-Control: immutable` on `/receipts/{id}`
+- `GET /receipts/{id}`: naive → `assertNumQueries` → `select_related`/`prefetch_related`
+- Discount `Strategy` refactor
+- `docs/cache-stampede-notes.md`, `docs/redis-notes.md`
 
 ---
 
@@ -310,6 +362,10 @@ the benchmark numbers are written down.
 | Serializer | Validation tests on products and receipts |
 | Migration | Every migration up and down |
 | Benchmark | `hey` against the cached endpoint, cold and warm |
+| **N+1** | `assertNumQueries` on `GET /receipts/{id}`: constant query count regardless of item count |
+| HTTP cache | `If-None-Match` with a matching `ETag` → `304`, no body; a price change → new `ETag` |
+| Matview | `REFRESH ... CONCURRENTLY` result equals the live query for the same date |
+| Strategy | Each discount strategy tested in isolation; the `Capped` wrapper tested once, not per strategy |
 
 ---
 
@@ -324,6 +380,11 @@ the benchmark numbers are written down.
 - [ ] Django Admin genuinely usable by a manager
 - [ ] `docs/cache-stampede-notes.md` written
 - [ ] Framework-choice rationale written down
+- [ ] `ETag`/`304` and `Cache-Control: immutable` working and tested
+- [ ] `GET /receipts/{id}` N+1-free, proven by `assertNumQueries`
+- [ ] `daily_sales_mv` built and compared with the live query
+- [ ] `docs/redis-notes.md` written (eviction, persistence, `SCAN`)
+- [ ] Discount rules as an explicit Strategy
 - [ ] CI green against Postgres + Redis
 
 ---
@@ -341,6 +402,14 @@ the benchmark numbers are written down.
 7. Why integer cents, and what does a float discount bug actually look like?
 8. Why is a receipt immutable, and what breaks if it is not?
 9. You rejected "fat models, thin views" — defend that.
+10. `ETag` versus a Redis cache — which problem does each solve, and can a `304`
+    still be a cache miss on your side?
+11. `select_related` vs `prefetch_related` — which did you use where, and why?
+12. What happens to your throttling when Redis runs out of memory? Which eviction
+    policy did you choose?
+13. Materialized view or live aggregate for the daily report — what did the
+    numbers say, and how stale is acceptable?
+14. Why does Django Admin need CSRF protection but your JWT API does not?
 
 ---
 
@@ -352,6 +421,9 @@ the benchmark numbers are written down.
 - Letting business logic slide into viewsets because "Django does it that way"
 - Reading the product's current price when displaying an old receipt
 - Benchmarking the cache with a warm cache only, and reporting the flattering number
+- Fixing N+1 by adding `select_related` everywhere "just in case" instead of measuring with `assertNumQueries`
+- `Cache-Control` on a mutable endpoint, so a client shows stale prices with no way to invalidate
+- Running Redis with `noeviction` and discovering it when throttling starts throwing
 
 ---
 

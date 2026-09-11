@@ -44,9 +44,16 @@ balance anyone trusts, and no way to answer "how many days do I have left?"
    *before* Celery was introduced
 8. Beat schedules tested with `freezegun` rather than by waiting
 9. An idempotency test proving a double-fired accrual does not double-accrue
+10. A Celery worker configured **on purpose**: `acks_late`,
+    `task_reject_on_worker_lost`, prefetch, time limits, and the Redis-broker
+    `visibility_timeout` — each one with a test or a demonstration behind it
+11. Two queues (`emails`, `accruals`) with separate workers, and a written reason
+12. A **DST/timezone test**: accrual on the night the clocks change still runs once,
+    and leave overlap is computed with `daterange`
 
 **Written artefacts**
-10. `docs/postmortem-peopleops.md`, tag `v0.2-peopleops-final`
+13. `docs/celery-ops-notes.md` — every worker setting above, what breaks without it
+14. `docs/postmortem-peopleops.md`, tag `v0.2-peopleops-final`
 
 ---
 
@@ -59,6 +66,8 @@ balance anyone trusts, and no way to answer "how many days do I have left?"
 - Approval / rejection with scoped permissions
 - Async notification emails with retry
 - Scheduled accrual and stale-request reminders
+- Celery operational configuration and queue routing
+- Timezone-correct dates (`USE_TZ=True`, Beat `timezone`, DST test)
 
 **Out of scope**
 - Payroll, attendance tracking, shift planning
@@ -93,6 +102,11 @@ and hire date. The hire date matters: accrual starts from it.
 Submission validates against the remaining balance and against overlapping
 approved requests. Status: `pending → approved | rejected`, plus `cancelled` by
 the employee while still pending.
+
+Overlap detection uses Postgres **range types**: `daterange(start_date, end_date,
+'[]') && daterange(:s, :e, '[]')`, not four hand-written comparisons. This is the
+warm-up for CarePoint's `EXCLUDE` constraint, where the database enforces the
+same rule for appointment slots.
 
 ### 5.3 Leave balances
 One row per employee per year: `accrued_days`, `used_days`. Accrual adds a
@@ -133,6 +147,18 @@ accrual_runs(id, year_month, run_at, employees_processed)
 `accrual_runs` is small but load-bearing: the unique constraint on `year_month` is
 what makes a double-fired Beat job a no-op instead of a double-accrual. Enforce
 idempotency with a constraint, not with an `if` that races.
+
+**The alternative you should be able to name:** `pg_advisory_xact_lock(hash)` at
+the start of the accrual serializes concurrent runs without a table. Write two
+sentences on why the unique constraint is still better here (it leaves an audit
+row, and it works across restarts and across processes that forget to take the
+lock).
+
+**Dates and time zones.** `start_date`/`end_date` are `date` — that is right for
+leave. But "the 1st of the month at 00:00" for accrual is a *timezone question*:
+`USE_TZ = True`, `CELERY_TIMEZONE` set explicitly, and Beat's crontab
+interpreted in that zone. Test the DST transition night with `freezegun`: the
+job must fire once, not zero or two times.
 
 ---
 
@@ -178,6 +204,11 @@ Client ──────►│  approve() → enqueue │──► Redis (broke
 
 The web process **never** waits for an email. It enqueues and returns.
 
+**Explicit enqueue, not Django signals.** It is tempting to send the email from
+a `post_save` signal. Do not: signals hide the call site, fire on every save
+(including fixtures and admin edits), and are miserable to test. The service
+function enqueues, inside `transaction.on_commit`. Write the reason down.
+
 ---
 
 ## 10. Infrastructure — what to connect, and exactly where
@@ -188,6 +219,8 @@ The web process **never** waits for an email. It enqueues and returns.
 | **Redis — Celery broker** | The queue between web and worker | Already in Compose from QuickServe; reused rather than re-derived |
 | **Redis — Celery result backend** | Only where you actually inspect a result | Do not enable it reflexively; most of these tasks are fire-and-forget |
 | **Celery worker** | Sending decision emails with `retry(3)` and backoff | The whole point of the project |
+| **Celery worker configuration** | `task_acks_late=True` + `task_reject_on_worker_lost=True` (a task is re-delivered if the worker dies mid-task); `worker_prefetch_multiplier=1` for long tasks; `task_time_limit` / `task_soft_time_limit`; `broker_transport_options={"visibility_timeout": ...}` set **longer than your longest task** | Defaults are tuned for short tasks. With the Redis broker, a task running longer than `visibility_timeout` (default 1h) is **re-delivered while still running** — a second cause of "Beat fired twice" that has nothing to do with Beat |
+| **Two queues** (`emails`, `accruals`) + `task_routes` | Separate workers per queue | A burst of 500 emails must not delay the accrual, and vice versa: head-of-line blocking is the felt problem. One queue is fine until it is not |
 | **Celery Beat** | Monthly accrual, daily stale-request reminder | Scheduled, not triggered — a different failure model, and that difference is the Phase 3 lesson |
 | **SMTP (mocked / MailHog)** | Local email delivery you can actually look at | Asserting "the task was enqueued" is not the same as seeing the mail |
 | **Docker Compose** | `api` + `postgres` + `redis` + **`celery-worker`** + **`celery-beat`** | |
@@ -219,6 +252,14 @@ The web process **never** waits for an email. It enqueues and returns.
    commit lands, it reads stale data. Use `transaction.on_commit(...)`.
 2. **Beat jobs fire twice.** Worker restarts, clock skew, and a redeployed
    scheduler all cause it. Design for it with a constraint.
+3. **Worker death and redelivery.** With `acks_late=False` (the default) a task is
+   acked when *received*; kill the worker mid-send and the email is simply gone.
+   With `acks_late=True` it is redelivered — which means the task must be
+   idempotent (the accrual already is; the email needs a "sent" marker or an
+   acceptable duplicate). Demonstrate both settings with `kill -9`.
+4. **Visibility timeout.** Set it above your longest task, and know that a stuck
+   task will be redelivered after it expires. This is the Redis-broker-specific
+   gotcha an interviewer will probe if you say "Redis as a broker".
 
 ---
 
@@ -245,12 +286,17 @@ The web process **never** waits for an email. It enqueues and returns.
 - Convert the approval email into a Celery task with `retry(3)`
 - Enqueue with `transaction.on_commit`
 - `LeaveBalance` accrual calculation — manual trigger for now
-- Compose gains `celery-worker`; CI green
+- Worker config: `acks_late`, `reject_on_worker_lost`, prefetch, time limits,
+  `visibility_timeout` — each demonstrated once (`kill -9` the worker mid-task)
+- `emails` and `accruals` queues, `task_routes`, two worker processes in Compose
+- Compose gains `celery-worker` ×2; CI green
 
 ### Stage 4 — Scheduling *(D49–D53, Phase 3 Week 9)*
 - **Celery Beat**: monthly accrual runs automatically
 - 3-day unapproved-request reminder job
-- Idempotency guard on accrual, tested
+- Idempotency guard on accrual, tested; advisory-lock alternative written down
+- `daterange && daterange` overlap; DST-night test with `freezegun`
+- `docs/celery-ops-notes.md`
 - Finalize: `docs/postmortem-peopleops.md`, tag `v0.2-peopleops-final`
 
 ---
@@ -268,6 +314,12 @@ The web process **never** waits for an email. It enqueues and returns.
 | **Schedule** | **Beat tested with `freezegun`** — fast-forward a month, assert accrual ran |
 | **Idempotency** | Run accrual twice for the same month → second run is a no-op |
 | Ordering | Enqueue happens after commit, not before |
+| **Worker death** | `kill -9` mid-task with `acks_late=True` → task redelivered; with the default → task lost. Both observed |
+| Visibility timeout | A task sleeping longer than `visibility_timeout` is redelivered while running — observed, then fixed by raising the timeout |
+| Routing | An email task never lands on the `accruals` worker |
+| Time limits | A task exceeding `soft_time_limit` gets `SoftTimeLimitExceeded` and cleans up |
+| **DST** | Accrual scheduled at 00:00 on the DST-change night runs exactly once |
+| Overlap | `daterange` overlap: adjacent, contained, partially overlapping, identical |
 
 ---
 
@@ -281,6 +333,10 @@ The web process **never** waits for an email. It enqueues and returns.
 - [ ] Monthly accrual on Beat, proven with `freezegun`
 - [ ] Accrual idempotent, guarded by a database constraint
 - [ ] Stale-request reminder working
+- [ ] `acks_late`/`reject_on_worker_lost`/prefetch/time limits/`visibility_timeout` configured and demonstrated
+- [ ] Two queues, two workers, routing tested
+- [ ] `daterange` overlap; DST test green
+- [ ] `docs/celery-ops-notes.md` written
 - [ ] `docs/postmortem-peopleops.md`, tag `v0.2-peopleops-final`
 
 ---
@@ -297,6 +353,13 @@ The web process **never** waits for an email. It enqueues and returns.
 7. Why enqueue on commit rather than inside the transaction — what breaks otherwise?
 8. What is the difference in failure model between a triggered job and a
    scheduled one?
+9. What does `acks_late` change, and why does it force your tasks to be idempotent?
+10. Explain `visibility_timeout` with the Redis broker. What happens to a
+    2-hour task with the default?
+11. Why two queues? What is head-of-line blocking in a task queue?
+12. Why not send the email from a `post_save` signal?
+13. How do you make a nightly job safe across a DST change?
+14. `pg_advisory_xact_lock` or a unique constraint for "run at most once" — trade-offs?
 
 ---
 
@@ -310,3 +373,8 @@ The web process **never** waits for an email. It enqueues and returns.
   task was enqueued
 - Treating manager permission as a global role check
 - Updating the balance in a second transaction after the status change
+- Running the default `acks_late=False` and calling the system "reliable"
+- A `visibility_timeout` shorter than the longest task, producing duplicate runs nobody can explain
+- One queue for everything, so a notification storm delays the month-end accrual
+- Sending email from a signal, then wondering why the test fixtures send email
+- Naive dates around DST, so a "midnight" job runs at 23:00 or 01:00 — or twice

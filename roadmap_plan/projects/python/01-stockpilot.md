@@ -8,7 +8,7 @@
 | Level | Junior |
 | Phase | 1 — Foundations |
 | Weeks | 1–4 (D1–D24) |
-| Stack | Python 3.12+, FastAPI, SQLAlchemy 2.0 (async), Alembic, PostgreSQL, Pydantic v2, pytest + Hypothesis, `structlog`, Docker Compose, GitHub Actions |
+| Stack | Python 3.12+, FastAPI, SQLAlchemy 2.0 (async), Alembic, PostgreSQL, Pydantic v2, pytest + Hypothesis, `structlog`, `pre-commit`, Docker (multi-stage) + Compose, GitHub Actions |
 | Repo | `StockPilot/` |
 
 > **What this project is really for.** One architectural habit — the router never
@@ -46,11 +46,17 @@ stock plus basic reporting.
 8. A property-based test (Hypothesis) on the pricing/stock math
 9. 80%+ coverage on services and repositories, with mypy and ruff gating CI
 10. A load-test number for `GET /products`, not a guess
+11. `GET /categories/{id}/tree` served by a **recursive CTE**, and a stock-value
+    report rolled up through the category tree
+12. **Keyset (cursor) pagination** on `GET /orders`, benchmarked against offset on
+    500k rows — so interview question 4 has a measured answer, not a guess
+13. A **multi-stage, non-root Dockerfile** whose image size you know
 
 **Written artefacts that become interview answers**
-11. `docs/notes.md` — the descriptor decision you considered and rejected
-12. `docs/scaling-notes.md` — what breaks first under load and why
-13. `docs/postmortem.md` — what you would do differently
+14. `docs/notes.md` — the descriptor decision you considered and rejected, the
+    **UUID-vs-bigint primary-key decision**, and the **password-hashing choice**
+15. `docs/scaling-notes.md` — what breaks first under load and why
+16. `docs/postmortem.md` — what you would do differently
 
 ---
 
@@ -63,6 +69,9 @@ stock plus basic reporting.
 - Two roles with different permissions
 - List / filter / paginate products and orders
 - Reports: stock value, low-stock list, orders in a date range
+- Category tree (recursive CTE) and per-category roll-up (`GROUP BY ... ROLLUP`)
+- Keyset pagination on `/orders`, offset pagination on `/products` — both, so the
+  difference is something you measured
 
 **Deliberately out of scope — each with a written TODO explaining why**
 
@@ -179,6 +188,29 @@ cleanly **both up and down**, and that is tested.
 `price_cents >= 0`. Let the database refuse nonsense even if the service layer
 already does.
 
+**Time is `timestamptz`, stored in UTC.** Every `created_at` is `TIMESTAMP WITH TIME
+ZONE`. Naive timestamps are the bug you will otherwise meet in PeopleOps (leave
+dates) and CarePoint (appointment slots). Start the habit here, in
+`docs/notes.md`, with one sentence on why `timestamp` (without tz) is a trap.
+
+**Primary keys — decide and write it down.** Internal `bigint` sequence plus a
+public `UUID` (or ULID) exposed in the API, or UUID everywhere? Name the
+trade-offs: sequential IDs leak volume and enable enumeration; random UUIDs
+fragment B-tree indexes; ULID/UUIDv7 are the usual compromise. One paragraph in
+`docs/notes.md` — this is asked in most backend interviews.
+
+**Two query shapes worth knowing by name:**
+
+| Query | SQL feature | Where |
+|---|---|---|
+| Category and all descendants | `WITH RECURSIVE` on `categories.parent_id` | `GET /categories/{id}/tree`, stock value by category subtree |
+| Stock value with subtotals per category and a grand total | `GROUP BY ROLLUP(category_id)` (or `GROUPING SETS`) | `GET /reports/stock-value` |
+| Orders page N of 500k | **Keyset**: `WHERE (created_at, id) < (:cursor_ts, :cursor_id) ORDER BY created_at DESC, id DESC LIMIT :n` on the `(status, created_at)` index | `GET /orders?cursor=` |
+
+Offset pagination on `/products` stays — it is fine for a few thousand rows and
+the admin needs "jump to page 7". Keyset on `/orders` is where you show the
+`EXPLAIN` of `OFFSET 400000` reading 400k rows to throw them away.
+
 ---
 
 ## 8. API Design
@@ -190,11 +222,12 @@ already does.
 | POST | `/products` | owner | |
 | PATCH | `/products/{id}` | owner | |
 | POST | `/products/{id}/stock-movements` | staff+ | Body: `delta`, `reason`. Audited |
-| GET | `/orders` | staff+ | Query: `status`, `from`, `to` |
+| GET | `/orders` | staff+ | Query: `status`, `from`, `to`, **`cursor`, `limit`** — keyset pagination |
+| GET | `/categories/{id}/tree` | staff+ | Recursive CTE; the category and all descendants |
 | POST | `/orders` | staff+ | Atomic decrement; `409` if insufficient |
 | GET | `/orders/{id}` | staff+ | Order + items + product info — **the N+1 lives here** |
 | PATCH | `/orders/{id}/status` | staff+ | |
-| GET | `/reports/stock-value` | owner | |
+| GET | `/reports/stock-value` | owner | `ROLLUP` by category: subtotals + grand total |
 | GET | `/reports/low-stock` | staff+ | `current_stock < reorder_level` |
 
 **Error contract:** insufficient stock → `409`. Validation failure → `422`.
@@ -252,6 +285,15 @@ StockPilot/
 Repositories conform to a `Repository[T]` **Protocol** — structural typing, not
 inheritance — and mypy enforces it in CI.
 
+**Async discipline, made concrete once.** `GET /orders/{id}` fetches the order,
+its items and the product rows. Do it three ways and time them: sequential
+awaits, `asyncio.gather` over independent repository calls, and one joined
+query. Then put a deliberately blocking call (e.g. `time.sleep`, or a sync
+`bcrypt` hash) inside a handler, watch every other request stall, and move it to
+`run_in_executor`. Write two sentences in `docs/notes.md` on what the event loop
+actually does, and when `gather` helps versus when the database is the
+bottleneck anyway.
+
 ---
 
 ## 11. Infrastructure — what to connect, and exactly where
@@ -262,7 +304,9 @@ adds a component only when a felt problem demands it.
 | Component | Where exactly it is used | Why |
 |---|---|---|
 | **PostgreSQL** | Everything | The only datastore |
+| **Dockerfile** | **Multi-stage** (builder with compilers → slim runtime), **non-root user**, `.dockerignore`, dependency layer cached before the code layer, pinned base image. Record the image size before and after multi-stage | The first Dockerfile sets the habit for the next nine. A root container that ships `gcc` is the default you must deliberately avoid |
 | **Docker Compose** | `api` + `postgres`, with a **real Postgres healthcheck** so `api` waits for readiness, not just "container started" | Reproducible local environment |
+| **`pre-commit`** | ruff + mypy + a secrets check running on every commit, before CI sees it | CI should confirm, not discover |
 | **`structlog`** | One structured JSON line per request: method, path, status, latency, `user_id` | Your only observability this phase |
 | **GitHub Actions** | ruff → mypy → pytest against a Postgres service container | The quality gate |
 | **`hey` or `locust`** | One light load test on `GET /products` in Week 4 | A number for `docs/scaling-notes.md` |
@@ -293,8 +337,12 @@ stages. Each ends green and committed.
 - `core/config.py` — Pydantic settings from `.env`
 - `db/session.py` — async engine + session factory
 - `docker-compose.yml` — `api` + `postgres` with a healthcheck
+- **`Dockerfile`: multi-stage, non-root, `.dockerignore`**; note the image size
+- **`pre-commit`** with ruff + mypy + `gitleaks` (or `detect-secrets`)
+- All timestamps `timestamptz`; `docs/notes.md` gets the tz and PK decisions
 
-*Done when:* `docker compose up` boots both services, migrations run, tests pass.
+*Done when:* `docker compose up` boots both services, migrations run, tests pass,
+and `docker run --rm <image> whoami` is not `root`.
 
 ### Stage 2 — Products vertical slice *(D7–D12, Week 2)*
 - `repositories/product_repository.py` — CRUD queries only
@@ -302,7 +350,8 @@ stages. Each ends green and committed.
 - `api/products.py` — router wired to the service
 - DB session as a **context-managed** FastAPI dependency: a failed request rolls
   back partial writes
-- Pagination + filtering (`category_id`, `low_stock`) on `GET /products`
+- Pagination + filtering (`category_id`, `low_stock`) on `GET /products` (offset)
+- **`GET /categories/{id}/tree`** with `WITH RECURSIVE`; test on a 4-level tree
 - Review pass: re-read your own service layer and find anything that smells like
   a business rule that leaked into a schema or handler
 
@@ -317,6 +366,12 @@ page) are tested, and a failing request leaves no partial write.
 - Run `EXPLAIN ANALYZE` on the "orders in a date range by status" query, see the
   seq scan, **then** add the `(status, created_at)` composite index and its
   migration. Write a test asserting the plan uses an index scan
+- **Keyset pagination on `GET /orders`**: seed 500k orders, `EXPLAIN ANALYZE`
+  `OFFSET 400000` vs the keyset predicate, record both plans in
+  `docs/scaling-notes.md`
+- `GET /reports/stock-value` with `ROLLUP` — subtotal per category, grand total
+- The async exercise from §10: sequential vs `gather` vs one join, plus the
+  blocking-call demonstration and `run_in_executor`
 - `docs/notes.md`: where descriptors *would* replace repeated Pydantic
   validators, and why you rejected that
 
@@ -351,6 +406,10 @@ page) are tested, and a failing request leaves no partial write.
 | Migration | Reversibility | Every migration up **and** down |
 | Plan | Index actually used | Assert index scan, not seq scan |
 | Pagination | Edge cases | Empty page, last page, page beyond the end |
+| **Keyset** | Cursor correctness | Stable ordering under ties on `created_at`; no duplicates or gaps across pages when rows are inserted mid-walk; plan uses the index |
+| Recursive CTE | Tree correctness | 4-level tree returns every descendant once; a cycle guard (`UNION` not `UNION ALL`, or a depth cap) is tested |
+| Report | `ROLLUP` | Subtotals sum to the grand total |
+| Image | Non-root | Container user is not root; image contains no compiler |
 
 **Target:** 80%+ coverage on `services/` and `repositories/` — not on everything.
 Coverage on routers and schemas is mostly self-congratulation.
@@ -383,6 +442,10 @@ Coverage on routers and schemas is mostly self-congratulation.
 - [ ] 80%+ coverage on services and repositories
 - [ ] Every migration reversible, and tested that way
 - [ ] Composite index added from a real `EXPLAIN ANALYZE`, with a plan assertion
+- [ ] Keyset pagination on `/orders`, offset-vs-keyset plans recorded
+- [ ] `WITH RECURSIVE` category tree and `ROLLUP` stock-value report, tested
+- [ ] All timestamps `timestamptz`; PK and password-hashing decisions in `docs/notes.md`
+- [ ] Multi-stage, non-root Dockerfile; `pre-commit` configured
 - [ ] `Money` used consistently; no raw cent ints in business code
 - [ ] `docker compose up` works from a clean clone
 - [ ] `docs/notes.md`, `docs/scaling-notes.md`, `docs/postmortem.md` written
@@ -412,6 +475,14 @@ read it back to you.
 8. What's your rollback strategy if a migration fails mid-deploy?
 9. Why did you *not* add caching here?
 10. What does `SELECT ... FOR UPDATE` actually lock, and for how long?
+11. Offset vs keyset pagination — show me the two plans and tell me when offset is
+    still the right choice.
+12. Write me a recursive CTE for a category tree. What stops it looping forever?
+13. UUID or bigint primary keys — what did you choose and what would change your mind?
+14. Why `timestamptz` and not `timestamp`?
+15. What does `asyncio.gather` buy you here, and what happens when you put a
+    blocking call inside an async handler?
+16. Why does your Dockerfile have two stages, and why is the runtime user not root?
 
 ---
 
@@ -425,6 +496,10 @@ read it back to you.
 - Letting `unit_price_cents` read through to the product, so old orders change
   when a price changes
 - Treating 100% coverage as the goal instead of coverage where the rules live
+- Naive `timestamp` columns, so the same instant means different things on two machines
+- A recursive CTE with `UNION ALL` and no depth guard on data that can contain a cycle
+- A single-stage Dockerfile running as root with build tools left in the image
+- Calling a sync, CPU-heavy function (password hashing!) directly inside an async handler
 
 ---
 

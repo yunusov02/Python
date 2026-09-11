@@ -8,12 +8,15 @@
 | Level | Middle |
 | Phase | 4 — Microservices & Infrastructure |
 | Weeks | 14–15 (D79–D90) |
-| Stack | FastAPI (auth-service), Django/DRF (clinic-service), PostgreSQL + `btree_gist`, Redis, Celery Beat, **Nginx**, **MinIO/S3**, **React + TS + Vite + TanStack Query**, Docker Compose, GHCR |
+| Stack | FastAPI (auth-service, **OAuth2/OIDC**, **RS256 + JWKS**), Django/DRF (clinic-service), PostgreSQL + `btree_gist`, Redis, Celery Beat, **Nginx**, **MinIO/S3**, **Keycloak** (local IdP), **React + TS + Vite + TanStack Query**, Docker Compose, GHCR |
 | Repo | `carepoint/` + `carepoint-web/` |
 
-> **Two lessons, both structural.** First: what a service split actually costs,
+> **Three lessons, all structural.** First: what a service split actually costs,
 > learned with two services rather than ten. Second: let the *database* enforce
 > the thing that must never happen, instead of hoping application code wins a race.
+> Third: this is **the auth project** — `auth-service` exists, so OAuth2/OIDC,
+> asymmetric keys with rotation, and a real browser-facing security posture
+> (CORS, headers, login protection) land here and are reused by every later service.
 
 ---
 
@@ -30,7 +33,12 @@ patient's record securely — currently juggled across a paper diary and emailed
 **A working system**
 1. Two independently deployable services behind one Nginx entrypoint
 2. JWTs issued by `auth-service` and validated **locally** by `clinic-service`,
-   with no network call per request
+   with no network call per request — signed **RS256**, public keys published at
+   `/.well-known/jwks.json`, **rotated** with a `kid` and proven by rotating live
+2a. **OAuth2 Authorization Code + PKCE** — patients log in with an external
+   identity provider (Google, or a local Keycloak in Compose), and `auth-service`
+   exchanges the code, verifies the IdP's ID token, and issues its own tokens
+2b. Refresh-token **rotation and revocation** (logout actually logs out)
 3. Appointment booking where double-booking is refused **by a Postgres constraint**
 4. Patient documents uploaded and downloaded via presigned URLs — bytes never
    pass through the API process
@@ -44,6 +52,15 @@ patient's record securely — currently juggled across a paper diary and emailed
    the rejection comes from the database
 10. A test that an expired presigned URL is refused
 11. `/health` on each service failing when its dependency is down
+12. `carepoint-web` works from a different origin because **CORS** is configured
+    deliberately (no `*` with credentials), and every response carries security
+    headers (`HSTS`, `X-Content-Type-Options`, `X-Frame-Options`, a starter CSP)
+13. `/auth/login` protected against brute force (rate limit + lockout/backoff), and
+    a test that a wrong password and an unknown email produce the *same* response
+14. Appointment times are `timestamptz`; a **DST test** proves a 09:00 slot on the
+    change-over day is still 09:00 clinic time
+15. One `X-Request-ID` flows Nginx → auth-service → clinic-service → Celery and
+    appears in every log line
 
 **Written artefacts**
 12. `docs/scaling-notes.md` — why `auth-service` might scale independently. If you
@@ -66,7 +83,8 @@ patient's record securely — currently juggled across a paper diary and emailed
 
 | Deferred | Why |
 |---|---|
-| Service-to-service mTLS | Named; the trust model here is a shared key, and you should be able to say what mTLS would add |
+| Service-to-service mTLS | Named; the trust model here is **asymmetric JWT** (clinic-service holds only public keys), and you should be able to say what mTLS would add on top |
+| Being a full OAuth2 *authorization server* for third parties | You are an OAuth2 *client* to an IdP and issue your own first-party tokens. Issuing tokens to third-party apps (client registration, consent screens, scopes) is named, not built |
 | Doctor availability rules (recurring schedules) | Real feature, no new lesson |
 | Waitlist for cancelled slots | Same |
 | A synchronous cross-service *write* | Deliberately absent. LedgerBase provides the first one, and it is the first to need resilience patterns |
@@ -82,18 +100,40 @@ patient's record securely — currently juggled across a paper diary and emailed
 | **`doctor`** | View **own** schedule, view records and documents of patients on their own schedule, upload documents to those records | See other doctors' schedules; alter another doctor's appointments |
 | **`clinic_admin`** | Manage doctors, opening hours, and users; view all schedules | Read clinical document contents *(state the choice — this is where the HIPAA-style discipline in Phase 6 starts)* |
 
-**Enforcement:** `auth-service` issues a JWT carrying the role and subject.
-`clinic-service` validates the signature locally and applies the rules. Document
-authorization is checked in the API **before** a presigned URL is minted — once
-the URL exists, whoever holds it can use it until it expires.
+**Enforcement:** `auth-service` issues a JWT carrying the role and subject,
+signed with an **RS256 private key it alone holds**. `clinic-service` fetches the
+**JWKS** (`/.well-known/jwks.json`), caches it, picks the key by `kid`, and
+validates locally. Document authorization is checked in the API **before** a
+presigned URL is minted — once the URL exists, whoever holds it can use it until
+it expires.
+
+**Why asymmetric, not the shared HS256 secret from QuickServe:** with HS256 every
+verifier can also *mint* tokens. A compromised `clinic-service` could forge an
+admin token. With RS256, verifiers hold only public keys. Rotation becomes
+possible without redeploying every service: publish the new key, sign with it,
+keep the old one in the JWKS until the last old token expires, then drop it.
+Do this rotation **live**, with requests flowing, and assert zero `401`s.
+
+**Login flows — two, on purpose:**
+
+| Flow | Who | Mechanism |
+|---|---|---|
+| Password login | Staff (`receptionist`, `doctor`, `clinic_admin`) | `POST /auth/login`, argon2 hash, rate-limited, lockout/backoff after N failures, constant response for "no such user" and "wrong password" |
+| **OAuth2 Authorization Code + PKCE** | Patients | Browser → `auth-service` `/auth/oidc/start` → IdP (Google, or **Keycloak in Compose** so tests do not need the internet) → callback with `code` → `auth-service` exchanges it, validates the IdP's ID token (issuer, audience, nonce, signature via *the IdP's* JWKS), links or creates the patient, issues **its own** access + refresh tokens |
+
+Refresh tokens are **rotated** on every use (the old one is invalidated; reuse of
+a rotated token revokes the whole family — that is how you detect theft) and
+stored hashed, so `POST /auth/logout` can actually revoke them.
 
 ---
 
 ## 5. Functional Modules
 
 ### 5.1 Identity (`auth-service`)
-Login, JWT issuance, key material. Deliberately small. It exists to be a separate
-deployable, not to be a full identity platform.
+Password login for staff, OIDC login for patients, RS256 signing, JWKS
+publication, key rotation, refresh-token rotation and revocation, login
+protection. Still deliberately small — it is a first-party token issuer, not a
+full identity platform, and it delegates *identity* for patients to an IdP.
 
 ### 5.2 Scheduling (`clinic-service`)
 Doctors, slots, appointments. The conflict rule is a database constraint.
@@ -148,13 +188,26 @@ carepoint-web/        # Vite + React + TypeScript + TanStack Query
 ```
 doctors(id, name, specialty)
 
-patients(id, name, dob, contact)
+patients(id, name, dob, contact, oidc_subject NULL, oidc_issuer NULL)
 
-appointments(id, doctor_id, patient_id, slot_start, slot_end, status)
+appointments(id, doctor_id, patient_id,
+             slot_start timestamptz, slot_end timestamptz, status)
     -- EXCLUDE constraint prevents overlapping slots per doctor
 
 documents(id, patient_id, s3_key, uploaded_by, uploaded_at)
+
+-- auth-service
+signing_keys(kid, private_pem, public_pem, created_at, retired_at NULL)
+refresh_tokens(id, user_id, token_hash, family_id, issued_at,
+               expires_at, revoked_at NULL, replaced_by NULL)
+login_attempts(email, failed_count, locked_until NULL, updated_at)
 ```
+
+**Time is `timestamptz`.** The clinic has a timezone (`Asia/Tashkent`); slots are
+stored as instants in UTC and rendered in clinic time. The `tsrange` in the
+`EXCLUDE` constraint becomes `tstzrange`. Test the DST change-over day: a slot
+booked at 09:00 local before the change is still 09:00 local after it, and
+two slots that look adjacent in local time do not overlap in UTC.
 
 ---
 
@@ -169,7 +222,7 @@ CREATE EXTENSION IF NOT EXISTS btree_gist;
 ALTER TABLE appointments ADD CONSTRAINT no_overlap
   EXCLUDE USING gist (
     doctor_id WITH =,
-    tsrange(slot_start, slot_end) WITH &&
+    tstzrange(slot_start, slot_end) WITH &&
   ) WHERE (status <> 'cancelled');
 ```
 
@@ -189,7 +242,12 @@ Also index `appointments(doctor_id, slot_start)` for the daily-schedule query.
 
 | Method | Path | Service | Role | Notes |
 |---|---|---|---|---|
-| POST | `/auth/login` | auth | public | Issues JWT |
+| POST | `/auth/login` | auth | public | Staff password login. Rate-limited, lockout/backoff. Issues RS256 access + refresh |
+| GET | `/auth/oidc/start` | auth | public | Redirects to the IdP with PKCE `code_challenge` + `state` + `nonce` |
+| GET | `/auth/oidc/callback` | auth | public | Exchanges `code`, validates ID token, issues first-party tokens |
+| POST | `/auth/token/refresh` | auth | public | **Rotates** the refresh token; reuse of an old one revokes the family |
+| POST | `/auth/logout` | auth | any | Revokes the refresh-token family |
+| GET | `/.well-known/jwks.json` | auth | public | Current + retiring public keys, by `kid` |
 | GET | `/appointments?doctor_id=&date=` | clinic | staff+ | **Redis-cached** |
 | POST | `/appointments` | clinic | patient+ | DB constraint prevents double-booking |
 | PATCH | `/appointments/{id}/cancel` | clinic | owner / reception | Invalidates the cache |
@@ -228,7 +286,10 @@ regardless of who holds it.
 
 | Component | Where exactly it is used | Why it is justified |
 |---|---|---|
-| **Nginx** | Single entrypoint; routes `/auth/*` → auth-service, everything else → clinic-service | Your first hand-written `nginx.conf`. Two services need one front door |
+| **Nginx** | Single entrypoint; routes `/auth/*` → auth-service, everything else → clinic-service. Also: `proxy_set_header X-Request-ID $request_id`, `proxy_read_timeout`, upstream `keepalive`, `gzip`, `client_max_body_size` **small** (bytes go to MinIO, not through here), and the **security headers** (`Strict-Transport-Security`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, a starter `Content-Security-Policy`) | Your first hand-written `nginx.conf`. Two services need one front door. Every option you set, you can explain |
+| **CORS** | `carepoint-web` on `localhost:5173` calls the API on `localhost:8080`. Configure allowed origins explicitly (an allow-list, never `*` when `credentials` are involved), allowed methods/headers, and understand the preflight `OPTIONS`. Decide whether Nginx or the apps answer preflight, and write down why | The first frontend is the first CORS error. Fix it by understanding it, not by `Access-Control-Allow-Origin: *` |
+| **Keycloak** (Compose) | The OIDC identity provider for patient login in local dev and CI | Real OIDC flow without depending on Google in tests. Also the first look at an IdP's admin console, realms, and clients |
+| **Request ID** | Nginx generates `$request_id`, forwards it; both services log it via `structlog` bind; Celery tasks receive it as a header/kwarg | Grepping one request across three processes is the smallest form of tracing. Full OpenTelemetry arrives in LedgerBase |
 | **PostgreSQL + `btree_gist`** | Appointments, patients, documents metadata | The extension is required for the `EXCLUDE` constraint |
 | **Redis — cache** | `GET /appointments?doctor_id=&date=` only, invalidated on booking/cancel for that doctor+date | Reception refreshes the same day view constantly |
 | **Redis — Celery broker** | The reminder job | Reused from earlier phases |
@@ -268,7 +329,14 @@ reuse instead of relearning:
 
 ### Stage 1 — Service split & booking *(D79–D84, Week 14)*
 - New repo `carepoint/`; `auth-service` scaffold (FastAPI, reusing Phase 1 JWT logic)
-- `clinic-service` scaffold (Django/DRF) with JWT validation middleware
+  — now **RS256**: `signing_keys` table, `/.well-known/jwks.json`, `kid` in the header
+- `clinic-service` scaffold (Django/DRF) with JWT validation middleware that
+  fetches and caches the JWKS and selects the key by `kid`
+- **Live key rotation**: add key B, sign with B, keep A published, let A's tokens
+  expire, retire A — under load, zero `401`s
+- Staff login hardening: argon2, per-IP + per-account rate limit, lockout/backoff,
+  identical responses for unknown user / wrong password
+- All appointment columns `timestamptz`; `tstzrange` in the constraint
 - `Appointment` model with the `EXCLUDE` constraint
 - `POST /appointments`, then **deliberately fire two concurrent identical bookings**
 - `nginx.conf` routing both services; add Nginx to Compose
@@ -278,9 +346,16 @@ reuse instead of relearning:
 - `POST /documents/presigned-upload`
 - `GET /documents/{id}/presigned-download`
 - Cache the doctor schedule, invalidate on booking/cancel
-- Scaffold `carepoint-web/` — the schedule page via TanStack Query
+- Scaffold `carepoint-web/` — the schedule page via TanStack Query — and hit the
+  **CORS** wall; fix it with an explicit allow-list, understand the preflight
+- Security headers in `nginx.conf`; check them with a header scanner
+- **OIDC patient login**: Keycloak in Compose, Authorization Code + PKCE, ID-token
+  validation against Keycloak's JWKS, patient linking, first-party token issuance
+- Refresh-token rotation + family revocation; `POST /auth/logout`
+- `X-Request-ID` end to end: Nginx → both services → Celery
 - Celery Beat: 24h reminder task
-- `docs/scaling-notes.md`; tag `v0.1-carepoint`
+- DST test for slots
+- `docs/scaling-notes.md`, `docs/auth-notes.md` (HS256→RS256, OIDC flow, rotation); tag `v0.1-carepoint`
 
 ---
 
@@ -297,6 +372,14 @@ reuse instead of relearning:
 | Auth | Clock-skew tolerance behaves as configured at the expiry boundary |
 | Task | The reminder fires 24h before, tested with time travel |
 | Health | `/health` fails when Postgres or Redis is down |
+| **Key rotation** | Rotate the signing key while a load test runs; zero `401`s; a token signed by the retired key is rejected after retirement |
+| **OIDC** | Full code flow against Keycloak in CI: wrong `state` rejected, wrong `nonce` rejected, ID token with the wrong `aud` rejected, happy path links the patient |
+| Refresh rotation | Using a refresh token twice revokes the family; logout invalidates every device's refresh token |
+| Login protection | 10 wrong passwords → lockout/backoff; unknown email and wrong password return byte-identical bodies and similar timing |
+| **CORS** | Preflight from the allowed origin succeeds; from another origin it is refused; no `*` when credentials are sent |
+| Headers | Every response carries HSTS, `nosniff`, `X-Frame-Options`, CSP |
+| **DST** | A 09:00 slot on the change-over day renders as 09:00 clinic time; adjacent local slots do not collide |
+| Request ID | One `X-Request-ID` appears in Nginx, both services' and the Celery worker's logs for a single booking |
 
 ---
 
@@ -319,6 +402,14 @@ makes four services and automating by hand stops being reasonable.
 - [ ] 24h reminder job on Beat
 - [ ] `carepoint-web/` schedule page working against the real API
 - [ ] `/health` per service, checking real dependencies
+- [ ] RS256 + JWKS + `kid`; live rotation with zero `401`s
+- [ ] OIDC Authorization Code + PKCE login for patients, tested against Keycloak in CI
+- [ ] Refresh-token rotation, family revocation, working logout
+- [ ] Login rate limit + lockout; no user enumeration
+- [ ] CORS allow-list and security headers in place and tested
+- [ ] `timestamptz` everywhere; DST test green
+- [ ] `X-Request-ID` propagated through Nginx, both services, Celery
+- [ ] `docs/auth-notes.md`
 - [ ] Images built and pushed to GHCR by CI
 - [ ] `docs/scaling-notes.md` written
 - [ ] Tag `v0.1-carepoint`
@@ -346,6 +437,16 @@ postmortem rather than pretending the split paid off.
    request — and what has to be shared for that to work?
 7. What is clock skew tolerance and why does it matter across two services?
 8. Your `/health` returns 200 — what exactly did it check?
+9. HS256 or RS256 for JWTs across services — why does it matter who can mint a token?
+10. Walk me through the OAuth2 Authorization Code flow with PKCE. What do `state`
+    and `nonce` each protect against?
+11. How do you rotate a JWT signing key with zero downtime?
+12. What is refresh-token rotation, and how does reuse detection catch a stolen token?
+13. Explain a CORS preflight. Why is `Access-Control-Allow-Origin: *` with
+    credentials refused by browsers?
+14. What does each security header you set actually prevent?
+15. How do you prevent user enumeration on a login endpoint?
+16. Why `timestamptz`, and what would have gone wrong with `timestamp` on the DST day?
 
 ---
 
@@ -357,6 +458,13 @@ postmortem rather than pretending the split paid off.
 - Forgetting that the two services must agree on clock skew tolerance
 - A `/health` endpoint that returns 200 without touching its dependencies
 - Splitting the database as well as the service, doubling the cost for no lesson
+- HS256 with a shared secret across services, so any service can forge any token
+- A JWKS with no `kid`, so rotation means a flag day
+- Refresh tokens that live forever and cannot be revoked — "logout" that only deletes a cookie
+- `Access-Control-Allow-Origin: *` to make the error go away
+- Different error messages for "no such user" and "wrong password"
+- Naive `timestamp` for slots, so the DST day double-books or gaps
+- Validating the IdP's ID token by parsing it without checking `iss`, `aud`, `nonce`, and signature
 
 ---
 

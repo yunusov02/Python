@@ -8,13 +8,16 @@
 | Level | Middle |
 | Phase | 5 — Scaling & Advanced Architecture |
 | Weeks | 21–22 (D121–D132) |
-| Stack | Python, FastAPI, PostgreSQL (+ **read replica**), MinIO/S3, **Elasticsearch/OpenSearch**, **Kubernetes (`kind`)**, **etcd**, React + TS + TanStack Query |
+| Stack | Python, FastAPI, PostgreSQL (**FTS `tsvector`/`pg_trgm`**, + **read replica**, **PgBouncer**, `pg_stat_statements`), MinIO/S3, **Elasticsearch/OpenSearch**, **Kubernetes (`kind`)** + Ingress, **etcd**, React + TS + TanStack Query |
 | Repo | `docuvault/` + `docuvault-web/` |
 
-> **Two lessons.** First: a derived index is never the source of truth, and you
-> prove it by rebuilding it from scratch. Second: Kubernetes, introduced only
-> because Compose has genuinely stopped coping — with the service list written
-> down as the evidence.
+> **Three lessons.** First: a derived index is never the source of truth, and you
+> prove it by rebuilding it from scratch — and you reach for Elasticsearch only
+> after **Postgres full-text search** has been tried and found wanting on a
+> specific query. Second: Kubernetes, introduced only because Compose has
+> genuinely stopped coping — with the service list written down as the evidence.
+> Third: this is where Postgres gets **operated**, not just queried — statistics,
+> autovacuum, `pg_stat_statements`, connection pooling.
 
 ---
 
@@ -30,11 +33,19 @@ contract" means asking around, not searching.
 
 **A working system**
 1. Documents uploaded and versioned — every edit creates a version, old ones retained
-2. Full-text search with typo tolerance and title boosting, plus tag filtering
+2. Full-text search with typo tolerance and title boosting, plus tag filtering —
+   after a **Postgres FTS** (`tsvector` + GIN, `pg_trgm`) version that you kept
+   until it could not do what a specific query needed
 3. Elasticsearch kept current by an event consumer, reusing FleetTrack's relay pattern
-4. A `reindex` endpoint that rebuilds the entire index from Postgres
+4. A `reindex` endpoint that rebuilds the entire index from Postgres — **`202
+   Accepted`** + a job resource, using **bulk** reads (server-side cursor) and
+   ES `_bulk` writes in tuned batches
 5. A Postgres read replica serving the indexing consumer
-6. A `kind` cluster running one service as a Deployment with 2 replicas
+6. A `kind` cluster running one service as a Deployment with 2 replicas, **resource
+   requests/limits**, an **Ingress**, a **preStop hook**, and an HPA you scaled once
+6a. **PgBouncer** in front of Postgres, with the prepared-statement gotcha met and solved
+6b. A **stale-statistics demonstration**: a plan that goes bad because `ANALYZE`
+   never ran, then `pg_stat_statements` finding the slow query
 7. `docuvault-web/`: a debounced search page
 
 **Proof it is correct**
@@ -51,6 +62,10 @@ contract" means asking around, not searching.
 13. `docs/sharding-decision-record.md` — the key, the reasoning, and **why you did
     not implement it**
 14. Search relevance before and after tuning, on the same queries
+15. `docs/postgres-ops-notes.md` — autovacuum, bloat, statistics, `pg_stat_statements`,
+    pooling: what you observed and what you set
+16. `docs/search-decision-record.md` — `LIKE` → Postgres FTS → Elasticsearch, with
+    the query that forced each step
 
 ---
 
@@ -59,9 +74,11 @@ contract" means asking around, not searching.
 **In scope**
 - Upload and versioning
 - Full-text search across content and metadata, with tag filtering
-- Event-driven ES sync + full reindex
-- Kubernetes fundamentals on `kind`
-- A Postgres read replica
+- Postgres FTS first, Elasticsearch second, with a decision record
+- Event-driven ES sync + full reindex (bulk, `202` + job status)
+- Kubernetes fundamentals on `kind`, plus requests/limits, Ingress, preStop, HPA
+- A Postgres read replica, with a read-your-own-write mitigation
+- Postgres operations: autovacuum/bloat, statistics, `pg_stat_statements`, PgBouncer
 - A hand-built consistent-hashing ring, benchmarked
 - A debounced search frontend
 
@@ -138,14 +155,25 @@ and the honest answer requires that `reindex` actually works.
 ## 7. Domain Model
 
 ```
-documents(id, title, current_version_id, created_by)
+documents(id, title, current_version_id, created_by,
+          search_tsv tsvector GENERATED ALWAYS AS
+            (setweight(to_tsvector('simple', title), 'A') ||
+             setweight(to_tsvector('simple', coalesce(body_excerpt,'')), 'B')) STORED)
+    -- GIN (search_tsv)            : Postgres FTS, stage 1 of the search story
+    -- GIN (title gin_trgm_ops)    : pg_trgm, so LIKE '%term%' / similarity() can use an index
 
 document_versions(id, document_id, s3_key, version_number, created_at)
     UNIQUE(document_id, version_number)
+    -- version_number assigned under SELECT ... FOR UPDATE on the parent
+    -- documents row, so two concurrent uploads never collide (the UNIQUE
+    -- constraint is the backstop, the lock is the mechanism)
 
 tags(id, name)
 
 document_tags(document_id, tag_id)
+
+reindex_jobs(id, status, total, done, started_at, finished_at NULL, error NULL)
+    -- the pollable resource behind 202 Accepted
 ```
 
 ---
@@ -159,24 +187,53 @@ document_tags(document_id, tag_id)
 | GET | `/documents/{id}` | reader+ | Metadata + current version |
 | GET | `/documents/{id}/versions` | reader+ | Full history |
 | GET | `/documents/{id}/versions/{n}/download` | reader+ | Presigned GET |
-| GET | `/documents/search?q=&tags=` | reader+ | Hits Elasticsearch |
-| POST | `/documents/reindex` | platform_admin | **Rebuilds ES fully from Postgres** |
+| GET | `/documents/search?q=&tags=` | reader+ | Hits Elasticsearch (stage 3). `?engine=pg` keeps the Postgres FTS path alive for comparison |
+| POST | `/documents/reindex` | platform_admin | **Rebuilds ES fully from Postgres**. `202 Accepted` + `Location: /reindex-jobs/{id}` |
+| GET | `/reindex-jobs/{id}` | platform_admin | Progress: `done/total`, status |
 
 ---
 
-## 9. Search Implementation
+## 9. Search Implementation — three stages, one decision record
 
+Elasticsearch is a choice, and a choice needs an alternative you actually tried.
+Most companies never get past stage 2. Build all three against the same test
+corpus and the same fixed query set.
+
+| Stage | Mechanism | What it gives | Where it breaks (the query that forces the next stage) |
+|---|---|---|---|
+| 1 — `LIKE '%term%'` | Sequential scan | Nothing but simplicity | Cannot use a B-tree (leading wildcard). Show the seq scan at 100k docs |
+| 1b — **`pg_trgm`** | `GIN (title gin_trgm_ops)`; `LIKE '%term%'`, `ILIKE`, `similarity()` | Indexed substring and fuzzy-ish matching **without leaving Postgres** | Relevance is just similarity; no stemming, no field weighting |
+| 2 — **Postgres FTS** | `tsvector` generated column + GIN, `to_tsquery`/`websearch_to_tsquery`, `ts_rank`, `setweight` (title A, body B), `ts_headline` | Stemming, stop words, ranking, weights, phrase search, highlighting — indexed, transactional, in the source of truth | **No typo tolerance** (`documnet` finds nothing), weak relevance tuning, one dictionary per column (Uzbek/Russian mixed text hurts), limited faceting |
+| 3 — **Elasticsearch** | Analyzer + fuzziness, title boost, tag filter clause | Typo tolerance, tunable relevance, aggregations | A second store that is **never authoritative** and must be rebuildable |
+
+For each stage record on the fixed query set: p95 latency at 100k docs, and
+relevance (did the expected document land in the top 3?). The moment stage 2
+fails a query you care about — typos in a title search is the usual one — is the
+moment Elasticsearch is justified. `docs/search-decision-record.md` carries the
+table and the query.
+
+Elasticsearch side:
 - Analyzer configuration for reasonable **typo tolerance** (fuzziness)
 - **Boost title matches over body matches**
 - Tag filters as a structured filter clause, not part of the text query
-- Tune against a small real test corpus and **record what changed** — the same
-  queries, relevance before and after
+- Tune against the corpus and **record what changed** — same queries, before and after
 
 Non-functional requirement: search must handle typos and partial matches
-reasonably and stay fast as the corpus grows past what `LIKE '%term%'` can handle.
-Be able to say *why* `LIKE '%term%'` cannot use an index, and what Postgres
-full-text search would have given you instead — Elasticsearch is a choice, and a
-choice needs an alternative.
+reasonably and stay fast as the corpus grows. Be able to say *why* `LIKE
+'%term%'` cannot use a B-tree, what `pg_trgm` and `tsvector` each give you, and
+what only Elasticsearch gave you here.
+
+### 9a. Reindex as a bulk, long-running operation
+
+`POST /documents/reindex` returns **`202 Accepted`** and a `reindex_jobs` row.
+The worker streams Postgres with a server-side cursor (`yield_per(1000)`, from
+the replica), builds ES `_bulk` requests of N docs, and updates `done` every
+batch. Tune N (500? 5000?) by measuring throughput and ES rejection rate; too
+large a batch and ES pushes back — that push-back is **backpressure**, and you
+must slow down rather than retry harder. Record the batch size you chose and why.
+The same pattern (cursor → batch → progress) is how any bulk job should look;
+`COPY` is the even faster path for Postgres→Postgres, named here and used once
+to load the test corpus.
 
 ---
 
@@ -195,10 +252,15 @@ Scoped as **fundamentals, not production operations**:
 |---|---|
 | Deployment | One DocuVault service, 2 replicas |
 | Service | Stable endpoint in front of the pods |
+| **Ingress** | Nginx Ingress Controller routing a hostname to the Service — the Kubernetes form of the `nginx.conf` you wrote in CarePoint |
 | ConfigMap | Externalized configuration |
 | Secret | Externalized secrets |
-| Rolling update | Performed, with **zero dropped requests** observed |
-| Probes | Readiness and liveness — and the difference between them, in your own words |
+| **`resources.requests` / `limits`** | Set for CPU and memory. Then set memory `limits` too low on purpose, watch the pod get **OOMKilled** and restart, read it in `kubectl describe`. Without requests the scheduler is guessing; without limits one pod can starve the node |
+| Probes | Readiness and liveness — and the difference between them, in your own words. A failing readiness probe removes the pod from the Service; a failing liveness probe restarts it |
+| **`preStop` hook + `terminationGracePeriodSeconds`** | Zero dropped requests during a rolling update **does not happen by default**: the pod is removed from the Service and sent `SIGTERM` at roughly the same time, and kube-proxy/Ingress may still route to it for a moment. A `preStop` sleep of a few seconds plus the application's graceful shutdown (LedgerBase) closes the gap. Do the rolling update without it first and count the errors |
+| **HPA** | One CPU-based HorizontalPodAutoscaler; drive load with `hey`, watch replicas go 2 → 4 → 2. Fundamentals only |
+| `kubectl rollout undo` | Roll back a bad image once, on purpose |
+| Rolling update | Performed, with **zero dropped requests** observed — *after* the preStop/graceful-shutdown work |
 
 Commit the Deployment/Service YAML to a `k8s/` directory **as if a GitOps
 controller were about to watch it** — declarative, no imperative `kubectl edit`
@@ -220,6 +282,31 @@ Deliverable: `docs/consensus-notes.md` — Raft in your own words, tied to all t
 consumer's reads routed to it. Writes still go to the primary. Notice and write
 down the replication lag you can actually observe, and what it means for a
 consumer reading its own recent write.
+
+**Read-your-own-write — build one mitigation.** The indexing consumer receives
+`DocumentVersionAdded` and reads the version from the replica — which may not
+have it yet. Options: (a) wait until the replica's replay LSN ≥ the LSN the
+event was committed at (`pg_current_wal_lsn()` captured in the event,
+`pg_last_wal_replay_lsn()` on the replica); (b) retry with backoff on "not
+found"; (c) read that one row from the primary. Implement (a) or (b), name all
+three, and write down the trade-off.
+
+### 11a. Postgres operations — `docs/postgres-ops-notes.md`
+
+This is the project where the database gets busy enough to misbehave. Meet each
+problem once, deliberately:
+
+| Topic | Do this | What you will see |
+|---|---|---|
+| **Statistics** | Load 200k `document_versions` with autovacuum **off**; `EXPLAIN` a filtered query; compare estimated vs actual rows; run `ANALYZE`; `EXPLAIN` again | A plan chosen on a 1-row estimate against a 200k-row reality. `pg_stats`, `default_statistics_target` |
+| **Autovacuum / bloat** | Update every row twice with autovacuum off; check `pg_stat_user_tables.n_dead_tup` and table size (`pg_total_relation_size`); `VACUUM`; compare. Then turn autovacuum on and tune `autovacuum_vacuum_scale_factor` for the busy table | Dead tuples, bloat that `VACUUM` does not shrink (only `VACUUM FULL` / `pg_repack` does), and why MVCC makes this unavoidable |
+| **`pg_stat_statements`** | Enable it; run the load test; query the top 10 by `total_exec_time` and by `mean_exec_time` | The actual slowest query is rarely the one you guessed. Feed the top one into `EXPLAIN (ANALYZE, BUFFERS)` |
+| **Slow query log** | `log_min_duration_statement = 200ms` | Every slow query, with its bind values, in the log |
+| **PgBouncer** | Put PgBouncer in **transaction pooling** mode between the K8s replicas + the indexing consumer and Postgres. Size the pool (`max_connections` on Postgres is not free — each backend is a process). Then hit the **prepared-statement gotcha**: asyncpg's implicit prepared statements break in transaction mode; fix with `statement_cache_size=0` or PgBouncer ≥1.21 `max_prepared_statements` | Why "just raise `max_connections`" is wrong; the difference between session, transaction and statement pooling |
+| `pg_stat_activity` | Watch connections while the load test runs; find `idle in transaction` | The connection that is holding a lock and doing nothing |
+
+None of this is a DBA course. It is the minimum a backend engineer needs to
+stop blaming "the database" and start reading it.
 
 **Sharding (decision record, not implemented):**
 `docs/sharding-decision-record.md` — what key (`document_id` is the natural one),
@@ -245,7 +332,10 @@ modulo" is a much better answer when you have the benchmark behind it.
 | **MinIO / S3** | Document bytes, via the presigned pattern reused from CarePoint | Bytes never pass through the API |
 | **Elasticsearch / OpenSearch** | Full-text search over title, body and tags | The felt problem: `LIKE '%term%'` cannot use an index and cannot do fuzziness. **Derived, never authoritative** |
 | **RabbitMQ** | Carries document-change events to the indexing consumer | The relay pattern from FleetTrack, reused |
-| **Kubernetes (`kind`)** | One service deployed as a Deployment + Service, config in ConfigMap/Secret, 2 replicas, rolling update | Justified by the written Compose service list, not by fashion |
+| **Kubernetes (`kind`)** | One service deployed as a Deployment + Service + **Ingress**, config in ConfigMap/Secret, 2 replicas, **requests/limits**, **preStop**, an HPA, rolling update and `rollout undo` | Justified by the written Compose service list, not by fashion |
+| **PgBouncer** | Transaction-mode pool between all Postgres clients and the primary | Replicas × pool size exceeds what Postgres backends should be asked to hold. Also the first place the asyncpg prepared-statement gotcha bites |
+| **`pg_stat_statements`, slow query log, `pg_stat_user_tables`** | Enabled on the primary | Finding the slow query instead of guessing it |
+| **Postgres FTS + `pg_trgm`** | Stages 1b–2 of the search story; kept behind `?engine=pg` | The alternative Elasticsearch has to beat |
 | **etcd (3-node, local)** | A hands-on look at Raft-backed consensus | Because you used it implicitly on Monday and should not leave it a black box |
 | **Prometheus + Grafana** | Index lag (events behind), search latency, replica lag, pod restarts | Index lag is this project's outbox lag: if the consumer stalls, search silently goes stale while everything looks healthy |
 | **`docuvault-web/`** | Debounced search box + tag chips via TanStack Query | Second frontend; reuses CarePoint's setup |
@@ -267,20 +357,29 @@ modulo" is a much better answer when you have the benchmark behind it.
 ### Stage 1 — Documents, versioning, search *(D121–D126, Week 21)*
 - New repo `docuvault/`: `Document` / `DocumentVersion` models
 - `POST /documents` + MinIO upload (reusing the Phase 4 presigned pattern)
+- Load the test corpus with `COPY`
+- **Search stage 1–2**: `LIKE` seq scan → `pg_trgm` GIN → `tsvector` + GIN +
+  `ts_rank`; measure on the fixed query set; find the query FTS cannot serve
 - Outbox-relay-style consumer indexing new/updated docs into Elasticsearch
-- `GET /documents/search?q=&tags=`, with analyzer and boosting tuned against a
-  real test corpus
+- **Search stage 3**: `GET /documents/search?q=&tags=`, analyzer and boosting
+  tuned against the corpus; `docs/search-decision-record.md`
+- `version_number` under `FOR UPDATE` on the parent row; concurrency test
 - `docuvault-web/` search page: debounced box + tag chips
-- `POST /documents/reindex` — full rebuild from Postgres
+- `POST /documents/reindex` — `202` + job; cursor → `_bulk` batches; batch size tuned
 
-### Stage 2 — Kubernetes, replication, sharding *(D127–D132, Week 22)*
+### Stage 2 — Kubernetes, replication, Postgres ops, sharding *(D127–D132, Week 22)* *(v2: +3 days)*
 - **Write down the Compose service list** — the justification
 - `kind` cluster; Deployment + Service YAML for one DocuVault service
 - Externalize config/secrets into ConfigMap / Secret
 - 3-node etcd cluster; `docs/consensus-notes.md`
-- Scale to 2 replicas, rolling update, observe **zero dropped requests**; commit
-  YAML to `k8s/`
-- Postgres read replica; route the ES-sync consumer's reads to it
+- `resources` requests/limits; the deliberate OOMKill; Ingress
+- Scale to 2 replicas; rolling update **without** preStop — count the errors;
+  add `preStop` + graceful shutdown; repeat, observe **zero dropped requests**;
+  `rollout undo` once; HPA 2→4→2 under `hey`; commit YAML to `k8s/`
+- Postgres read replica; route the ES-sync consumer's reads to it; **read-your-own-write** mitigation
+- **PgBouncer** in transaction mode; the prepared-statement gotcha, solved
+- Stale-statistics demo, autovacuum/bloat demo, `pg_stat_statements` top-10,
+  slow-query log → `docs/postgres-ops-notes.md`
 - Build and benchmark the consistent-hashing ring
 - `docs/sharding-decision-record.md`, backed by the benchmark
 - `docs/postmortem-week22.md`
@@ -300,6 +399,16 @@ modulo" is a much better answer when you have the benchmark behind it.
 | K8s | A rolling update drops zero requests |
 | K8s | A failing readiness probe keeps a pod out of the Service |
 | Benchmark | Consistent hashing vs naive modulo — measured redistribution on node add and remove |
+| **Search stages** | Fixed query set: latency and top-3 relevance recorded for `LIKE`, `pg_trgm`, FTS, ES; the typo query fails on FTS and passes on ES |
+| Bulk reindex | `202` returned in <100ms; job progresses; memory flat during a 100k-doc rebuild; an ES `429` slows the batch loop rather than crashing it |
+| Version lock | 20 concurrent uploads to one document → `version_number` 1..20 with no gaps or collisions |
+| Read-your-own-write | Consumer never indexes a "not found" — the LSN wait (or retry) is exercised under induced replica lag |
+| K8s resources | A pod with a too-low memory limit is OOMKilled and restarted, visible in `describe` |
+| **preStop** | Rolling update without preStop: N errors recorded; with preStop + graceful shutdown: 0 |
+| HPA | Replicas scale up under load and back down after |
+| Statistics | Plan estimate vs actual differs by >100× before `ANALYZE`, matches after |
+| Bloat | `n_dead_tup` and relation size before/after `VACUUM` recorded |
+| **PgBouncer** | The app works in transaction mode with the statement-cache fix; `SHOW POOLS` observed under load |
 
 ---
 
@@ -318,6 +427,13 @@ modulo" is a much better answer when you have the benchmark behind it.
 - [ ] Read replica serving the indexing consumer
 - [ ] Consistent-hashing ring built and benchmarked
 - [ ] `docs/sharding-decision-record.md` with a **measured number** in it
+- [ ] `LIKE` → `pg_trgm` → FTS → ES built on one corpus; `docs/search-decision-record.md`
+- [ ] Reindex is `202` + job, cursor + `_bulk`, batch size tuned, backpressure handled
+- [ ] `version_number` safe under concurrency via parent-row lock
+- [ ] Ingress, requests/limits (OOMKill seen), preStop + graceful shutdown, HPA, `rollout undo`
+- [ ] Read-your-own-write mitigation on the replica
+- [ ] PgBouncer transaction pooling; prepared-statement gotcha solved
+- [ ] Stale-stats, bloat/vacuum, `pg_stat_statements` demonstrated; `docs/postgres-ops-notes.md`
 - [ ] The access-control-in-search gap documented honestly
 - [ ] `docuvault-web/` search page live
 - [ ] `docs/postmortem-week22.md`
@@ -340,6 +456,18 @@ modulo" is a much better answer when you have the benchmark behind it.
 8. Your search is not access-filtered. How would you fix that, and why is it harder
    than adding a `WHERE` clause?
 9. You routed the indexing consumer to a read replica. What can go wrong?
+10. Why can `LIKE '%term%'` not use a B-tree, and how does `pg_trgm` change that?
+11. What did Postgres full-text search give you, and what was the exact query that
+    made you add Elasticsearch?
+12. How does a rolling update drop zero requests? What does `preStop` do that
+    the readiness probe does not?
+13. What happens to a pod without a memory limit? With one that is too low?
+14. Your consumer reads its own write from a replica and gets "not found". Three fixes?
+15. Why PgBouncer, why transaction mode, and what broke with asyncpg?
+16. A query's plan went bad overnight and no code changed. Where do you look first?
+17. What is table bloat, why does `VACUUM` not shrink the file, and what does?
+18. How do you find the slowest query in production without guessing?
+19. Why does `reindex` return `202`? How do you handle Elasticsearch pushing back with `429`?
 
 ---
 
@@ -352,6 +480,12 @@ modulo" is a much better answer when you have the benchmark behind it.
 - Sharding prematurely
 - Tuning search relevance by feel instead of against a fixed query set
 - Monitoring the API but not the index lag, so search goes quietly stale
+- Jumping to Elasticsearch without ever trying `tsvector` — and being unable to say what it added
+- A rolling update that "worked" because nobody was sending requests during it
+- Pods with no resource requests, so the scheduler packs them until the node falls over
+- Raising `max_connections` to 500 instead of pooling
+- Autovacuum disabled "for performance", and a table three times its live size a month later
+- A reindex that loads every document into a Python list first
 
 ---
 

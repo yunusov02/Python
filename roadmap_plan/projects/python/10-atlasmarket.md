@@ -8,7 +8,7 @@
 | Level | Middle+ / Senior |
 | Phase | 6 — Senior-Track Capstone |
 | Weeks | 27–28 (D157–D168) |
-| Stack | Nginx gateway + 5 services, PostgreSQL (managed), Elasticsearch, RabbitMQ, **real AWS/GCP**, React + TS + Vite + React Router + TanStack Query, **Playwright**, feature flags |
+| Stack | Nginx gateway + 5 services, PostgreSQL (managed, **Row Level Security**), Elasticsearch, RabbitMQ, **real AWS/GCP via Terraform** (+ TLS, CDN for the storefront), OpenTelemetry end to end, React + TS + Vite + React Router + TanStack Query, **Playwright**, feature flags, `locust`, GraphQL BFF (stretch) |
 | Repo | `atlasmarket/` + `atlasmarket/storefront/` |
 
 > **This is an integration exercise, not a rewrite.** You are explicitly
@@ -48,13 +48,22 @@ This is the convergence point of everything built so far:
 4. **Multi-vendor checkout: one cart, one payment, N vendor groups, N ledger entries**
 5. Per-vendor fulfillment status
 6. A React/TS storefront: product list, cart, checkout
-7. Gateway + `catalog-service` deployed to **real cloud infrastructure**
+7. Gateway + `catalog-service` deployed to **real cloud infrastructure** — created
+   by **Terraform** (extending PayFlow's `infra/`), served over **HTTPS**, with the
+   storefront's static build on **object storage + CDN**
+7a. Vendor isolation enforced **twice**: in every query, and by **Postgres Row
+   Level Security** — so a forgotten `WHERE vendor_id` cannot leak
 
 **Operational firsts**
 8. **Bulkhead** connection pools per downstream service
 9. A change shipped **dark behind a feature flag**, then ramped 10% → 100% while
    watching Grafana — the first canary all year
 10. A **Playwright** browser test through the whole checkout flow
+10a. One **trace** for one checkout across all five services and the outbox relay —
+    the observability demo of the whole curriculum
+10b. A `locust` checkout load test that sets the bulkhead pool sizes from numbers
+10c. **Gateway rate limiting** (Nginx `limit_req` per IP + per API key) as the
+    outermost of three protection layers (rate limit → bulkhead → breaker)
 
 **Proof it is correct**
 11. The end-to-end test: two vendors, one checkout, two `order_vendor_groups`,
@@ -67,6 +76,13 @@ This is the convergence point of everything built so far:
 15. `docs/cloud-deployment-notes.md` — IAM policy, VPC layout, **monthly cost estimate**
 16. `docs/atlasmarket-roadmap-post-bootcamp.md` — the deferred list, respected
 17. Two system-design problems worked from scratch and compared to what you built
+18. `docs/multi-tenancy-decision-record.md` — shared schema + RLS vs schema-per-tenant
+    vs database-per-tenant
+19. `docs/distributed-transactions.md` — why not 2PC, why the saga/outbox shape instead
+20. `docs/cart-persistence.md` — client state now; the Redis-hash design that
+    replaces it when carts must survive across devices
+21. *(Stretch)* a **GraphQL BFF** for the storefront with **DataLoader**, and the
+    N+1 it prevents, measured
 
 ---
 
@@ -88,6 +104,7 @@ was.
 | Recommendation engine | |
 | Vendor analytics dashboard | → Project 25, Phase 11 |
 | Promotions / discounts across vendors | The cross-vendor accounting alone is a project |
+| Kubernetes in production, a service mesh, a managed flag service | See §10 — named, deliberately not built |
 | Returns workflow | |
 | Vendor trust / fraud systems | What real marketplaces invest in first |
 | Search relevance tuning at scale | |
@@ -113,6 +130,22 @@ sees their slice of an order and nothing else — not the customer's other vendo
 groups, not the marketplace's total. One customer order is deliberately fragmented
 along vendor lines, and that fragmentation is a **security boundary**, not just a
 data-modelling convenience. Test it as one.
+
+**Enforce it in two places.** Every query filters by `vendor_id` — that is the
+first line. The second is **Postgres Row Level Security**: `ALTER TABLE products
+ENABLE ROW LEVEL SECURITY` plus a policy `USING (vendor_id =
+current_setting('app.vendor_id')::bigint)`, with the application setting
+`SET LOCAL app.vendor_id = ...` at the start of each vendor-scoped transaction
+(after resolving the vendor from the JWT). A query that forgets the `WHERE` now
+returns nothing instead of everything. Test exactly that: comment out one
+`WHERE vendor_id`, run vendor B's request, assert an empty result and a log line.
+
+This is the same defense-in-depth philosophy as CarePoint's `EXCLUDE` and
+LedgerBase's trigger, applied to authorization. RLS has costs — a per-transaction
+`SET`, policies that the planner must apply, and a connection-pool interaction
+(PgBouncer transaction mode and `SET LOCAL` are fine; `SET` without `LOCAL` is
+not) — write them down in `docs/multi-tenancy-decision-record.md` alongside the
+alternatives (schema-per-tenant, database-per-tenant) and when each wins.
 
 ---
 
@@ -148,6 +181,22 @@ perfectly healthy `catalog-service`.
 The breaker does not help against slow-but-succeeding calls: they never fail, so
 it never trips, while every worker sits waiting. The bulkhead is what keeps the
 rest of the system alive. Be able to say that.
+
+You *saw* this in PayFlow's Toxiproxy run: 2s latency, 0% errors, breaker
+closed, system dying. The bulkhead is the answer to that specific observation.
+
+Add the outermost layer at the gateway: **Nginx `limit_req`** per client IP and,
+for API-key callers, per key (`$http_x_api_key` as the zone key), with a small
+burst. Rate limit → bulkhead → breaker → retry: four layers, each with a
+different failure it handles. Draw the table in `docs/architecture.md`.
+
+**Why not distributed transactions?** Checkout touches five services. The
+tempting textbook answer is two-phase commit. `docs/distributed-transactions.md`
+explains why not — blocking coordinators, in-doubt transactions, no 2PC support
+in your brokers, and the availability cost — and why the shape you built (one
+local transaction for the order split + outbox, idempotent payment, eventual
+ledger entries with reconciliation) is the industry's actual answer. One page,
+because the interviewer will ask "why not just use a transaction across services".
 
 ---
 
@@ -202,11 +251,14 @@ The gateway and `catalog-service` deploy to a **real AWS or GCP account**:
 
 | Item | Requirement |
 |---|---|
+| **Terraform** | Everything below is in `infra/` (started in PayFlow Week 26): add the compute (a VM or a small container service), the managed Postgres instance, the object-storage bucket + CDN, DNS and the certificate. `plan` in CI, `apply` from `main`, remote locked state. **No console clicks** — if it is not in the code, it does not exist |
 | IAM | Least-privilege role, **not** the root account |
 | Network | VPC with the database in a **private subnet** |
-| Security groups | Scoped to exactly the needed ports |
-| Database | **Managed Postgres**, not a container |
-| Docs | `docs/cloud-deployment-notes.md` — IAM policy, VPC layout, **monthly cost estimate** |
+| Security groups | Scoped to exactly the needed ports; `5432` admits only the gateway/service SG |
+| Database | **Managed Postgres**, not a container; RLS policies applied by migration |
+| **TLS** | A real certificate (ACM / managed cert on the load balancer, or Let's Encrypt on the gateway VM as in LedgerBase); HTTP → HTTPS; HSTS |
+| **Static hosting** | Storefront build on object storage behind a CDN; cache headers set |
+| Docs | `docs/cloud-deployment-notes.md` — the Terraform module layout, IAM policy, VPC diagram, **monthly cost estimate read from the actual bill after a week** |
 
 *(The account, IAM role and VPC are created back in Week 26 alongside PayFlow's
 security work, so they are ready when this project needs them.)*
@@ -232,6 +284,31 @@ Built on habits from CarePoint, FleetTrack and DocuVault — not learned from ze
 **Honest framing:** four builds in is enough to read a frontend PR, ask the right
 questions, and ship a small feature without a frontend engineer. It is **not** the
 same as being a frontend specialist, and this plan does not pretend otherwise.
+
+**Where the static files live.** The storefront is a static build. In the cloud
+it goes to **object storage behind a CDN** (S3 + CloudFront, GCS + Cloud CDN, or
+Cloudflare in front of either), with cache headers on hashed asset filenames
+(`immutable`) and a short TTL on `index.html`. A backend engineer should know
+this shape and its cost (near zero) even without owning the frontend.
+
+**Cart persistence.** Cart state is client-side at this scope. Write
+`docs/cart-persistence.md`: the Redis design that replaces it (a hash per user,
+TTL, merge-on-login for anonymous carts) and the moment it becomes necessary
+(second device, abandoned-cart emails). The **Idempotency-Key for checkout is
+the order id** — which means a cart re-submitted as a *new* order needs a
+*client-generated* key; state that explicitly, or two clicks become two orders.
+
+### GraphQL BFF *(stretch)*
+
+The storefront's product page fetches a product, its vendor, its stock and its
+reviews-count from three services. A **backend-for-frontend** in GraphQL
+(Strawberry) lets the page ask for exactly that in one query. The lesson is not
+GraphQL syntax — it is the **N+1 problem**: a naive resolver for `vendor` on a
+list of 50 products makes 50 calls; a **DataLoader** batches them into one.
+Measure both. Then write the third column of PayFlow's transport decision
+record: REST for resources, gRPC for internal RPC, GraphQL for a client that
+composes. If time runs out, the decision record alone is acceptable; the
+DataLoader measurement is what makes it more than reading.
 
 ### Feature flag + canary — the first all year
 
@@ -268,6 +345,12 @@ hiding the submit button, a redirect loop after login.
 | **Circuit breaker + retry** | Each downstream call | Reused from LedgerBase |
 | **Feature-flag table** | `is_enabled(flag, user_id)` with stable per-user bucketing | Deliberately hand-rolled — a flag service would hide the mechanism you are meant to understand |
 | **Prometheus + Grafana** | Per-downstream latency and pool saturation, checkout success rate **split by flag cohort**, ledger-entry lag | The cohort split is what makes the canary meaningful. Without it you are ramping blind |
+| **OpenTelemetry, end to end** | Every service carries LedgerBase's OTel setup; `traceparent` crosses the gateway, the sync calls, the outbox (FleetTrack) and the payment webhook | One checkout = one trace across five services and a relay. This is the demo you open in the interview |
+| **Nginx `limit_req`** | Per IP and per API key at the gateway | The outermost protection layer, cheaper than anything behind it |
+| **Postgres RLS** | `vendor_id` policies on `products`, `order_vendor_groups`, payout tables; `SET LOCAL app.vendor_id` per transaction | Isolation that survives a forgotten `WHERE` |
+| **Terraform** | All cloud resources | See §8 |
+| **`locust`** | Checkout flow at realistic concurrency | Bulkhead pool sizes come from these numbers, not from a guess |
+| **GraphQL BFF** *(stretch)* | Strawberry + DataLoader for the product page | The N+1 measurement |
 | **Playwright** | Browser E2E in CI | |
 | **Cloud IAM / VPC / security groups** | Gateway + catalog-service | |
 
@@ -278,7 +361,8 @@ hiding the submit button, a redirect loop after login.
 | **Kubernetes in production** | You ran `kind` locally in Phase 8 to understand the objects. Operating a production cluster is a different job, and two weeks is not enough to do it honestly |
 | **A service mesh** | Five services, one gateway. The mesh would add operational surface you cannot justify |
 | **A managed feature-flag service** | Hand-rolled on purpose — the bucketing logic *is* the lesson |
-| **A shared cart cache** | Cart lives in the client at this scope. Note what changes when carts must survive across devices |
+| **A shared cart cache** | Cart lives in the client at this scope. `docs/cart-persistence.md` designs the Redis version and names the trigger for building it |
+| **Two-phase commit** | `docs/distributed-transactions.md`. The saga/outbox/idempotency shape you built *is* the answer to "how do you keep five services consistent" |
 | **Per-service databases** | Tempting "proper microservices" instinct. At this scale it multiplies operational cost and forces distributed transactions you deliberately avoided. Say why you did not |
 
 ---
@@ -289,17 +373,24 @@ hiding the submit button, a redirect loop after login.
 - New repo `atlasmarket/`; `docs/architecture.md` **mapping each service to its
   origin project** — write this first; it is the plan
 - Adapt StockPilot's product model: add `vendor_id`; vendor onboarding endpoint
+- **RLS policies** + `SET LOCAL app.vendor_id`; the "forgotten WHERE" test;
+  `docs/multi-tenancy-decision-record.md`
+- Extend PayFlow's `infra/` with compute, managed Postgres, bucket + CDN, DNS, cert
 - Adapt DocuVault's ES sync pattern to index **vendor-scoped** products
 - `storefront/` scaffold; React Router routes; product list via TanStack Query
 - Cart state + cart UI, wired to the router's cart route
 
-### Stage 2 — Checkout, cloud, canary *(D163–D165, Week 28)*
+### Stage 2 — Checkout, cloud, canary *(D163–D165, Week 28)* *(v2: +2 days)*
 - **Checkout:** cart → split into `order_vendor_groups` → PayFlow idempotent
   payment → per-vendor ledger entries
-- **Bulkhead** pools on the gateway's calls to each of the five services
+- **Bulkhead** pools on the gateway's calls to each of the five services — sized
+  from a `locust` checkout run; Nginx `limit_req` in front
+- OTel across all five + relay; one checkout trace end to end
 - Adapt WareFlow's status concepts to `order_vendor_groups`
-- Deploy gateway + `catalog-service` to **real cloud compute**; DB on managed
-  Postgres in the private subnet → `docs/cloud-deployment-notes.md`
+- `terraform apply`: gateway + `catalog-service` on **real cloud compute**, DB on
+  managed Postgres in the private subnet, **HTTPS**, storefront on bucket + CDN
+  → `docs/cloud-deployment-notes.md`; `docs/distributed-transactions.md`;
+  `docs/cart-persistence.md`
 - Storefront checkout wired to the real API, shipped **dark behind the flag**,
   ramped 10% → 100% while watching Grafana
 
@@ -308,6 +399,8 @@ hiding the submit button, a redirect loop after login.
   what you built. Work SD10 from `system-design-problems.md`
 - Design payment idempotency + product search from scratch, unprompted; work SD16
 - Playwright test: real browser through browse → cart → checkout
+- *(Stretch)* GraphQL BFF with DataLoader; N+1 measured; transport DR completed
+- Read the cloud bill; put the real number in `docs/cloud-deployment-notes.md`
 - `docs/atlasmarket-roadmap-post-bootcamp.md`
 
 ---
@@ -326,6 +419,12 @@ hiding the submit button, a redirect loop after login.
 | Idempotency | A retried checkout charges once |
 | Search | A vendor-scoped inventory change propagates to the catalog index |
 | Cloud | The database is unreachable from the public internet |
+| **RLS** | With one `WHERE vendor_id` removed from a query, vendor B's request returns nothing; the policy is enforced when connecting as the app role and bypassed only by the migration role |
+| Rate limit | `limit_req` returns `429` past the burst; other clients unaffected |
+| **Trace** | One `trace_id` from the storefront request through gateway → order → payment → ledger and the outbox relay |
+| Load | Bulkhead pool sizes documented with the `locust` numbers that produced them |
+| Terraform | `plan` clean after `apply`; the DB SG admits only the service SG; TLS certificate valid; the storefront loads from the CDN with `immutable` asset headers |
+| GraphQL *(stretch)* | Product list with 50 vendors: 51 calls without DataLoader, 2 with |
 
 ---
 
@@ -343,6 +442,12 @@ hiding the submit button, a redirect loop after login.
 - [ ] Checkout shipped dark, ramped 10% → 100%, watched on Grafana **by cohort**
 - [ ] Feature-flag bucketing stable per user, tested
 - [ ] Playwright end-to-end test green
+- [ ] RLS policies live; "forgotten WHERE" test passes
+- [ ] Nginx `limit_req` at the gateway; four protection layers documented
+- [ ] One checkout traced across all five services and the relay
+- [ ] Cloud built by Terraform only; HTTPS; storefront on CDN; real bill recorded
+- [ ] `docs/multi-tenancy-decision-record.md`, `docs/distributed-transactions.md`, `docs/cart-persistence.md`
+- [ ] *(Stretch)* GraphQL BFF + DataLoader measurement; transport DR complete
 - [ ] Two system-design problems worked from scratch (SD10, SD16) and compared
 - [ ] `docs/atlasmarket-roadmap-post-bootcamp.md` written — **and respected**
 
@@ -365,6 +470,16 @@ hiding the submit button, a redirect loop after login.
    side of a rollout — and why does that matter?
 9. Why one database rather than one per service?
 10. How do you make sure a vendor can never see another vendor's data?
+11. Row Level Security — how does it work, what does `SET LOCAL` have to do with
+    connection pooling, and what would make you choose schema-per-tenant instead?
+12. Why not a distributed transaction across the five services?
+13. Rate limit, bulkhead, circuit breaker, retry — which failure does each handle,
+    and in what order do they sit?
+14. Show me one checkout as a trace. Where did the time go?
+15. What is in your Terraform, and what would break if someone changed the security
+    group in the console?
+16. Where do the storefront's static files live, and why not on the gateway VM?
+17. *(Stretch)* What is the N+1 problem in GraphQL and how does DataLoader solve it?
 
 ---
 
@@ -379,6 +494,11 @@ hiding the submit button, a redirect loop after login.
 - A per-request random feature-flag roll, so users flip between versions
 - Splitting the database per service because "microservices", then discovering you
   need a distributed transaction for checkout
+- Vendor isolation that lives only in the ORM query, one forgotten filter away from a leak
+- `SET app.vendor_id` (not `LOCAL`) through a transaction-mode pool, leaking a vendor into the next request
+- Cloud resources created by hand "just to get it working", never captured in Terraform
+- Sizing bulkhead pools by feel instead of from the load test
+- Shipping a portfolio capstone over plain HTTP
 
 ---
 
