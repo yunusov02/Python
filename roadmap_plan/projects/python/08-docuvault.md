@@ -505,3 +505,48 @@ implementation** (`raft-impl/`) — leader election, log replication, all five s
 properties, tested under a real simulated network partition. Project 28's
 distributed job scheduler is later built on it. See
 `phase-5-scaling-architecture.md` §5.
+
+---
+
+## 20. LLM/RAG Extension — Stage 2 *(Week 22, +3 days)*
+
+> **Why here — the deepest LLM work in Track A.** DocuVault already has a real
+> search infrastructure (Postgres FTS *and* Elasticsearch) and real documents with
+> body content. That makes it the one place in Track A where RAG can be built
+> with **an actual evaluation step**, not just a demo — a genuine preview of
+> Track B's **Project 12** (Phase 7, "Ask Your Documents" Chatbot), which adds
+> multi-turn conversation and production-grade evaluation on top of this.
+
+**Scope (in)**
+- Chunk `document_versions`' text content; embed with a real embedding model
+  (hosted API or a local `sentence-transformers` model — name the tradeoff)
+- Store vectors in `pgvector` **or** as an Elasticsearch dense-vector field —
+  pick one and justify it in `docs/rag-decision-record.md` against the FTS/ES
+  work already done in this project
+- `GET /documents/ask?q=` — retrieve top-k chunks, generate an answer citing the
+  source document and version
+- **A real evaluation set**: 15-20 hand-written questions with a known correct
+  source document each; compute **hit rate** (was the right document in the
+  top-k?) — the same metric Track B's LLM Zoomcamp formalizes in Phase 7
+
+**Scope (out)**
+
+| Deferred | Where |
+|---|---|
+| MRR, LLM-as-judge evaluation | Phase 7 |
+| Hybrid search combining FTS + dense vectors | Named as the natural next step; Phase 7 territory |
+| Multi-turn conversation, prompt-injection guardrails | Phase 7 |
+| Access-control-aware retrieval | Same gap already named for search (§4) — the RAG endpoint inherits it |
+
+**Definition of Done**
+- [ ] Chunking + embedding pipeline reuses the existing indexing consumer's
+      event-driven trigger (new/updated versions re-embed, same pattern as ES sync)
+- [ ] Hit rate computed on the 15-20 question evaluation set, recorded
+- [ ] `docs/rag-decision-record.md` written: pgvector vs. Elasticsearch dense
+      vectors, and why
+
+**Interview questions this adds**
+1. What does "hit rate" measure, and why is it the first metric to compute
+   before anything about answer quality?
+2. Why reuse the indexing consumer's event trigger instead of a separate embed job?
+3. pgvector or Elasticsearch for the vectors — what did you choose here, and why?

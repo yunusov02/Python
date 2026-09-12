@@ -434,3 +434,40 @@ partition.
 Real WMS platforms use the **outbox pattern** precisely because "commit to the DB,
 then publish to the broker" is not atomic. You are meant to *feel* this gap now,
 not have it solved for you — and FleetTrack in Phase 5 is where you close it.
+
+---
+
+## 19. ML Extension — Stage 5 *(Week 13, +3 days)*
+
+> **Why here — and why this is new ground.** WareFlow has no Track B counterpart
+> at all; this section closes that gap. `stock_movements`, partitioned and
+> indexed since Stage 3, is exactly the shape of data anomaly detection needs:
+> high volume, timestamped, one row per event.
+
+**Scope (in)**
+- An `IsolationForest` (`scikit-learn`) over `stock_movements`, features: `delta`
+  magnitude, time-of-day, warehouse, product — flags movements that look
+  statistically unlike the rest (a plausible proxy for data-entry errors or
+  theft, named honestly as a proxy, not a fraud system)
+- Run as a one-off batch script against the partitioned table (reads by month
+  partition, not the whole table) — reusing the BRIN-indexed time-range query
+  pattern from Stage 3
+- A written review of the top 20 flagged movements: how many look like real
+  anomalies vs. noise
+
+**Scope (out)**
+
+| Deferred | Why |
+|---|---|
+| Real-time flagging on write | This is a batch review tool, not a blocking control |
+| A labeled fraud dataset / supervised model | None exists; unsupervised is the honest choice here |
+| Alerting on flagged movements | Would need the Phase 4 observability stack wired to a model — named, not built |
+
+**Definition of Done**
+- [ ] Isolation Forest run against a full partition, `docs/anomaly-notes.md`
+      written with the top-20 review
+- [ ] The proxy nature of "anomalous ≠ fraudulent" stated explicitly
+
+**Interview questions this adds**
+1. Why unsupervised anomaly detection here instead of a classifier?
+2. What would you need to turn this batch review into a real-time control?

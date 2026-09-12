@@ -473,3 +473,72 @@ postmortem rather than pretending the split paid off.
 Most real systems do not split auth out this early. You are doing it now
 specifically to *feel* the tradeoff while the system is still small enough to
 reason about — not because two services is the right number at this size.
+
+---
+
+## 21. LLM/RAG Extension — Stage 3 *(Week 15, +3 days)*
+
+> **Why here — a deliberate "first touch".** CarePoint is revisited properly in
+> Track B's **Project 11** (Phase 7): a full RAG pipeline with hybrid search,
+> re-ranking, evaluation (hit rate/MRR, LLM-as-judge) and prompt-injection
+> guardrails. Building none of that rigor yet is the point — this section exists
+> so "how does RAG work" is answered with your hands before Phase 7 answers it
+> with rigor.
+
+**Scope (in)**
+- A small, static corpus of patient-FAQ documents (clinic hours, what to bring to
+  an appointment, insurance basics — a handful of markdown files, not real PHI)
+- Chunking + embeddings via a hosted embedding API, stored in `pgvector`
+  (`ALTER ... ADD COLUMN embedding vector(N)`, `CREATE INDEX ... USING ivfflat`)
+  reusing the Postgres that already runs CarePoint — no new datastore
+- A `/faq/ask` endpoint: embed the question, retrieve top-k chunks by cosine
+  distance, pass them plus the question to an LLM API, return the answer with
+  the source chunks cited
+
+**Scope (out) — named, and this is most of what makes RAG hard**
+
+| Deferred | Where it lands |
+|---|---|
+| Retrieval evaluation (hit rate, MRR) | Phase 7 |
+| Hybrid search / re-ranking | Phase 7 |
+| Prompt-injection guardrails | Phase 7 — **do not expose this endpoint outside a trusted demo** until that lands |
+| Multi-turn conversation | Phase 7 |
+| Real patient data | Never in this endpoint — synthetic FAQ content only |
+
+**Definition of Done**
+- [ ] Corpus embedded into `pgvector`, retrieval returns plausible chunks for a
+      handful of manually-checked test questions
+- [ ] `/faq/ask` returns an answer citing its source chunks
+- [ ] `docs/rag-notes.md`: what "source of truth" means for a RAG answer, and why
+      this endpoint is not production-safe yet (no guardrails)
+
+**Interview questions this adds**
+1. Walk me through what happens between a user's question and the answer they see.
+2. Why cite source chunks in the response instead of just the generated text?
+3. What is missing here that Phase 7 adds, and why does it matter for a real deployment?
+
+---
+
+## 22. Telegram Bot Extension — Stage 2 *(Week 15, +1 day)*
+
+> **Why here — reuse, not rebuild.** CarePoint already has a 24h-before Celery
+> Beat reminder (§5.4). This section only adds a second delivery channel to a
+> job that already exists, reusing QuickServe's webhook/auth bot pattern.
+
+**Scope (in)**
+- Patients optionally link a Telegram chat via the same one-time-code pattern
+  as QuickServe's `/link`
+- The existing appointment-reminder Celery task gains a second branch: if the
+  patient has a linked chat, send via the bot **in addition to** (not instead
+  of) email
+
+**Scope (out)** — no bot-initiated booking or cancellation; that would duplicate
+the OIDC-authenticated booking flow for no new lesson.
+
+**Definition of Done**
+- [ ] A patient with a linked chat receives the reminder via Telegram; one
+      without still receives only email
+- [ ] The Celery task's retry/backoff behavior is unchanged for the email branch
+
+**Interview question this adds**
+1. Why add a channel to an existing job instead of building a second reminder pipeline?

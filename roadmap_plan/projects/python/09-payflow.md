@@ -553,3 +553,47 @@ Real payment platforms (Stripe) treat idempotency as **infrastructure-level**, n
 per-endpoint — a client-library concern as much as a server one, so that every
 call is idempotent by default rather than by remembering. Worth naming even though
 you built it per-endpoint here.
+
+---
+
+## 21. ML/MLOps Extension — Stage 3 *(Week 26, +3 days)*
+
+> **Why here — closing the last real gap.** PayFlow has no Track B counterpart,
+> and it is already the most heavily observed system in Track A (Prometheus,
+> Grafana, Sentry, an SLO). That makes it the right place for the curriculum's
+> most senior AI work: a model whose **operational behavior** — latency, drift —
+> gets the same monitoring discipline as everything else in this project.
+
+**Scope (in)**
+- A classification model (`scikit-learn`, e.g. `IsolationForest` or logistic
+  regression on engineered features) flagging payments that look anomalous:
+  amount vs. merchant's history, velocity (payments per minute per merchant),
+  time-of-day — named honestly as a **fraud-signal proxy**, not a real fraud
+  system
+- **MLflow** tracking (reused from LedgerBase's habit) for training runs
+- **A model-serving metric wired into the existing Prometheus stack**:
+  prediction latency (histogram) and a simple drift signal (the mean of the
+  model's score over a rolling window, alerting if it moves outside a band) —
+  the same RED-metric discipline this project already applies to its API
+- One Grafana panel showing the anomaly score distribution alongside payment
+  volume
+
+**Scope (out)**
+
+| Deferred | Why |
+|---|---|
+| A real fraud rules engine, blocking payments | This is a signal, not a decision — a false positive here means an interview note, not a declined transaction |
+| A model registry, automated retraining | Phase 10 — this project reuses the *monitoring* habit, not the full MLOps pipeline |
+| Labeled fraud data | None exists; the model is unsupervised, and that limitation is stated honestly |
+
+**Definition of Done**
+- [ ] Model trained and tracked in MLflow
+- [ ] Prediction-latency histogram and a drift-signal metric visible in Grafana,
+      alongside the existing RED dashboards
+- [ ] `docs/fraud-signal-notes.md`: what this model can and cannot claim to detect
+
+**Interview questions this adds**
+1. Why treat this as a signal for a human to review rather than an automatic block?
+2. What does "drift" mean for a model in production, and how did you detect it here
+   without a labeled ground truth?
+3. Why does a model's latency belong on the same dashboard as the API's?

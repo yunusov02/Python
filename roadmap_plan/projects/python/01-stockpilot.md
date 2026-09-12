@@ -509,3 +509,59 @@ Real inventory systems (Shopify, Square) never denormalize stock without an even
 log behind it. `stock_movements` **is** that event log — so you are already doing
 the honest version, just without the full event-sourcing machinery. That machinery
 is Phase 5 territory, and even there only as an overview.
+
+---
+
+## 21. AI/ML/Data Extension — Stage 5 *(Week 4, +3 days)*
+
+> **Why here.** `stock_movements` is already an append-only event log — the cleanest
+> possible raw material for a first brush with both data engineering and applied
+> ML. This is deliberately the lightest AI touch in the whole curriculum: one
+> mental model — *features come from your own operational data, not from a
+> vendor API* — not a production system. Track B's **Project 17** (Phase 9,
+> StockPilot Demand Forecaster) rebuilds this exact problem with real rigor
+> (train/validation/test discipline, several model families, full evaluation,
+> deployment). This section is the "before" picture that makes Project 17 feel
+> like a continuation, not a cold start.
+
+**Scope (in)**
+- A read-only export script pulling `orders` + `order_items` + `stock_movements`
+  into a weekly-aggregated Parquet file — the smallest possible ETL
+- A single-feature linear regression (`scikit-learn`) forecasting next week's
+  units sold per product from the last N weeks
+- A naive baseline ("next week = this week") computed on the same data
+- MAE and RMSE for both, compared
+
+**Scope (out) — named**
+
+| Deferred | Where it lands |
+|---|---|
+| Train/validation/test split discipline, cross-validation | Phase 9, Project 17 |
+| Multiple model families, feature engineering beyond lag features | Phase 9 |
+| Model serving, an API endpoint, a retraining schedule | Phase 9/10 |
+| A feature store | Never — the export script *is* the pipeline at this scale |
+
+**New artifacts**
+```
+analytics/
+  export_analytics.py   # repository-layer reads → weekly Parquet, no new endpoints
+  forecast.py            # pandas + scikit-learn LinearRegression, lag features
+docs/forecast-notes.md   # MAE/RMSE vs. naive baseline, and why beating naive matters
+```
+
+**Testing**
+- The export script produces one row per `(product_id, iso_week)` with no gaps for
+  weeks that had zero sales (explicit zero, not a missing row — a missing week
+  silently corrupts a lag feature)
+- The forecast script is deterministic given a fixed random seed
+
+**Definition of Done**
+- [ ] `export_analytics.py` produces a Parquet file with zero-filled weekly rows
+- [ ] Linear regression MAE/RMSE computed against the naive baseline, both recorded
+- [ ] `docs/forecast-notes.md` written, including one honest sentence on whether the
+      model actually beat the baseline
+
+**Interview questions this adds**
+1. Why export to Parquet instead of querying Postgres directly for every training run?
+2. What is a naive baseline, and why must a forecasting model beat it to be worth anything?
+3. What would this need before it could run against production traffic — and where in the curriculum does that get built?

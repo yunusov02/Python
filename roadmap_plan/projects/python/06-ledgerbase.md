@@ -580,3 +580,36 @@ Real ledgers often use an **append-only event log as the source of truth**, with
 balances as projections. That is an explicit, named preview of Phase 5's Event
 Sourcing overview — and it is the same shape as `stock_movements` in StockPilot,
 now applied to money.
+
+---
+
+## 20. ML/MLOps-lite Extension — Stage 4 *(Week 18, +3 days)*
+
+> **Why here.** LedgerBase has invoices with due dates and amounts — enough for a
+> first cash-flow forecast — and it is already the most operationally mature
+> project so far (Prometheus/Grafana/Sentry all live). That makes it the right
+> place for the curriculum's **first taste of MLOps discipline** (experiment
+> tracking), even though full MLOps waits for Phase 10.
+
+**Scope (in)**
+- A simple time-series cash-flow forecast (`statsmodels` or a lag-feature linear
+  model) predicting next week's expected collections from `invoices` +
+  `payments` history
+- **MLflow, local only**: log each training run's parameters and MAE as an
+  experiment — the point is the *habit* of tracking runs, not a registry or
+  deployment
+- No serving endpoint; the forecast is a script whose output is reviewed, not
+  called by the app
+
+**Scope (out)** — model registry, deployment, retraining triggers, drift
+monitoring: all Phase 10.
+
+**Definition of Done**
+- [ ] Forecast script runs, MAE recorded
+- [ ] At least 3 training runs (varying one hyperparameter or feature) logged to
+      local MLflow, comparable in its UI
+- [ ] `docs/mlops-notes.md`: what MLflow gave you over a spreadsheet of numbers
+
+**Interview questions this adds**
+1. What problem does experiment tracking solve that a personal spreadsheet does not?
+2. Why no serving endpoint here yet — what would change your mind?

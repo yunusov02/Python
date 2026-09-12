@@ -378,3 +378,84 @@ function enqueues, inside `transaction.on_commit`. Write the reason down.
 - One queue for everything, so a notification storm delays the month-end accrual
 - Sending email from a signal, then wondering why the test fixtures send email
 - Naive dates around DST, so a "midnight" job runs at 23:00 or 01:00 — or twice
+
+---
+
+## 17. Data Engineering Extension — Stage 4 *(Week 9, +2 days)*
+
+> **Why here.** `leave_requests`/`leave_balances` are exactly the kind of HR data
+> Track B's **Project 23** (Year-2 Analytics Platform, Phase 11) later unifies
+> across StockPilot/QuickServe/PeopleOps/LedgerBase. This section is the first,
+> single-system version: get one clean export right before combining four.
+
+**Scope (in)**
+- A Celery Beat job (reusing the queue infrastructure this project already
+  builds) exporting `leave_requests` + `leave_balances` to Parquet monthly, after
+  accrual runs
+- Partition the export by `year_month`, matching `accrual_runs`' own key — the
+  same idempotency discipline as the accrual job itself
+
+**Definition of Done**
+- [ ] Monthly export job scheduled on Beat, idempotent per `year_month`
+- [ ] Parquet files partitioned by month, readable by `pandas.read_parquet`
+
+**Interview question this adds**
+1. Why partition the export the same way the accrual job is keyed?
+
+---
+
+## 18. Telegram Bot Extension — Stage 3 *(Week 9, +2 days)*
+
+> **Why here, and why this is the deep build.** This is the first bot in the
+> curriculum with real, stateful business logic and the first with **push**
+> (Celery now exists). Approving a leave request from a chat message is a genuine
+> multi-step flow — the natural place to learn a proper **FSM** (finite-state
+> conversation) and **inline keyboards**, on top of QuickServe's webhook/auth
+> foundation.
+
+**Scope (in)**
+- Same linked-account pattern as QuickServe's bot (reused, not reinvented)
+- `/request_leave` — an FSM conversation: type → start date → end date → confirm,
+  each step validated against the same service layer the REST API calls (no
+  parallel business-logic path)
+- **Push**: on submission, the manager's linked chat receives an inline-keyboard
+  message — `✅ Approve` / `❌ Reject` — sent via a new Celery task alongside
+  `send_decision_email` (same queue discipline: justify whether it shares the
+  `emails` queue or gets its own `bot_notifications` queue)
+- Button tap calls the **same** `approve`/`reject` service function the REST
+  endpoint calls — the bot is another caller of the service layer, not a second
+  implementation of the business rule
+
+**Scope (out)**
+
+| Deferred | Why |
+|---|---|
+| Editing an in-flight FSM conversation ("go back a step") | Real UX feature, no new lesson |
+| Bot-only actions with no REST equivalent | The rule that "the bot calls the same service layer" would break |
+
+**New artifacts**
+```
+bot/
+  states.py        # aiogram FSM states for the leave-request flow
+  handlers.py       # /request_leave conversation, approve/reject callback handlers
+```
+
+**Testing**
+- The FSM conversation is tested with a fake update sequence, asserting each state
+  transition and the final service call
+- Tapping "Approve" twice (a stale/duplicate callback) does not double-approve —
+  same idempotency discipline as the rest of this project
+- A manager's inline keyboard cannot approve a report that is not their own —
+  same relationship-based permission check as the REST endpoint
+
+**Definition of Done**
+- [ ] `/request_leave` FSM flow working end to end via the bot
+- [ ] Inline-keyboard approve/reject calls the existing service layer, proven by
+      a shared test helper used by both the REST and bot test suites
+- [ ] Duplicate callback tap does not double-approve
+- [ ] `docs/telegram-bot-notes.md` updated with the FSM design
+
+**Interview questions this adds**
+1. How do you keep a Telegram bot's business logic from diverging from the REST API's?
+2. What stops a duplicate button tap from double-approving a request?
+3. Why an FSM here, when QuickServe's bot needed none?

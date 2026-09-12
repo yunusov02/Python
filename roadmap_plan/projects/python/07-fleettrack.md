@@ -428,3 +428,28 @@ At large scale the outbox relay becomes a **CDC pipeline** (Debezium) reading th
 write-ahead log instead of polling a table: lower lag, no polling load, but WAL
 access and more operational surface. Named here as the natural next step; out of
 scope to build.
+
+---
+
+## 18. ML Extension — Stage 2 *(Week 20, +2 days)*
+
+> **Why here.** `delivery_events`' timestamps between `assigned` and `delivered`
+> are a ready-made regression target, and this feeds directly into Track B's
+> **Project 24** (Year-2 Analytics + Streaming, Phase 11), which streams this
+> same project's events.
+
+**Scope (in)**
+- A regression model (`scikit-learn`) predicting delivery duration from: driver,
+  time of day, day of week, number of prior deliveries that day
+- Trained on synthetic seed data expanded to a few thousand deliveries
+- Compared against a naive baseline (the driver's historical median duration)
+
+**Scope (out)** — no serving, no real-time ETA on the dispatcher dashboard (that
+would need this wired into `delivery_view`, a real Phase 9/10-level project).
+
+**Definition of Done**
+- [ ] Model trained, MAE compared to the per-driver median baseline
+- [ ] `docs/eta-notes.md` written
+
+**Interview question this adds**
+1. Why compare against the driver's own historical median instead of the global average?

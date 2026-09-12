@@ -432,3 +432,94 @@ the benchmark numbers are written down.
 Production POS systems often run checkout **fully offline-first**, with local
 queuing and background sync, because a shop cannot stop selling when the network
 drops. Worth naming in an interview; out of scope for a backend-focused bootcamp.
+
+---
+
+## 19. AI/ML Extension — Stage 4 *(Week 7, +2 days)*
+
+> **Why here.** QuickServe captures every receipt and return — the first place
+> in the curriculum with enough transaction history to try a classification
+> model. Track B's **Project 18** (Phase 9, QuickServe Churn Predictor) does this
+> properly later, with a real evaluation harness. This is the first-touch version.
+
+**A minimal, named scope addition.** QuickServe's core domain has no customer
+identity — receipts are anonymous by design (§6). For this exercise only, add:
+```
+customers(id, phone_hash UNIQUE)
+```
+and a nullable `receipts.customer_id`, populated when a cashier optionally enters
+a phone number at checkout. This is **not** a core-project feature — no endpoint
+exposes it beyond checkout, and it is not part of the roles/permissions model.
+State this explicitly in `docs/notes.md` so the scope addition is honest, not silent.
+
+**Scope (in)**
+- Label: a customer who returns within 30 days of their first receipt = `1`
+- Logistic regression (`scikit-learn`) on: receipt count, average basket size,
+  discount usage, days since first visit
+- Precision/recall/confusion matrix on a held-out slice, no cross-validation
+- No deployment
+
+**Scope (out)** — full train/test discipline, feature engineering beyond four
+columns, deployment, monitoring: all Phase 9/10.
+
+**Definition of Done**
+- [ ] `customers` addition documented as an ML-only scope exception
+- [ ] Logistic regression trained; precision/recall/confusion matrix recorded
+- [ ] `docs/churn-notes.md` written
+
+**Interview question this adds**
+1. Why does a classifier need a labeled outcome, and how did you define "churn" here?
+
+---
+
+## 20. Telegram Bot Extension — Stage 3 *(Week 7, +2 days)*
+
+> **Why here, and why pull-only.** QuickServe deliberately has no Celery (§3) —
+> the synchronous pain that earns it is PeopleOps' lesson, not this project's.
+> So this bot is built **pull-only**: a manager sends a command, the bot's
+> webhook handler queries the database synchronously and replies. No push, no
+> schedule — that capability arrives with PeopleOps' bot, the moment Celery
+> actually exists to back it. This is also the curriculum's **first Telegram
+> bot** — the patterns built here (webhook setup, auth, error handling) are
+> reused, not rebuilt, in every later bot.
+
+**Scope (in)**
+- `aiogram` (or `python-telegram-bot`) bot, **webhook** mode (not polling — set
+  up once, understand why webhook needs a public HTTPS URL or a tunnel in dev)
+- `/report [date]` — manager-only, calls the existing daily-sales query (live or
+  matview) and replies with a formatted summary
+- `/link <code>` — a manager links their Telegram `chat_id` to their DRF user via
+  a short-lived one-time code generated from the existing session (no new auth
+  mechanism — reuse `simplejwt`'s user, do not invent a second identity system)
+- Role check: the bot looks up the linked user's role before answering `/report`
+
+**Scope (out) — named**
+
+| Deferred | Why / where |
+|---|---|
+| Push notifications (low-stock, daily auto-report) | Needs a scheduler — PeopleOps, once Celery exists |
+| Inline keyboards, multi-step flows (FSM) | Nothing here needs a conversation — PeopleOps' approve/reject bot is where FSM earns its place |
+| Group chat support | One manager, one private chat is enough to learn webhook auth |
+
+**New artifacts**
+```
+bot/
+  main.py         # aiogram Dispatcher, webhook route registered on the same Django app or a small sidecar
+  handlers.py      # /report, /link
+  auth.py          # chat_id -> user resolution
+docs/telegram-bot-notes.md   # webhook vs polling, why webhook here, the tunnel used in dev
+```
+
+**Testing**
+- An unlinked `chat_id` calling `/report` gets a clear "link your account first" reply, not a stack trace
+- A linked cashier (not a manager) calling `/report` is refused, same role check as the REST endpoint
+
+**Definition of Done**
+- [ ] Bot responds to `/link` and `/report` over a real webhook (tunnel or deployed URL)
+- [ ] Role enforcement reuses the existing permission logic, not a bot-specific copy
+- [ ] `docs/telegram-bot-notes.md` written
+
+**Interview questions this adds**
+1. Webhook vs. polling for a Telegram bot — which did you choose and why?
+2. Why link the bot to an existing user instead of giving Telegram its own auth?
+3. Why is this bot pull-only, and what would it take to make it push-capable?

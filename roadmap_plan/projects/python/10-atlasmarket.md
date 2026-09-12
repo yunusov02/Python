@@ -524,3 +524,70 @@ AtlasMarket is the base for the rest of the program:
 And, after Day 180, AtlasMarket is the portfolio project you keep growing — which
 is why the deferred list in `docs/atlasmarket-roadmap-post-bootcamp.md` is a
 roadmap, not a graveyard.
+
+---
+
+## 18. AI/ML/LLM/Data Convergence — Stage 3 *(Week 28, +3 days)*
+
+> **Why here — the capstone's AI layer.** Every prior AI/ML/Data extension in
+> Track A gets its final callback here, the same way every backend pattern in
+> AtlasMarket is "imported and adapted, not rebuilt" (§1). This section
+> previews Track B's **Project 13** (Phase 7 support assistant) and **Project 25**
+> (Phase 11 vendor analytics) in miniature, and adds one new piece —
+> recommendations — that no earlier project had the data for.
+
+**Scope (in)**
+- **ML**: a simple co-purchase / content-based product recommender ("customers
+  who bought this also bought…") over the marketplace's own order history —
+  adapted from StockPilot's export-and-train pattern (§21 of that project),
+  not reinvented
+- **LLM**: a small RAG support assistant over product descriptions and vendor
+  policies — adapted from DocuVault's pgvector pattern (§20 of that project)
+- **Data Engineering**: a nightly batch job aggregating `order_vendor_groups` +
+  `journal_entries` into a per-vendor daily revenue summary table — the direct
+  precursor to Project 25's Phase 11 warehouse
+
+**Scope (out)** — named, respecting the project's own "scope creep is the real
+failure mode" rule (§3): no recommendation-serving infrastructure beyond a
+`GET /products/{id}/recommendations` endpoint reading a precomputed table; no
+RAG evaluation harness beyond the hit-rate check already built in DocuVault; no
+real-time vendor analytics dashboard — that is Project 25's job.
+
+**Definition of Done**
+- [ ] Recommendation endpoint serving from a precomputed table, refreshed nightly
+- [ ] Support-assistant endpoint answering from product/policy content, citing sources
+- [ ] Vendor daily-revenue aggregation table populated by a nightly batch job
+- [ ] `docs/ai-convergence-notes.md` mapping each piece back to the project that taught it
+
+**Interview questions this adds**
+1. Where did each AI feature's underlying technique come from — which earlier
+   project taught it, and what did you adapt versus rebuild?
+2. What is the honest scope boundary between what you built here and Track B's
+   Projects 13/25?
+
+---
+
+## 19. Telegram Bot Extension — Stage 2 *(Week 28, +1 day)*
+
+> **Why here — the last reuse.** By now the bot pattern (webhook, linked account,
+> role check) is routine — QuickServe built it, PeopleOps extended it with FSM
+> and push. This is the final reuse, matching the capstone's own philosophy.
+
+**Scope (in)**
+- `/order_status <order_id>` — a customer command reading `order_vendor_groups`,
+  reusing the linked-account pattern
+- **Push**: when a vendor marks their group fulfilled, the existing outbox
+  relay (§5) gains one more consumer — a notification service that, if the
+  customer has a linked chat, sends a status-update message
+
+**Scope (out)** — no checkout via the bot; that would duplicate the storefront's
+idempotent payment flow for no new lesson.
+
+**Definition of Done**
+- [ ] `/order_status` returns each vendor group's current status
+- [ ] A fulfillment event reaches a linked customer's chat via the outbox relay,
+      proven by the same fault-injection style test as FleetTrack's relay (§7)
+
+**Interview question this adds**
+1. Why does the bot's push notification go through the outbox relay instead of
+   calling the Telegram API directly from the fulfillment endpoint?
