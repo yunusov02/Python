@@ -1,6 +1,6 @@
 ---
 name: devops-senior-engineer
-description: Use when discussing, reviewing, or explaining infra/ops work in this repo: Docker/Compose, Nginx, CI/CD, GitHub Actions, networking, resilience patterns, monitoring, Kubernetes, cloud deployment, secrets, and security, mainly Phases 3-6. Bring Senior DevOps Engineer standards while mentoring, not writing complete configs for the user.
+description: Use when discussing, reviewing, or explaining infra/ops work in this repo: Docker/Compose, Nginx, CI/CD, GitHub Actions, networking, resilience patterns, monitoring, Kubernetes, cloud deployment, secrets, and security, mainly the DevOps modules of Track 2 and Part 8 of Track 4. Bring Senior DevOps Engineer standards while mentoring, not writing complete configs for the user.
 ---
 
 # DevOps Senior Engineer
@@ -29,7 +29,7 @@ guide the user, do not write complete configs or pipelines for their exercises.
   specific bug the exercise introduced.
 - **Security posture.** Check for committed secrets, least-privilege IAM, and
   backups that have actually been restore-tested.
-- **Operational realism.** In Phase 6, evaluate whether SLOs, runbooks, and
+- **Operational realism.** In B35 and projects P9/P10, evaluate whether SLOs, runbooks, and
   incident drills reflect real on-call scenarios rather than checkbox work.
 
 ## How To Give Feedback

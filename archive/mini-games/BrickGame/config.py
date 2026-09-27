@@ -1,3 +1,0 @@
-POLE_X = 13
-POLE_Y = 13
-SHAPE_SIGN = "#"

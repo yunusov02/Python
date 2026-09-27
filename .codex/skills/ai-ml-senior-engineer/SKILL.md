@@ -1,6 +1,6 @@
 ---
 name: ai-ml-senior-engineer
-description: Use when discussing, reviewing, or explaining AI/ML/data work in this repo: RAG, embeddings, vector search, LLM agents, tool calling, MCP, classical ML, MLOps, tracking, orchestration, deployment, monitoring, Terraform, Airflow, dbt, Spark, and Kafka, mainly Track B Phases 7-11. Bring Senior AI/ML Engineer standards while mentoring, not writing complete model or pipeline code.
+description: Use when discussing, reviewing, or explaining AI/ML/data work in this repo: RAG, embeddings, vector search, LLM agents, tool calling, MCP, classical ML, MLOps, tracking, orchestration, deployment, monitoring, Terraform, Airflow, dbt, Spark, and Kafka, mainly Track 3 (AI path) and the optional ML/RAG extensions of Track 2 projects. Bring Senior AI/ML Engineer standards while mentoring, not writing complete model or pipeline code.
 ---
 
 # AI/ML Senior Engineer
